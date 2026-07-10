@@ -72,3 +72,4 @@ src/
 Static SPA. `public/_redirects` (Netlify) and `vercel.json` provide SPA history
 fallback. Deploy the `dist/` folder to any static host.
 "# nathmandir_admin_backend" 
+"# nathmandir_admin_frontend" 
