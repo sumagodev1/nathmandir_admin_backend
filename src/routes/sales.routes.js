@@ -1,0 +1,76 @@
+// ── Sales & Revenue API ───────────────────────────────────────
+// GET /api/sales?query=&from=&to=  — transactions (all products)
+// GET /api/sales/report            — per-product counts + revenue + totals
+// GET /api/sales/:txnId            — one transaction (for a receipt)
+import { Router } from 'express'
+import { prisma } from '../lib/prisma.js'
+import { requireAuth } from '../middleware/auth.js'
+import { ymd } from '../lib/helpers.js'
+
+const router = Router()
+router.use(requireAuth)
+
+const shape = (s) => ({
+  id: s.txnId,
+  userId: s.userId,
+  user: s.user?.name || '',
+  product: s.productId,
+  productName: s.product?.name || s.productId,
+  amount: s.amount,
+  status: s.status,
+  date: ymd(s.createdAt),
+  ref: s.ref,
+})
+
+// GET /api/sales?query=&from=&to=
+router.get('/', async (req, res) => {
+  const { query = '', from = '', to = '' } = req.query
+  const sales = await prisma.sale.findMany({
+    include: { user: true, product: true },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  const q = String(query).trim().toLowerCase()
+  const rows = sales.map(shape).filter((s) => {
+    const matchQ =
+      !q ||
+      s.user.toLowerCase().includes(q) ||
+      s.id.toLowerCase().includes(q) ||
+      s.productName.toLowerCase().includes(q)
+    const matchFrom = !from || s.date >= from
+    const matchTo = !to || s.date <= to
+    return matchQ && matchFrom && matchTo
+  })
+
+  res.json({ sales: rows, total: rows.length })
+})
+
+// GET /api/sales/report
+router.get('/report', async (req, res) => {
+  const products = await prisma.product.findMany({ orderBy: { id: 'asc' } })
+  const report = await Promise.all(
+    products.map(async (p) => {
+      const agg = await prisma.sale.aggregate({
+        where: { productId: p.id },
+        _sum: { amount: true },
+        _count: true,
+      })
+      return { id: p.id, name: p.name, count: agg._count, amount: agg._sum.amount || 0 }
+    })
+  )
+  const totalAmount = report.reduce((s, r) => s + r.amount, 0)
+  const totalCount = report.reduce((s, r) => s + r.count, 0)
+  res.json({ report, totalAmount, totalCount })
+})
+
+// GET /api/sales/:txnId
+router.get('/:txnId', async (req, res) => {
+  const sale = await prisma.sale.findUnique({
+    where: { txnId: req.params.txnId },
+    include: { user: true, product: true },
+  })
+  if (!sale) return res.status(404).json({ error: 'Transaction not found.' })
+  res.json({ sale: shape(sale) })
+})
+
+export default router
