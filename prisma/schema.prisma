@@ -1,0 +1,249 @@
+// ─────────────────────────────────────────────────────────────
+// Prisma schema — Shreenath Gitanjali Admin Backend
+// Models mirror the admin panel's data model (src/data/adminData.js).
+// Run `npx prisma migrate dev` to create these tables in MySQL.
+// ─────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ────────────────────────────────────────────────────
+enum UserStatus {
+  active
+  disabled
+}
+
+enum ContentType {
+  audio
+  text
+}
+
+enum AccessSource {
+  purchased // devotee paid (has a matching Sale)
+  granted   // admin gave it manually
+}
+
+enum GrantDuration {
+  d7   // 7 days
+  d15  // 15 days
+  perm // till revoked
+}
+
+enum SaleStatus {
+  success
+  pending
+  failed
+}
+
+// ── Admin (panel login) ──────────────────────────────────────
+model Admin {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         String   @default("super_admin")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admins")
+}
+
+// ── Product / Module (gita1, gita2, upasana, nithya) ─────────
+model Product {
+  id        String  @id // stable code, e.g. "gita1"
+  name      String
+  shortName String  @map("short_name")
+  price     Int
+  active    Boolean @default(true)
+
+  content Content[]
+  access  UserAccess[]
+  sales   Sale[]
+
+  @@map("products")
+}
+
+// ── User (devotee) ───────────────────────────────────────────
+model User {
+  id           Int        @id @default(autoincrement())
+  name         String
+  phone        String // maps to nathmand_db.user.mobile
+  city         String
+  status       UserStatus @default(active) // maps to nathmand_db.user.active
+  registeredOn DateTime   @default(now()) @map("registered_on")
+  lastLogin    DateTime?  @map("last_login")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  // ── Fields added to match the real production nathmand_db.user table ──
+  email         String? @default("")
+  address       String? @db.Text
+  otp           String? @db.VarChar(255)
+  isPaid        Int     @default(0) @map("is_paid") // nathmand_db: isPaid
+  donation      Int     @default(0) // normal-content donation flag/amount
+  donationAudio Int     @default(0) @map("donation_audio") // nathmand_db: donation_audio
+  amount        String? @db.Text // last transaction amount (kept as text like source)
+
+  // ── Access Control flags (real access model = flags on the user row) ──
+  part1          Int @default(0) @map("part_1") // Gitanjali Part 1 paid
+  part2          Int @default(0) @map("part_2") // Gitanjali Part 2 paid
+  upasanaPaid    Int @default(0) @map("upasana_paid") // Upasana paid
+  nityaniyamPaid Int @default(0) @map("nityaniyam_paid") // Nityaniyam paid
+
+  updatedAt  DateTime? @map("updated_at") // nathmand_db: updatedAt
+  updatedAt2 DateTime? @map("updated_at2") // nathmand_db: updatedAt2
+
+  access UserAccess[]
+  sales  Sale[]
+
+  @@map("users")
+}
+
+// ── Content (audio + text per product) ───────────────────────
+model Content {
+  id        Int         @id @default(autoincrement())
+  productId String      @map("product_id")
+  type      ContentType
+  title     String
+  duration  Int         @default(0) // seconds
+  audioUrl  String?     @map("audio_url") @db.Text
+  lyrics    String?     @db.Text
+  plays     Int         @default(0)
+  listeners Int         @default(0)
+  published Boolean     @default(true)
+  sortOrder Int         @default(0) @map("sort_order")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("content")
+}
+
+// ── User access (purchased vs granted, with expiry) ──────────
+model UserAccess {
+  id        Int            @id @default(autoincrement())
+  userId    Int            @map("user_id")
+  productId String         @map("product_id")
+  source    AccessSource
+  duration  GrantDuration? // only meaningful for granted access
+  grantedOn DateTime       @default(now()) @map("granted_on")
+  expiresOn DateTime?      @map("expires_on") // null = permanent / till revoked
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("user_access")
+}
+
+// ── Sales / transactions ─────────────────────────────────────
+model Sale {
+  id        Int        @id @default(autoincrement())
+  txnId     String     @unique @map("txn_id")
+  userId    Int        @map("user_id")
+  productId String     @map("product_id")
+  amount    Int
+  status    SaleStatus @default(success)
+  ref       String?
+  gateway   String     @default("razorpay")
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([userId])
+  @@index([productId])
+  @@map("sales")
+}
+
+// ── Notifications ────────────────────────────────────────────
+model Notification {
+  id       Int      @id @default(autoincrement())
+  title    String
+  message  String   @db.Text
+  audience String   @default("all") // "all" or a product code
+  reach    Int      @default(0)
+  sentOn   DateTime @default(now()) @map("sent_on")
+
+  @@map("notifications")
+}
+
+// ── Spiritual Library: Books + Chapters ──────────────────────
+model Book {
+  id          Int     @id @default(autoincrement())
+  title       String
+  author      String?
+  category    String // granth, pothi, stotra
+  cover       String? @db.Text
+  description String? @db.Text
+  published   Boolean @default(false)
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  chapters Chapter[]
+
+  @@map("books")
+}
+
+model Chapter {
+  id        Int    @id @default(autoincrement())
+  bookId    Int    @map("book_id")
+  title     String
+  content   String @db.Text
+  sortOrder Int    @default(0) @map("sort_order")
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@map("chapters")
+}
+
+// ── Photo Gallery: Albums + Photos ───────────────────────────
+model Album {
+  id        Int       @id @default(autoincrement())
+  title     String
+  category  String // maharaj, events
+  cover     String?   @db.Text
+  date      DateTime?
+  published Boolean   @default(true)
+
+  photos Photo[]
+
+  @@map("albums")
+}
+
+model Photo {
+  id        Int     @id @default(autoincrement())
+  albumId   Int     @map("album_id")
+  url       String  @db.Text
+  caption   String?
+  sortOrder Int     @default(0) @map("sort_order")
+
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@index([albumId])
+  @@map("photos")
+}
+
+// ── CMS Pages (माहिती) ───────────────────────────────────────
+model Page {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String   @db.Text
+  heroImage String?  @map("hero_image") @db.Text
+  published Boolean  @default(true)
+  updatedOn DateTime @default(now()) @updatedAt @map("updated_on")
+
+  @@map("pages")
+}
+
+// ── Settings (key/value: about/terms/privacy docs, prefs) ────
+model Setting {
+  key   String @id
+  value String @db.Text
+
+  @@map("settings")
+}
