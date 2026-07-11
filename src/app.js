@@ -21,6 +21,8 @@ import donationsRoutes from './routes/donations.routes.js'
 import contactsRoutes from './routes/contacts.routes.js'
 import loginsRoutes from './routes/logins.routes.js'
 import mobileRoutes from './routes/mobile.routes.js'
+import publicRoutes from './routes/public.routes.js'
+import sectionsRoutes from './routes/sections.routes.js'
 
 export const app = express()
 
@@ -58,10 +60,14 @@ app.use('/api/payments', paymentsRoutes)
 app.use('/api/donations', donationsRoutes)
 app.use('/api/contacts', contactsRoutes)
 app.use('/api/logins', loginsRoutes)
+app.use('/api/sections', sectionsRoutes)
 app.use('/api/uploads', uploadsRoutes)
 
 // Public mobile-app API (drop-in replacement for the legacy API.php)
 app.use('/api/mobile', mobileRoutes)
+
+// Public website API (read-only published content + contact form)
+app.use('/api/public', publicRoutes)
 
 // 404 for unknown API paths
 app.use((req, res) => {

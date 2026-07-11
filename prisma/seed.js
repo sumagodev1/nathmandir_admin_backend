@@ -3,7 +3,7 @@
 // Mirrors src/data/adminData.js so the API returns the same content
 // the UI already knows. Safe to re-run: it clears tables first.
 //
-// Run with:  npm run seed
+// Run with:  npm run see
 // ─────────────────────────────────────────────────────────────
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'

@@ -250,3 +250,17 @@ model Setting {
 
   @@map("settings")
 }
+
+// ── Website content sections (CMS for the public website) ────
+// One row per website section (maharaj, temple, trust, events,
+// donate, story). `data` is a JSON document holding the section's
+// structured, tri-lingual content ({ en, hi, mr } per text field).
+// The admin edits in one language; the backend auto-translates the
+// other two at save time, so the whole { en, hi, mr } shape is stored.
+model SiteSection {
+  key       String   @id // "maharaj" | "temple" | "trust" | "events" | "donate" | "story"
+  data      String   @db.Text // JSON blob
+  updatedOn DateTime @default(now()) @updatedAt @map("updated_on")
+
+  @@map("site_sections")
+}
