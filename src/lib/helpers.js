@@ -1,5 +1,28 @@
 // Small shared helpers used across routes.
 
+// ── Pagination ────────────────────────────────────────────────
+// Slice an already-built (and already-filtered) array using the
+// request's ?page & ?limit query params.
+//
+// Backward compatible: if NEITHER `page` nor `limit` is present the whole
+// array is returned (so existing clients that read the full list keep working).
+// `total` is always the full, unpaged count.
+//
+//   const pg = paginate(rows, req.query)
+//   res.json({ users: pg.data, total: pg.total, page: pg.page, pages: pg.pages, limit: pg.limit })
+export const paginate = (rows, query = {}, { defaultLimit = 20, maxLimit = 200 } = {}) => {
+  const total = rows.length
+  const hasPaging = query.page !== undefined || query.limit !== undefined
+  if (!hasPaging) {
+    return { data: rows, total, page: 1, pages: 1, limit: total }
+  }
+  const limit = Math.min(maxLimit, Math.max(1, parseInt(query.limit, 10) || defaultLimit))
+  const pages = Math.max(1, Math.ceil(total / limit))
+  const page = Math.min(pages, Math.max(1, parseInt(query.page, 10) || 1))
+  const start = (page - 1) * limit
+  return { data: rows.slice(start, start + limit), total, page, pages, limit }
+}
+
 // Format a Date (or date string) as "YYYY-MM-DD" — matches the admin panel.
 export const ymd = (d) => (d ? new Date(d).toISOString().slice(0, 10) : null)
 

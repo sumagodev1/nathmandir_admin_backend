@@ -97,6 +97,9 @@ model User {
   updatedAt  DateTime? @map("updated_at") // nathmand_db: updatedAt
   updatedAt2 DateTime? @map("updated_at2") // nathmand_db: updatedAt2
 
+  // JWT issued to the mobile app on OTP verify (persisted for session lookup).
+  token String? @db.Text
+
   access UserAccess[]
   sales  Sale[]
 

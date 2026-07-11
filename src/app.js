@@ -20,11 +20,13 @@ import paymentsRoutes from './routes/payments.routes.js'
 import donationsRoutes from './routes/donations.routes.js'
 import contactsRoutes from './routes/contacts.routes.js'
 import loginsRoutes from './routes/logins.routes.js'
+import mobileRoutes from './routes/mobile.routes.js'
 
 export const app = express()
 
 app.use(cors())         // allow the React admin panel to call this API
 app.use(express.json()) // parse JSON request bodies
+app.use(express.urlencoded({ extended: true })) // parse form fields (mobile app / API.php style)
 
 // Serve uploaded files (audio, images) — public, no auth (mobile app fetches directly)
 app.use('/uploads', express.static(UPLOADS_ROOT))
@@ -57,6 +59,9 @@ app.use('/api/donations', donationsRoutes)
 app.use('/api/contacts', contactsRoutes)
 app.use('/api/logins', loginsRoutes)
 app.use('/api/uploads', uploadsRoutes)
+
+// Public mobile-app API (drop-in replacement for the legacy API.php)
+app.use('/api/mobile', mobileRoutes)
 
 // 404 for unknown API paths
 app.use((req, res) => {

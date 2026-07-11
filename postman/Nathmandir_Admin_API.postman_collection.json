@@ -1,0 +1,943 @@
+{
+  "info": {
+    "name": "Nathmandir Admin + Mobile API",
+    "description": "Full API collection for the Shreenath Gitanjali backend.\n\n- **Admin API** (`/api/*`) — protected by admin JWT. Run **Auth → Login** first; it auto-saves the token into the `{{token}}` collection variable, and every other admin request uses it via Bearer auth.\n- **Mobile App API** (`/api/mobile?apicall=...`) — public, form-urlencoded, drop-in replacement for the old `API.php`.\n\nSet the `{{baseUrl}}` variable (default `http://localhost:5000`).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "mobileToken", "value": "", "type": "string" },
+    { "key": "userId", "value": "1", "type": "string" },
+    { "key": "productId", "value": "gita1", "type": "string" },
+    { "key": "contentId", "value": "1", "type": "string" },
+    { "key": "bookId", "value": "1", "type": "string" },
+    { "key": "albumId", "value": "1", "type": "string" },
+    { "key": "photoId", "value": "1", "type": "string" },
+    { "key": "pageId", "value": "1", "type": "string" },
+    { "key": "txnId", "value": "TXN90001", "type": "string" },
+    { "key": "mobile", "value": "9099099099", "type": "string" },
+    { "key": "deviceId", "value": "TEST-DEVICE-ABC123", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (saves token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  console.log('Token saved to {{token}}');",
+                  "}",
+                  "pm.test('login ok', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "  pm.expect(json.token).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@gitanjali.app\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+          }
+        },
+        {
+          "name": "Change password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"admin123\",\n  \"newPassword\": \"admin12345\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/change-password", "host": ["{{baseUrl}}"], "path": ["api", "auth", "change-password"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/dashboard/stats", "host": ["{{baseUrl}}"], "path": ["api", "dashboard", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users?query=&status=all&subscription=all&from=&to=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [
+                { "key": "query", "value": "" },
+                { "key": "status", "value": "all", "description": "all | active | disabled" },
+                { "key": "subscription", "value": "all", "description": "all | subscribed | free" },
+                { "key": "from", "value": "" },
+                { "key": "to", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get user by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["api", "users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Devotee\",\n  \"phone\": \"+91 90000 00000\",\n  \"city\": \"Nashik\",\n  \"access\": [\n    { \"productId\": \"gita1\", \"duration\": \"perm\" }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
+          }
+        },
+        {
+          "name": "Update user status (toggle/set)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"disabled\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users/{{userId}}/status", "host": ["{{baseUrl}}"], "path": ["api", "users", "{{userId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Access Control",
+      "item": [
+        {
+          "name": "Access matrix",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/access?query=&from=&to=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "access"],
+              "query": [
+                { "key": "query", "value": "" },
+                { "key": "from", "value": "" },
+                { "key": "to", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Grant access",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{userId}},\n  \"productId\": \"{{productId}}\",\n  \"duration\": \"perm\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/access/grant", "host": ["{{baseUrl}}"], "path": ["api", "access", "grant"] }
+          }
+        },
+        {
+          "name": "Revoke access",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{userId}},\n  \"productId\": \"{{productId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/access/revoke", "host": ["{{baseUrl}}"], "path": ["api", "access", "revoke"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/products", "host": ["{{baseUrl}}"], "path": ["api", "products"] }
+          }
+        },
+        {
+          "name": "Create product",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Module\",\n  \"price\": 151,\n  \"shortName\": \"New\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/products", "host": ["{{baseUrl}}"], "path": ["api", "products"] }
+          }
+        },
+        {
+          "name": "Update product",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Gitanjali Part 1\",\n  \"price\": 251,\n  \"active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["api", "products", "{{productId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Content",
+      "item": [
+        {
+          "name": "List content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/content?product=all&query=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "content"],
+              "query": [
+                { "key": "product", "value": "all", "description": "all | <productId>" },
+                { "key": "query", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create content",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"title\": \"New Aarti\",\n  \"audioUrl\": \"/uploads/audio/sample.mp3\",\n  \"lyrics\": \"...\",\n  \"published\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/content", "host": ["{{baseUrl}}"], "path": ["api", "content"] }
+          }
+        },
+        {
+          "name": "Update content",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"published\": false,\n  \"title\": \"Updated title\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/content/{{contentId}}", "host": ["{{baseUrl}}"], "path": ["api", "content", "{{contentId}}"] }
+          }
+        },
+        {
+          "name": "Delete content",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/content/{{contentId}}", "host": ["{{baseUrl}}"], "path": ["api", "content", "{{contentId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales",
+      "item": [
+        {
+          "name": "List sales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sales?query=&from=&to=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sales"],
+              "query": [
+                { "key": "query", "value": "" },
+                { "key": "from", "value": "" },
+                { "key": "to", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sales report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/sales/report", "host": ["{{baseUrl}}"], "path": ["api", "sales", "report"] }
+          }
+        },
+        {
+          "name": "Get sale by txnId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/sales/{{txnId}}", "host": ["{{baseUrl}}"], "path": ["api", "sales", "{{txnId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Library (Books)",
+      "item": [
+        {
+          "name": "List books",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books?category=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"],
+              "query": [{ "key": "category", "value": "all", "description": "all | granth | pothi | stotra" }]
+            }
+          }
+        },
+        {
+          "name": "Get book by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/books/{{bookId}}", "host": ["{{baseUrl}}"], "path": ["api", "books", "{{bookId}}"] }
+          }
+        },
+        {
+          "name": "Create book",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"नवीन ग्रंथ\",\n  \"author\": \"लेखक\",\n  \"category\": \"granth\",\n  \"description\": \"...\",\n  \"published\": false,\n  \"chapters\": [\n    { \"title\": \"प्रकरण १\", \"content\": \"...\" }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/books", "host": ["{{baseUrl}}"], "path": ["api", "books"] }
+          }
+        },
+        {
+          "name": "Update book",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"अद्ययावत ग्रंथ\",\n  \"published\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/books/{{bookId}}", "host": ["{{baseUrl}}"], "path": ["api", "books", "{{bookId}}"] }
+          }
+        },
+        {
+          "name": "Delete book",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/books/{{bookId}}", "host": ["{{baseUrl}}"], "path": ["api", "books", "{{bookId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gallery (Albums)",
+      "item": [
+        {
+          "name": "List albums",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/albums?category=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "albums"],
+              "query": [{ "key": "category", "value": "all", "description": "all | maharaj | events" }]
+            }
+          }
+        },
+        {
+          "name": "Get album by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/albums/{{albumId}}", "host": ["{{baseUrl}}"], "path": ["api", "albums", "{{albumId}}"] }
+          }
+        },
+        {
+          "name": "Create album",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"नवीन अल्बम\",\n  \"category\": \"events\",\n  \"date\": \"2026-07-10\",\n  \"published\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/albums", "host": ["{{baseUrl}}"], "path": ["api", "albums"] }
+          }
+        },
+        {
+          "name": "Update album",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"अद्ययावत अल्बम\",\n  \"published\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/albums/{{albumId}}", "host": ["{{baseUrl}}"], "path": ["api", "albums", "{{albumId}}"] }
+          }
+        },
+        {
+          "name": "Add photo to album",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"/uploads/image/sample.jpg\",\n  \"caption\": \"फोटो\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/albums/{{albumId}}/photos", "host": ["{{baseUrl}}"], "path": ["api", "albums", "{{albumId}}", "photos"] }
+          }
+        },
+        {
+          "name": "Delete photo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/albums/{{albumId}}/photos/{{photoId}}", "host": ["{{baseUrl}}"], "path": ["api", "albums", "{{albumId}}", "photos", "{{photoId}}"] }
+          }
+        },
+        {
+          "name": "Delete album",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/albums/{{albumId}}", "host": ["{{baseUrl}}"], "path": ["api", "albums", "{{albumId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pages (CMS)",
+      "item": [
+        {
+          "name": "List pages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/pages", "host": ["{{baseUrl}}"], "path": ["api", "pages"] }
+          }
+        },
+        {
+          "name": "Get page by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/pages/{{pageId}}", "host": ["{{baseUrl}}"], "path": ["api", "pages", "{{pageId}}"] }
+          }
+        },
+        {
+          "name": "Create page",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"नवीन पान\",\n  \"body\": \"मजकूर...\",\n  \"published\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/pages", "host": ["{{baseUrl}}"], "path": ["api", "pages"] }
+          }
+        },
+        {
+          "name": "Update page",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"अद्ययावत पान\",\n  \"published\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/pages/{{pageId}}", "host": ["{{baseUrl}}"], "path": ["api", "pages", "{{pageId}}"] }
+          }
+        },
+        {
+          "name": "Delete page",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/pages/{{pageId}}", "host": ["{{baseUrl}}"], "path": ["api", "pages", "{{pageId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Get settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/settings", "host": ["{{baseUrl}}"], "path": ["api", "settings"] }
+          }
+        },
+        {
+          "name": "Update settings",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doc.about\": \"About text\",\n  \"pref.alert.newUser\": \"true\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/settings", "host": ["{{baseUrl}}"], "path": ["api", "settings"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications?query=&from=&to=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "query", "value": "" },
+                { "key": "from", "value": "" },
+                { "key": "to", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send notification",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"नमस्कार\",\n  \"message\": \"नवीन content उपलब्ध आहे.\",\n  \"audience\": \"all\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/notifications", "host": ["{{baseUrl}}"], "path": ["api", "notifications"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments / Donations / Contacts / Logins",
+      "item": [
+        {
+          "name": "Payments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/payments?gateway=all&status=all&query=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments"],
+              "query": [
+                { "key": "gateway", "value": "all", "description": "all | razorpay | instamojo" },
+                { "key": "status", "value": "all", "description": "all | completed | pending" },
+                { "key": "query", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Donations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/donations", "host": ["{{baseUrl}}"], "path": ["api", "donations"] }
+          }
+        },
+        {
+          "name": "Contacts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/contacts?query=&page=1&pageSize=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacts"],
+              "query": [
+                { "key": "query", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/logins?query=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "logins"],
+              "query": [{ "key": "query", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload file (audio|image)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [], "description": "Select an audio or image file" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/uploads/audio",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "uploads", "audio"],
+              "variable": [{ "key": "kind", "value": "audio", "description": "audio | image" }]
+            },
+            "description": "Change the path segment to `image` for image uploads. Field name MUST be `file`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mobile App API",
+      "description": "Drop-in replacement for API.php. POST form-urlencoded to /api/mobile?apicall=<op>.\n\nProtected calls need a Bearer token → this folder sends `Authorization: Bearer {{mobileToken}}`, which verifyOTP fills in automatically. PUBLIC (no token): loginuser, verifyOTP, register, admin_login.",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{mobileToken}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "loginuser (send OTP)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [{ "key": "mobile", "value": "{{mobile}}" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=loginuser",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "loginuser" }]
+            }
+          }
+        },
+        {
+          "name": "verifyOTP (login)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('mobileToken', json.token);",
+                  "  console.log('Mobile JWT saved to {{mobileToken}}');",
+                  "}",
+                  "pm.test('verifyOTP returns a token', function () {",
+                  "  pm.expect(json.error).to.eql('false');",
+                  "  pm.expect(json.token).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "mobile", "value": "{{mobile}}" },
+                { "key": "otp", "value": "1234", "description": "the OTP from loginuser response" },
+                { "key": "DID", "value": "{{deviceId}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "verifyOTP" }]
+            }
+          }
+        },
+        {
+          "name": "register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "name", "value": "Test Bhakt" },
+                { "key": "email", "value": "test@example.com" },
+                { "key": "mobile", "value": "{{mobile}}" },
+                { "key": "city", "value": "Nashik" },
+                { "key": "address", "value": "Test Rd" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "register" }]
+            }
+          }
+        },
+        {
+          "name": "check_status",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [{ "key": "mobile", "value": "{{mobile}}" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=check_status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "check_status" }]
+            }
+          }
+        },
+        {
+          "name": "check_active_session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "mobile", "value": "{{mobile}}" },
+                { "key": "DID", "value": "{{deviceId}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=check_active_session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "check_active_session" }]
+            }
+          }
+        },
+        {
+          "name": "save_payment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "userID", "value": "{{userId}}" },
+                { "key": "name", "value": "Test Bhakt" },
+                { "key": "mobile", "value": "{{mobile}}" },
+                { "key": "amount", "value": "251" },
+                { "key": "order_id", "value": "order_TEST01" },
+                { "key": "payment_request_id", "value": "preq_TEST01" },
+                { "key": "payment_status", "value": "Credit" },
+                { "key": "partOne", "value": "1" },
+                { "key": "partTwo", "value": "0" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=save_payment",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "save_payment" }]
+            }
+          }
+        },
+        {
+          "name": "receipts",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [{ "key": "id", "value": "{{userId}}" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=receipts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "receipts" }]
+            }
+          }
+        },
+        {
+          "name": "active_session (logout)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "id", "value": "{{userId}}" },
+                { "key": "mobile", "value": "{{mobile}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=active_session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "active_session" }]
+            }
+          }
+        },
+        {
+          "name": "update_session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "mobile", "value": "{{mobile}}" },
+                { "key": "active", "value": "1", "description": "1 = active, 0 = disabled" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=update_session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "update_session" }]
+            }
+          }
+        },
+        {
+          "name": "fetch_user (all users)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=fetch_user",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "fetch_user" }]
+            }
+          }
+        },
+        {
+          "name": "audio_donation_user (all users)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=audio_donation_user",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "audio_donation_user" }]
+            }
+          }
+        },
+        {
+          "name": "admin_login",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "email", "value": "admin@gitanjali.app" },
+                { "key": "password", "value": "admin123" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=admin_login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "admin_login" }]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
