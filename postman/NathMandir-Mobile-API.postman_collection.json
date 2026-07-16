@@ -1,0 +1,401 @@
+{
+  "info": {
+    "_postman_id": "b7e4a1c2-9f31-4d55-8a10-6c3f2d9e4a10",
+    "name": "Nath Mandir — Mobile API",
+    "description": "Mobile app API for the Nath Mandir backend (drop-in replacement for the legacy API.php).\n\n## How it works\nEvery operation goes to a single endpoint:\n\n`POST {{baseUrl}}/api/mobile?apicall=<operation>`\n\nParameters are sent as **x-www-form-urlencoded** body fields (GET + query params also work — the server reads `req.body[key] ?? req.query[key]`).\n\n## Auth\n- **Public (no token):** `loginuser`, `verifyOTP`, `register`, `admin_login`\n- **Protected (Bearer token):** everything else → `Authorization: Bearer <token>`\n\nThe token is a **mobile JWT** issued by `verifyOTP` and stored on the user row. Logging in on another device invalidates old tokens (401 = \"Logged in on another device\"). This is separate from the admin-panel auth.\n\n## Quick start\n1. Run **1. loginuser** → the OTP is returned in the response (same as the old PHP) and auto-saved to `{{otp}}`.\n2. Run **2. verifyOTP** → the JWT is auto-saved to `{{token}}` and used by all protected requests.\n3. Run any protected request.\n\n> Test account: mobile `1234567890` always gets OTP `1947`.\n\n## Response shape\nAll responses return `{ \"error\": \"true\"|\"false\", \"message\": \"...\" }` plus optional `data` / `otp` / `token`. Note `error` is a **string**, not a boolean.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "mobile", "value": "1234567890", "type": "string" },
+    { "key": "otp", "value": "1947", "type": "string" },
+    { "key": "DID", "value": "postman-device-001", "type": "string" },
+    { "key": "userId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Public (no token)",
+      "description": "These four run before a token exists, or use their own credentials.",
+      "item": [
+        {
+          "name": "1. loginuser — send OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('request succeeded', () => pm.response.to.have.status(200));",
+                  "if (json.otp) {",
+                  "    pm.collectionVariables.set('otp', String(json.otp));",
+                  "    console.log('OTP saved to {{otp}}:', json.otp);",
+                  "}",
+                  "pm.test('error flag is false', () => pm.expect(json.error).to.eql('false'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Registered mobile number" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=loginuser",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "loginuser" }]
+            },
+            "description": "Generates a 4-digit OTP, saves it on the user row and sends it by SMS.\n\n**Body:** `mobile` (required)\n\n**Returns:** `{ error, otp, message }` — the OTP is returned in the response (kept identical to the legacy PHP; the app relies on it).\n\n- User not found → `{ error: 'true', message: 'Please Register First' }`\n- Test account `1234567890` always gets OTP `1947`.\n\nThe OTP is auto-saved to `{{otp}}` by this request's test script."
+          },
+          "response": []
+        },
+        {
+          "name": "2. verifyOTP — login (returns JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('request succeeded', () => pm.response.to.have.status(200));",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token saved to {{token}}');",
+                  "}",
+                  "if (json.data && json.data.id) {",
+                  "    pm.collectionVariables.set('userId', String(json.data.id));",
+                  "}",
+                  "pm.test('login succeeded', () => pm.expect(json.error).to.eql('false'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "otp", "value": "{{otp}}", "type": "text", "description": "OTP from loginuser (required)" },
+                { "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Registered mobile number (required)" },
+                { "key": "DID", "value": "{{DID}}", "type": "text", "description": "Device ID — OPTIONAL. Sent = bind this device; omitted = no device row registered." }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "verifyOTP" }]
+            },
+            "description": "Verifies the OTP, clears it, marks the user active, issues a **mobile JWT** and persists it on the user row.\n\n**Body:** `otp`, `mobile` (required) · `DID` (**optional**)\n\n- **With `DID`** → this device is bound to the account (any previous `login_user` row for the mobile is replaced). This is what the app does.\n- **Without `DID`** → login still succeeds and a token is returned, but no device row is registered, so `check_active_session` will report `Is Logged Out` for that session.\n\nEither way, overwriting the stored token invalidates any other device's session.\n\n**Returns:** `{ token, data: <user>, error, message }`\n\nThe token is auto-saved to `{{token}}` and used by every protected request in this collection.\n\n- Missing `otp`/`mobile` → `{ error: 'true', message: 'Check parameter' }`\n- Wrong OTP → `{ error: 'true', message: 'OTP Incorrect' }`"
+          },
+          "response": []
+        },
+        {
+          "name": "3. register — create account",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "name", "value": "Test Devotee", "type": "text", "description": "Required" },
+                { "key": "email", "value": "devotee@example.com", "type": "text", "description": "Required" },
+                { "key": "mobile", "value": "9999900001", "type": "text", "description": "Required — must be unique" },
+                { "key": "city", "value": "Nashik", "type": "text", "description": "Optional" },
+                { "key": "address", "value": "Vihitgaon, Nashik Road", "type": "text", "description": "Optional" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "register" }]
+            },
+            "description": "Creates a new devotee account.\n\n**Body:** `name`, `email`, `mobile` (required); `city`, `address` (optional)\n\n**Returns:** `{ error: 'false', message: 'Register Successfully' }`\n\n- Duplicate mobile → `{ error: 'true', message: 'Mobile Number Already exist' }`"
+          },
+          "response": []
+        },
+        {
+          "name": "4. admin_login — check admin credentials",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "email", "value": "admin@gitanjali.app", "type": "text", "description": "Admin email" },
+                { "key": "password", "value": "admin123", "type": "text", "description": "Admin password (bcrypt-checked)" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=admin_login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "admin_login" }]
+            },
+            "description": "Validates admin credentials against the bcrypt hash in the `admins` table.\n\n**Body:** `email`, `password`\n\n**Returns:** `{ error: 'false', message: 'Login Success' }` or `{ error: 'true', message: 'Credentials not matched' }`\n\n> Note: this does NOT return a token — it is only a credential check (kept identical to the legacy PHP)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authenticated (Bearer token)",
+      "description": "All of these need `Authorization: Bearer {{token}}` — run **verifyOTP** first.\n\nWithout a valid token they return **401** `{ error: 'true', message: '...' }`.",
+      "item": [
+        {
+          "name": "check_status — get user by mobile",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [{ "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Required" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=check_status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "check_status" }]
+            },
+            "description": "Returns the full user row for a mobile number.\n\n**Body:** `mobile` (required)\n\n**Returns:** `{ data: <user>, error: 'false', message }`\n\nThe user object uses the legacy PHP column names: `id, name, mobile, email, city, address, otp, active, isPaid, donation, donation_audio, amount, Part_1, Part_2, token`.\n\n- Not found → `{ error: 'true', message: 'Inactive User' }`"
+          },
+          "response": []
+        },
+        {
+          "name": "receipts — paid receipts for a user",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [{ "key": "id", "value": "{{userId}}", "type": "text", "description": "User id (required)" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=receipts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "receipts" }]
+            },
+            "description": "Successful payments (`user_payment.status = '1'`) for a user.\n\n**Body:** `id` (user id, required)\n\n**Returns:** `{ data: [{ amount, status, created_at, updated_at, payment_type }], error, message }`\n\n- No rows → `{ error: 'true', message: 'No data found' }`"
+          },
+          "response": []
+        },
+        {
+          "name": "save_payment — record a payment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "payment_request_id", "value": "PRQ_TEST_001", "type": "text", "description": "Required" },
+                { "key": "payment_status", "value": "Credit", "type": "text", "description": "Required" },
+                { "key": "userID", "value": "{{userId}}", "type": "text", "description": "User id" },
+                { "key": "amount", "value": "251", "type": "text", "description": "Amount paid" },
+                { "key": "name", "value": "Test Devotee", "type": "text", "description": "Optional" },
+                { "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Optional" },
+                { "key": "order_id", "value": "ORD_TEST_001", "type": "text", "description": "Optional" },
+                { "key": "partOne", "value": "1", "type": "text", "description": "Send '1' to mark Gitanjali Part 1 as purchased" },
+                { "key": "partTwo", "value": "0", "type": "text", "description": "Send '1' to mark Gitanjali Part 2 as purchased" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=save_payment",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "save_payment" }]
+            },
+            "description": "Inserts a row into the legacy `userpayment` table and updates the user: sets `donation_audio = 1`, `isPaid = 1`, `amount`, and `part_1` / `part_2` when `partOne` / `partTwo` are `'1'`.\n\n**Body:** `payment_request_id`, `payment_status` (required); `userID`, `amount`, `name`, `mobile`, `order_id`, `partOne`, `partTwo` (optional)\n\n**Returns:** `{ error: 'false', message: 'Payment Save Successfully' }`\n\n⚠️ This **writes** to the DB and grants content access — use a test user."
+          },
+          "response": []
+        },
+        {
+          "name": "check_active_session — is this device still logged in?",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Required" },
+                { "key": "DID", "value": "{{DID}}", "type": "text", "description": "Device ID (required)" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=check_active_session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "check_active_session" }]
+            },
+            "description": "Checks the `login_user` table for a matching `mobile` + `device_id`.\n\n**Body:** `mobile`, `DID` (required)\n\n**Returns:** `{ error: 'false', message: 'Login Success' }` if the device still holds the session, else `{ error: 'true', message: 'Is Logged Out' }` (i.e. the user logged in elsewhere)."
+          },
+          "response": []
+        },
+        {
+          "name": "update_session — enable / disable a user",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Required" },
+                { "key": "active", "value": "1", "type": "text", "description": "'1' = active, anything else = disabled" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=update_session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "update_session" }]
+            },
+            "description": "Sets the user's status by mobile number.\n\n**Body:** `mobile`, `active` (both required; `active='1'` → active, otherwise disabled)\n\n**Returns:** `{ active, error: 'false', message: 'Updated Successfully' }`"
+          },
+          "response": []
+        },
+        {
+          "name": "active_session — logout from all devices",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "id", "value": "{{userId}}", "type": "text", "description": "User id (required)" },
+                { "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Required" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=active_session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "active_session" }]
+            },
+            "description": "Disables the user (`status = 'disabled'`) and deletes all `login_user` rows for that mobile — logging them out of every device.\n\n**Body:** `id`, `mobile` (required)\n\n**Returns:** `{ error: 'false', message: 'Logout Success From All Devices' }`\n\n⚠️ This **disables the account** — the user must be re-enabled (e.g. via `update_session` or the admin panel) before they can log in again."
+          },
+          "response": []
+        },
+        {
+          "name": "fetch_user — all users",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=fetch_user",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "fetch_user" }]
+            },
+            "description": "Returns every user, ordered by id.\n\n**Body:** none\n\n**Returns:** `{ data: [<user>, ...], error: 'false', message: 'User loaded' }`\n\n- No users → `{ error: 'true', message: 'Credentials not matched' }`"
+          },
+          "response": []
+        },
+        {
+          "name": "audio_donation_user — all users (alias of fetch_user)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=audio_donation_user",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "audio_donation_user" }]
+            },
+            "description": "Identical to `fetch_user` (same handler — kept for compatibility with the legacy PHP API).\n\n**Body:** none\n\n**Returns:** `{ data: [<user>, ...], error, message }`"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error cases",
+      "description": "Handy checks for the dispatcher's error handling.",
+      "item": [
+        {
+          "name": "Missing apicall",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"]
+            },
+            "description": "No `apicall` query param → `{ error: 'true', message: 'Invalid API Call' }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Unknown apicall",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=does_not_exist",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "does_not_exist" }]
+            },
+            "description": "Unknown operation → `{ error: 'true', message: 'Invalid Operation Called' }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Protected call without token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [{ "key": "mobile", "value": "{{mobile}}", "type": "text" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=check_status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [{ "key": "apicall", "value": "check_status" }]
+            },
+            "description": "A protected operation with no Bearer token → **401** `{ error: 'true', message: 'Not authenticated. Please log in.' }`"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -17,6 +17,7 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma.js'
 import { jsonSafe } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
+import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
 
 // Read a POST field (falls back to query string), matching PHP $_POST.
 const field = (req, key) => {
@@ -46,10 +47,10 @@ const toPhpUser = (u) => ({
 // ── loginuser ─ POST { mobile } → generate + send OTP ──────────
 async function loginuser(req, res) {
   const mobile = field(req, 'mobile')
-  if (!mobile) return res.json({ error: 'true', message: 'Check parameter' })
+  if (!mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   const user = await prisma.user.findFirst({ where: { phone: mobile } })
-  if (!user) return res.json({ error: 'true', message: 'Please Register First' })
+  if (!user) return sendFail(res, 'Please Register First', STATUS.NOT_FOUND)
 
   // Fixed OTP for the test account, random 4-digit otherwise.
   const otp = mobile === '1234567890' ? '1947' : String(Math.floor(1000 + Math.random() * 9000))
@@ -58,18 +59,23 @@ async function loginuser(req, res) {
   await sendOtpSms(mobile, otp) // returns false in dev; OTP is still sent back below
 
   // NOTE: the app relies on `otp` in the response (same as the old PHP).
-  return res.json({ error: 'false', otp, message: 'OTP Sent Successfully' })
+  return sendOk(res, 'OTP Sent Successfully', { otp })
 }
 
-// ── verifyOTP ─ POST { otp, mobile, DID } → verify + open session ─
+// ── verifyOTP ─ POST { otp, mobile, DID? } → verify + open session ─
+// DID (device id) is OPTIONAL: when supplied, this device is bound to the
+// account (previous devices are unbound). When omitted, the login still
+// succeeds and a token is issued, but no device row is registered — so
+// check_active_session will report "Is Logged Out" for that session.
+// The mobile app always sends DID, so its behaviour is unchanged.
 async function verifyOTP(req, res) {
   const otp = field(req, 'otp')
   const mobile = field(req, 'mobile')
   const did = field(req, 'DID')
-  if (!otp || !mobile || !did) return res.json({ error: 'true', message: 'Check parameter' })
+  if (!otp || !mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   const user = await prisma.user.findFirst({ where: { phone: mobile, otp } })
-  if (!user) return res.json({ error: 'true', message: 'OTP Incorrect' })
+  if (!user) return sendFail(res, 'OTP Incorrect', STATUS.UNAUTHORIZED)
 
   // Issue a JWT for this mobile session (long-lived — the app stays logged in).
   const token = jwt.sign(
@@ -78,27 +84,30 @@ async function verifyOTP(req, res) {
     { expiresIn: process.env.MOBILE_JWT_EXPIRES || '365d' }
   )
 
-  // Clear OTP, mark active, persist the token, and bind this device.
+  // Clear OTP, mark active and persist the token. Overwriting the token
+  // already invalidates any other device's session.
   await prisma.user.update({ where: { id: user.id }, data: { otp: '', status: 'active' } })
   await prisma.$executeRawUnsafe(`UPDATE users SET token = ? WHERE id = ?`, token, user.id)
-  await prisma.$executeRawUnsafe(`DELETE FROM login_user WHERE mobile = ?`, mobile)
-  await prisma.$executeRawUnsafe(
-    `INSERT INTO login_user (mobile, device_id) VALUES (?, ?)`,
-    mobile, did
-  )
 
-  return res.json({
+  // Bind this device only when a DID was supplied (it is optional).
+  if (did) {
+    await prisma.$executeRawUnsafe(`DELETE FROM login_user WHERE mobile = ?`, mobile)
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO login_user (mobile, device_id) VALUES (?, ?)`,
+      mobile, did
+    )
+  }
+
+  return sendOk(res, 'Login Success', {
     token,
     data: toPhpUser({ ...user, otp: '', status: 'active', token }),
-    error: 'false',
-    message: 'Login Success',
   })
 }
 
 // ── receipts ─ POST { id } → successful payments for a user ────
 async function receipts(req, res) {
   const id = field(req, 'id')
-  if (!id) return res.json({ error: 'true', message: 'Check parameter' })
+  if (!id) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   const rows = await prisma.$queryRawUnsafe(
     `SELECT amount, status, created_at, updated_at, payment_type
@@ -106,22 +115,22 @@ async function receipts(req, res) {
     id
   )
   const data = jsonSafe(rows)
-  if (!data.length) return res.json({ error: 'true', message: 'No data found' })
-  return res.json({ error: 'false', message: 'Success', data })
+  if (!data.length) return sendFail(res, 'No data found', STATUS.NOT_FOUND)
+  return sendOk(res, 'Success', { data })
 }
 
 // ── active_session ─ POST { id, mobile } → logout from all devices ─
 async function active_session(req, res) {
   const id = field(req, 'id')
   const mobile = field(req, 'mobile')
-  if (!id || !mobile) return res.json({ error: 'true', message: 'Check parameter' })
+  if (!id || !mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   try {
     await prisma.user.update({ where: { id: Number(id) }, data: { status: 'disabled' } })
     await prisma.$executeRawUnsafe(`DELETE FROM login_user WHERE mobile = ?`, mobile)
-    return res.json({ error: 'false', message: 'Logout Success From All Devices' })
+    return sendOk(res, 'Logout Success From All Devices')
   } catch {
-    return res.json({ error: 'true', message: 'Unable to logout' })
+    return sendFail(res, 'Unable to logout', STATUS.SERVER_ERROR)
   }
 }
 
@@ -130,10 +139,10 @@ async function register(req, res) {
   const name = field(req, 'name')
   const email = field(req, 'email')
   const mobile = field(req, 'mobile')
-  if (!name || !email || !mobile) return res.json({ error: 'true', message: 'Check parameter' })
+  if (!name || !email || !mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   const exists = await prisma.user.findFirst({ where: { phone: mobile } })
-  if (exists) return res.json({ error: 'true', message: 'Mobile Number Already exist' })
+  if (exists) return sendFail(res, 'Mobile Number Already exist', STATUS.CONFLICT)
 
   await prisma.user.create({
     data: {
@@ -144,14 +153,14 @@ async function register(req, res) {
       address: field(req, 'address') || '',
     },
   })
-  return res.json({ error: 'false', message: 'Register Successfully' })
+  return sendOk(res, 'Register Successfully', {}, STATUS.CREATED)
 }
 
 // ── save_payment ─ POST { payment_request_id, payment_status, … } ─
 async function save_payment(req, res) {
   const paymentRequestId = field(req, 'payment_request_id')
   const paymentStatus = field(req, 'payment_status')
-  if (!paymentRequestId || !paymentStatus) return res.json({ error: 'true', message: 'Check parameter' })
+  if (!paymentRequestId || !paymentStatus) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   const userId = field(req, 'userID')
   const amount = field(req, 'amount') || ''
@@ -176,9 +185,9 @@ async function save_payment(req, res) {
     if (field(req, 'partTwo') === '1') data.part2 = 1
     await prisma.user.update({ where: { id: Number(userId) }, data })
 
-    return res.json({ error: 'false', message: 'Payment Save Successfully' })
+    return sendOk(res, 'Payment Save Successfully', {}, STATUS.CREATED)
   } catch {
-    return res.json({ error: 'true', message: 'Payment not Save' })
+    return sendFail(res, 'Payment not Save', STATUS.SERVER_ERROR)
   }
 }
 
@@ -186,30 +195,30 @@ async function save_payment(req, res) {
 async function admin_login(req, res) {
   const email = field(req, 'email')
   const password = field(req, 'password')
-  if (!email) return res.json({ error: 'true', message: 'Parameter not matched' })
+  if (!email) return sendFail(res, 'Parameter not matched', STATUS.BAD_REQUEST)
 
   const admin = await prisma.admin.findUnique({ where: { email: email.trim().toLowerCase() } })
   if (admin && password && (await bcrypt.compare(password, admin.passwordHash))) {
-    return res.json({ error: 'false', message: 'Login Success' })
+    return sendOk(res, 'Login Success')
   }
-  return res.json({ error: 'true', message: 'Credentials not matched' })
+  return sendFail(res, 'Credentials not matched', STATUS.UNAUTHORIZED)
 }
 
 // ── check_status ─ POST { mobile } → user row ──────────────────
 async function check_status(req, res) {
   const mobile = field(req, 'mobile')
-  if (!mobile) return res.json({ error: 'true', message: 'Check parameter' })
+  if (!mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   const user = await prisma.user.findFirst({ where: { phone: mobile } })
-  if (!user) return res.json({ error: 'true', message: 'Inactive User' })
-  return res.json({ data: toPhpUser(user), error: 'false', message: 'Active User Save Successfully' })
+  if (!user) return sendFail(res, 'Inactive User', STATUS.NOT_FOUND)
+  return sendOk(res, 'Active User Save Successfully', { data: toPhpUser(user) })
 }
 
 // ── fetch_user / audio_donation_user ─ all users ───────────────
 async function fetch_user(req, res) {
   const users = await prisma.user.findMany({ orderBy: { id: 'asc' } })
-  if (!users.length) return res.json({ error: 'true', message: 'Credentials not matched' })
-  return res.json({ data: users.map(toPhpUser), error: 'false', message: 'User loaded' })
+  if (!users.length) return sendFail(res, 'Credentials not matched', STATUS.NOT_FOUND)
+  return sendOk(res, 'User loaded', { data: users.map(toPhpUser) })
 }
 
 // ── update_session ─ POST { mobile, active } ───────────────────
@@ -217,7 +226,7 @@ async function update_session(req, res) {
   const mobile = field(req, 'mobile')
   const active = field(req, 'active')
   if (mobile === undefined || active === undefined) {
-    return res.json({ error: 'true', message: 'Check parameter' })
+    return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
   }
 
   try {
@@ -225,9 +234,9 @@ async function update_session(req, res) {
       where: { phone: mobile },
       data: { status: active === '1' ? 'active' : 'disabled' },
     })
-    return res.json({ active, error: 'false', message: 'Updated Successfully' })
+    return sendOk(res, 'Updated Successfully', { active })
   } catch {
-    return res.json({ error: 'true', message: 'Something went wrong' })
+    return sendFail(res, 'Something went wrong', STATUS.SERVER_ERROR)
   }
 }
 
@@ -235,16 +244,16 @@ async function update_session(req, res) {
 async function check_active_session(req, res) {
   const mobile = field(req, 'mobile')
   const did = field(req, 'DID')
-  if (!mobile || !did) return res.json({ error: 'true', message: 'Check parameter' })
+  if (!mobile || !did) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   const rows = await prisma.$queryRawUnsafe(
     `SELECT * FROM login_user WHERE mobile = ? AND device_id = ?`,
     mobile, did
   )
   if (jsonSafe(rows).length > 0) {
-    return res.json({ error: 'false', message: 'Login Success' })
+    return sendOk(res, 'Login Success')
   }
-  return res.json({ error: 'true', message: 'Is Logged Out' })
+  return sendFail(res, 'Is Logged Out', STATUS.UNAUTHORIZED)
 }
 
 // ── apicall → handler map (mirrors the PHP switch) ─────────────
@@ -293,17 +302,17 @@ async function authenticateMobile(req) {
 export async function dispatch(req, res) {
   const apicall = req.query.apicall || req.body?.apicall
   if (!apicall) {
-    return res.json({ error: 'true', message: 'Invalid API Call' })
+    return sendFail(res, 'Invalid API Call', STATUS.BAD_REQUEST)
   }
   const handler = handlers[apicall]
   if (!handler) {
-    return res.json({ error: 'true', message: 'Invalid Operation Called' })
+    return sendFail(res, 'Invalid Operation Called', STATUS.NOT_FOUND)
   }
 
   // Protected apicalls require a valid Bearer token.
   if (!PUBLIC_APICALLS.has(apicall)) {
     const auth = await authenticateMobile(req)
-    if (!auth.ok) return res.status(401).json({ error: 'true', message: auth.message })
+    if (!auth.ok) return sendFail(res, auth.message, STATUS.UNAUTHORIZED)
     req.mobileUser = auth.payload // { id, mobile, name } — available to handlers
   }
 

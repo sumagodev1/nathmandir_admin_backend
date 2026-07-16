@@ -10,7 +10,8 @@
 //
 // Operations (apicall):
 //   loginuser            { mobile }                       [public]  → send OTP
-//   verifyOTP            { otp, mobile, DID }             [public]  → login → JWT
+//   verifyOTP            { otp, mobile, DID? }            [public]  → login → JWT
+//                        (DID optional: sent = bind this device; omitted = no device row)
 //   register            { name, email, mobile, city?, address? }  [public]
 //   admin_login         { email, password }              [public]
 //   receipts            { id }                            [auth]    → paid receipts
