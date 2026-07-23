@@ -41,6 +41,10 @@ const toPhpUser = (u) => ({
   amount: u.amount || '',
   Part_1: u.part1 ?? 0,
   Part_2: u.part2 ?? 0,
+  // Upasana & Nityaniyam unlocks — needed so the app can gate all 4
+  // modules (previously missing, so those modules never unlocked).
+  upasanaPaid: u.upasanaPaid ?? 0,
+  nityaniyamPaid: u.nityaniyamPaid ?? 0,
   token: u.token || '',
 })
 

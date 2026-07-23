@@ -69,3 +69,21 @@ CREATE TABLE IF NOT EXISTS login_user (
   mobile        VARCHAR(50)  DEFAULT NULL,
   device_id     VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- ── donation (NEW — website Razorpay donations) ──────────────
+-- Separate from app payments/subscriptions: a donation is a one-off
+-- gift of any amount, with no module unlock. Stores the donor details,
+-- chosen category, amount and the Razorpay references.
+CREATE TABLE IF NOT EXISTS donation (
+  id                  INT AUTO_INCREMENT PRIMARY KEY,
+  name                VARCHAR(255)  DEFAULT NULL,
+  mobile              VARCHAR(50)   DEFAULT NULL,
+  email               VARCHAR(255)  DEFAULT NULL,
+  amount              VARCHAR(50)   DEFAULT NULL,
+  category            VARCHAR(100)  DEFAULT NULL, -- temple-development | annadan | festival-support | general
+  razorpay_order_id   VARCHAR(255)  DEFAULT NULL,
+  razorpay_payment_id VARCHAR(255)  DEFAULT NULL,
+  status              VARCHAR(10)   DEFAULT '0',  -- '1' = successful, 'failed' = signature mismatch
+  created_at          DATETIME      DEFAULT CURRENT_TIMESTAMP,
+  updated_at          DATETIME      DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

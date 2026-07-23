@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Shreenath — Payment Flow Test</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, Segoe UI, Roboto, sans-serif; background:#faf7f2; color:#2a2118; margin:0; padding:24px; }
+  .card { max-width:520px; margin:0 auto; background:#fff; border:1px solid #ece3d5; border-radius:14px; padding:24px; box-shadow:0 6px 24px rgba(120,80,20,.06); }
+  h1 { font-size:20px; margin:0 0 4px; color:#8a1c1c; }
+  p.sub { margin:0 0 20px; color:#7a6f5e; font-size:14px; }
+  label { display:block; font-size:13px; font-weight:600; margin:14px 0 6px; }
+  input { width:100%; padding:11px 12px; border:1px solid #d9ccb6; border-radius:9px; font-size:15px; }
+  button { margin-top:16px; width:100%; padding:12px; border:0; border-radius:9px; background:#b8860b; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .step { border-top:1px dashed #e6dcc8; margin-top:20px; padding-top:6px; }
+  .muted { color:#9a8f7c; font-size:12px; }
+  .log { margin-top:18px; background:#1e1a14; color:#d9f0d0; font:12px/1.5 ui-monospace,Consolas,monospace; padding:12px; border-radius:9px; white-space:pre-wrap; max-height:220px; overflow:auto; }
+  .modules { margin-top:10px; }
+  .modrow { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f0e9dc; font-size:14px; }
+  .pill { display:inline-block; background:#f3ead8; color:#8a1c1c; border-radius:20px; padding:2px 10px; font-size:12px; }
+  .ok { color:#2e7d32; font-weight:600; }
+  .testcard { background:#fff8e6; border:1px solid #f0dfa8; border-radius:9px; padding:10px 12px; font-size:12px; color:#6b5a1e; margin-top:12px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Shreenath — Payment Flow Test</h1>
+  <p class="sub">Test mode · no real money · fake cards only</p>
+
+  <!-- Step 1: details + module -->
+  <div class="step">
+    <label>1. Your details</label>
+    <input id="mobile" placeholder="Mobile number (e.g. +91 7767841795)" value="+91 7767841795" />
+    <input id="name" placeholder="Full name" value="Test Devotee" style="margin-top:8px" />
+    <input id="email" placeholder="Email (optional)" value="test@example.com" style="margin-top:8px" />
+
+    <label>2. Choose a module</label>
+    <div class="modules" id="modules">loading…</div>
+
+    <button id="btnPay" disabled>Pay with Razorpay (test)</button>
+    <div class="testcard">
+      <b>Test card:</b> 4111 1111 1111 1111 · any future expiry · any CVV · any name.<br/>
+      Or test UPI: <b>success@razorpay</b>
+    </div>
+  </div>
+
+  <!-- Step 3: OTP (appears after payment) -->
+  <div class="step" id="otpStep" style="display:none">
+    <label>3. Verify OTP (sent to your mobile after payment)</label>
+    <input id="otp" placeholder="4-digit OTP" />
+    <button id="btnConfirm">Verify OTP & Unlock</button>
+  </div>
+
+  <div class="log" id="log">ready…</div>
+</div>
+
+<script>
+const API = location.origin + '/api/checkout';
+let SELECTED = null, LAST_ORDER = null;
+
+const $ = (id) => document.getElementById(id);
+const log = (m, obj) => { $('log').textContent += '\n' + m + (obj ? ' ' + JSON.stringify(obj) : ''); $('log').scrollTop = 1e9; };
+
+async function api(method, path, body) {
+  const opt = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opt.body = JSON.stringify(body);
+  const res = await fetch(API + path, opt);
+  return res.json();
+}
+
+// Load modules with prices
+(async () => {
+  const r = await api('GET', '/modules');
+  $('modules').innerHTML = '';
+  (r.modules || []).forEach((m) => {
+    const row = document.createElement('div');
+    row.className = 'modrow';
+    row.innerHTML = '<span><input type="radio" name="mod" value="' + m.code + '"> ' + m.name + ' — ₹' + m.price + '</span><span class="pill">buy</span>';
+    $('modules').appendChild(row);
+  });
+  document.querySelectorAll('input[name=mod]').forEach((r) =>
+    r.addEventListener('change', () => { SELECTED = r.value; $('btnPay').disabled = false; }));
+})();
+
+// Step: create order → open Razorpay → verify payment → OTP step
+$('btnPay').onclick = async () => {
+  const mobile = $('mobile').value.trim(), name = $('name').value.trim(), email = $('email').value.trim();
+  if (!SELECTED) return;
+  if (!mobile || !name) { log('✗ mobile and name are required'); return; }
+
+  log('→ create-order', { module: SELECTED, mobile });
+  const o = await api('POST', '/create-order', { mobile, name, email, module: SELECTED });
+  log('← ' + o.message, o.orderId ? { orderId: o.orderId, amount: o.amount } : {});
+  if (o.error !== 'false') return;
+  LAST_ORDER = o.orderId;
+
+  const rzp = new Razorpay({
+    key: o.keyId, order_id: o.orderId, amount: o.amount, currency: o.currency,
+    name: 'Shreenath Gitanjali', description: o.name,
+    prefill: { name: o.prefill.name, contact: o.prefill.contact, email: o.prefill.email },
+    theme: { color: '#b8860b' },
+    handler: async (resp) => {
+      log('✓ paid, verifying signature…', { payment_id: resp.razorpay_payment_id });
+      const v = await api('POST', '/verify-payment', {
+        razorpay_order_id: resp.razorpay_order_id,
+        razorpay_payment_id: resp.razorpay_payment_id,
+        razorpay_signature: resp.razorpay_signature,
+        mobile, name, email, module: SELECTED,
+      });
+      log('← ' + v.message, v.otp ? { devOtp: v.otp } : {});
+      if (v.error === 'false' && v.needOtp) {
+        $('otpStep').style.display = 'block';
+        if (v.otp) $('otp').value = v.otp;   // dev convenience
+      }
+    },
+    modal: { ondismiss: () => log('checkout closed (no payment)') },
+  });
+  rzp.on('payment.failed', (e) => log('✗ payment failed', e.error));
+  rzp.open();
+};
+
+// Step: confirm OTP → access granted
+$('btnConfirm').onclick = async () => {
+  const mobile = $('mobile').value.trim(), otp = $('otp').value.trim();
+  log('→ confirm-otp', { mobile, otp });
+  const c = await api('POST', '/confirm-otp', { mobile, otp, module: SELECTED, razorpay_order_id: LAST_ORDER });
+  log('← ' + c.message, c.owned ? { owned: c.owned } : {});
+  if (c.error === 'false') {
+    log('🎉 ' + (c.user?.name || '') + ' can now log into the app with ' + mobile + ' and access "' + SELECTED + '".');
+    $('btnConfirm').disabled = true;
+  }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(node -e \"import\\('./src/controllers/uploads.controller.js'\\).then\\(m=>console.log\\('UPLOADS_ROOT =', m.UPLOADS_ROOT\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"test page HTTP %{http_code}\\\\n\" \"http://localhost:5000/uploads/checkout-test.html\")",
+      "Bash(node \"C:/Users/Shree/AppData/Local/Temp/claude/d--Nathmandir-backend-nathmandir-admin-backend/5f7384c7-bfe3-4fa5-a441-69770692c44f/scratchpad/smoke-checkout.mjs\")",
+      "Bash(cp \"C:/Users/Shree/AppData/Local/Temp/claude/d--Nathmandir-backend-nathmandir-admin-backend/5f7384c7-bfe3-4fa5-a441-69770692c44f/scratchpad/smoke-checkout.mjs\" ./_smoke.mjs)",
+      "Bash(sed -i \"s|'file://' + process.cwd\\(\\).replace\\(/\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\/g, '/'\\) + '/src/controllers/checkout.controller.js'|'./src/controllers/checkout.controller.js'|\" ./_smoke.mjs)",
+      "Bash(node ./_smoke.mjs)",
+      "Bash(rm -f ./_smoke.mjs)",
+      "Read(//d/Nathmandir backend/**)",
+      "Read(//d//**)",
+      "Read(//d/Nathmandir fronted/**)",
+      "Read(//d/Nathmandir fronted/nathmandir_admin_frontend/**)",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const p=JSON.parse\\(s\\);console.log\\('deps:',Object.keys\\(p.dependencies||{}\\).join\\(', '\\)\\);console.log\\('scripts:',JSON.stringify\\(p.scripts\\)\\)}\\)\")",
+      "Bash(cd \"D:/Nathmandir fronted/nathmandir_admin_frontend\" && echo \"=== pages ===\" && ls src/pages && echo \"\" && echo \"=== sections ===\" && ls src/sections && echo \"\" && echo \"=== routes ===\" && ls src/routes && echo \"\" && echo \"=== services ===\" && ls src/services && echo \"\" && echo \"=== api ===\" && ls src/api && echo \"\" && echo \"=== constants ===\" && ls src/constants && echo \"\" && echo \"=== context ===\" && ls src/context)",
+      "Bash(cd \"D:/Nathmandir fronted/nathmandir_admin_frontend\" && echo \"=== tailwind.config.js ===\" && cat tailwind.config.js && echo \"\" && echo \"=== src/api/client.js ===\" && cat src/api/client.js && echo \"\" && echo \"=== src/services/api.js ===\" && cat src/services/api.js && echo \"\" && echo \"=== src/services/donationService.js ===\" && cat src/services/donationService.js)",
+      "Bash(cd \"D:/Nathmandir fronted/nathmandir_admin_frontend\" && echo \"=== Donate.jsx ===\" && cat src/pages/Donate.jsx && echo \"\" && echo \"=== AppRoutes.jsx ===\" && cat src/routes/AppRoutes.jsx && echo \"\" && echo \"=== navigation.js ===\" && cat src/constants/navigation.js)",
+      "Bash(cd \"D:/Nathmandir fronted/nathmandir_admin_frontend\" && echo \"=== components ===\" && ls src/components && echo \"\" && echo \"=== components/ui ===\" && ls src/components/ui && echo \"\" && echo \"=== styles ===\" && ls src/styles && echo \"\" && echo \"=== grep utility classes in css ===\" && grep -rnE \"\\\\.\\(btn-primary|btn-outline|card|container-max|section|input|field|label\\)\\\\b\" src/styles 2>/dev/null | head -40)",
+      "Bash(cd \"D:/Nathmandir fronted/nathmandir_admin_frontend\" && echo \"=== ContactForm.jsx ===\" && cat src/components/ContactForm.jsx && echo \"\" && echo \"=== index.css lines 60-160 ===\" && sed -n '60,160p' src/styles/index.css)",
+      "Bash(cd \"D:/Nathmandir fronted/nathmandir_admin_frontend\" && echo \"=== SectionHeading.jsx ===\" && cat src/components/ui/SectionHeading.jsx && echo \"\" && echo \"=== structuredData exports ===\" && grep -n \"export\" src/utils/structuredData.js && echo \"\" && echo \"=== PageHero props ===\" && grep -nE \"function PageHero|crumbs|animatedBg|subtitle|title\" src/components/PageHero.jsx | head)",
+      "Read(//d/Nathmandir fronted/nathmandir_admin_frontend/src/routes/**)",
+      "Read(//d/Nathmandir fronted/nathmandir_admin_frontend/src/constants/**)",
+      "Bash(node _addtrans.mjs)",
+      "Bash(rm -f _addtrans.mjs)",
+      "Bash(node -e \"['en','hi','mr'].forEach\\(l=>{const j=require\\('./src/translations/'+l+'.json'\\);console.log\\(l,'nav.subscribe:',j.nav.subscribe,'| subscribe.payNow:',j.subscribe.payNow\\)}\\)\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5000/)",
+      "Bash(curl -s http://localhost:5000/api/checkout/modules)",
+      "Read(//d/Nathmandir fronted/nathmandir_admin_frontend/src/pages/**)",
+      "Bash(node _addtrans2.mjs)",
+      "Bash(rm -f _addtrans2.mjs)",
+      "Bash(cd \"D:/Nathmandir backend/nathmandir_admin_backend\" && echo \"=== donations.controller.js ===\" && cat src/controllers/donations.controller.js && echo \"\" && echo \"=== donations.routes.js ===\" && cat src/routes/donations.routes.js *)",
+      "Read(//d/Nathmandir fronted/nathmandir_admin_frontend/src/data/**)",
+      "Read(//d/Nathmandir fronted/nathmandir_admin_frontend/src/services/**)",
+      "Bash(node _addtrans3.mjs)",
+      "Bash(rm -f _addtrans3.mjs)"
+    ],
+    "additionalDirectories": [
+      "D:\\Nathmandir fronted\\nathmandir_admin_frontend\\src\\services",
+      "D:\\Nathmandir fronted\\nathmandir_admin_frontend\\src\\utils",
+      "D:\\Nathmandir fronted\\nathmandir_admin_frontend\\src\\pages",
+      "D:\\Nathmandir fronted\\nathmandir_admin_frontend\\src\\routes",
+      "D:\\Nathmandir fronted\\nathmandir_admin_frontend\\src\\constants",
+      "D:\\Nathmandir fronted\\nathmandir_admin_frontend"
+    ]
+  }
+}

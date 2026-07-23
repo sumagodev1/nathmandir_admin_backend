@@ -21,13 +21,17 @@ import donationsRoutes from './routes/donations.routes.js'
 import contactsRoutes from './routes/contacts.routes.js'
 import loginsRoutes from './routes/logins.routes.js'
 import mobileRoutes from './routes/mobile.routes.js'
+import checkoutRoutes from './routes/checkout.routes.js'
+import donateRoutes from './routes/donate.routes.js'
 import publicRoutes from './routes/public.routes.js'
 import sectionsRoutes from './routes/sections.routes.js'
 
 export const app = express()
 
 app.use(cors())         // allow the React admin panel to call this API
-app.use(express.json()) // parse JSON request bodies
+// Parse JSON, keeping the raw bytes on req.rawBody so the Razorpay webhook
+// can verify its signature (which is computed over the exact raw body).
+app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf } }))
 app.use(express.urlencoded({ extended: true })) // parse form fields (mobile app / API.php style)
 
 // Serve uploaded files (audio, images) — public, no auth (mobile app fetches directly)
@@ -65,6 +69,12 @@ app.use('/api/uploads', uploadsRoutes)
 
 // Public mobile-app API (drop-in replacement for the legacy API.php)
 app.use('/api/mobile', mobileRoutes)
+
+// Website payment flow (OTP → Razorpay → unlock module flags)
+app.use('/api/checkout', checkoutRoutes)
+
+// Website donation flow (Razorpay → record gift in donation table)
+app.use('/api/donate', donateRoutes)
 
 // Public website API (read-only published content + contact form)
 app.use('/api/public', publicRoutes)

@@ -10,7 +10,7 @@ export async function list(req, res) {
   const { gateway = 'all', status = 'all', query = '' } = req.query
 
   const razor = await prisma.$queryRawUnsafe(
-    `SELECT up.id, up.user_id AS userId, u.name AS userName, up.package_id AS packageId,
+    `SELECT up.id, up.user_id AS userId, u.name AS userName, u.phone AS userMobile, up.package_id AS packageId,
             up.amount, up.razorpay_order_id AS orderId, up.razorpay_payment_id AS paymentId,
             up.razorpay_stageOfPayment AS stage, up.payment_type AS ptype, up.created_at AS createdAt
      FROM user_payment up LEFT JOIN users u ON u.id = up.user_id
@@ -28,6 +28,7 @@ export async function list(req, res) {
       gateway: 'Razorpay',
       userId: r.userId,
       user: r.userName || '',
+      mobile: r.userMobile || '',
       module: PKG[r.packageId] || `Package ${r.packageId}`,
       amount: Number(r.amount) || 0,
       txn: r.paymentId || '',
