@@ -18,11 +18,28 @@ import { prisma } from '../lib/prisma.js'
 import { jsonSafe } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
+import { MODULES } from '../lib/razorpay.js'
 
 // Read a POST field (falls back to query string), matching PHP $_POST.
 const field = (req, key) => {
   const v = req.body?.[key] ?? req.query?.[key]
   return v === undefined || v === null ? undefined : String(v)
+}
+
+// Turn a stored file reference into a full URL the app can play directly.
+// Relative "/uploads/…" paths get this server's origin; full http(s) URLs pass through.
+const absUrl = (req, ref) => {
+  if (!ref) return null
+  if (/^https?:\/\//i.test(ref)) return ref
+  const base = `${req.protocol}://${req.get('host')}`
+  return `${base}${ref.startsWith('/') ? '' : '/'}${ref}`
+}
+
+// Does this user own the module identified by its website `code`?
+// Access is stored as an integer flag on the user row (1 = owned).
+const ownsModule = (user, code) => {
+  const m = MODULES[code]
+  return !!m && user[m.flag] === 1
 }
 
 // Shape a Prisma user as the PHP `user` row the app expects.
@@ -260,6 +277,105 @@ async function check_active_session(req, res) {
   return sendFail(res, 'Is Logged Out', STATUS.UNAUTHORIZED)
 }
 
+// ── home ─ [auth] → all modules with owned flag + song counts ──
+// Drives the app's home screen: which of the 4 modules are unlocked for
+// THIS logged-in user, their price/name, and how many songs each has.
+async function home(req, res) {
+  const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
+  if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
+
+  const products = await prisma.product.findMany()
+  const byId = new Map(products.map((p) => [p.id, p]))
+
+  // Published-song count per module (for the badge under each module).
+  const counts = await prisma.content.groupBy({
+    by: ['productId'],
+    where: { published: true },
+    _count: { _all: true },
+  })
+  const countMap = new Map(counts.map((c) => [c.productId, c._count._all]))
+
+  const modules = Object.entries(MODULES).map(([code, m]) => {
+    const p = byId.get(m.productId)
+    return {
+      code,
+      name: p?.name || code,
+      price: p?.price ?? 0,
+      owned: user[m.flag] === 1,
+      songCount: countMap.get(m.productId) || 0,
+    }
+  })
+
+  return sendOk(res, 'Modules', { modules })
+}
+
+// ── get_content ─ [auth] { product } → songs of a module ───────
+// Returns the published songs/lyrics of a module. The user is taken from
+// the Bearer token (not a param) so ownership can't be spoofed. If the
+// user has NOT purchased the module, titles are still listed (locked=true)
+// but audioUrl & lyrics are withheld — the app shows a locked state.
+async function get_content(req, res) {
+  const code = field(req, 'product')
+  if (!code) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
+
+  const m = MODULES[code]
+  if (!m) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
+
+  const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
+  if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
+
+  const owned = user[m.flag] === 1
+  const product = await prisma.product.findUnique({ where: { id: m.productId } })
+
+  const rows = await prisma.content.findMany({
+    where: { productId: m.productId, published: true },
+    orderBy: { sortOrder: 'asc' },
+  })
+
+  const content = rows.map((c) => ({
+    id: c.id,
+    title: c.title,
+    type: c.type, // 'audio' | 'text'
+    duration: c.duration, // seconds
+    sortOrder: c.sortOrder,
+    plays: c.plays,
+    locked: !owned,
+    // Withhold the actual media/lyrics until the module is owned.
+    audioUrl: owned ? absUrl(req, c.audioUrl) : null,
+    lyrics: owned ? c.lyrics || '' : null,
+  }))
+
+  return sendOk(res, 'Content loaded', {
+    owned,
+    product: { code, name: product?.name || code, price: product?.price ?? 0 },
+    content,
+  })
+}
+
+// ── mark_played ─ [auth] { id } → +1 play count ────────────────
+// Called by the app when a song actually starts playing. Only counts if
+// the caller owns the module the song belongs to.
+async function mark_played(req, res) {
+  const id = field(req, 'id')
+  if (!id) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
+
+  try {
+    const item = await prisma.content.findUnique({ where: { id: Number(id) } })
+    if (!item) return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
+
+    const entry = Object.entries(MODULES).find(([, m]) => m.productId === item.productId)
+    const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
+    if (!entry || !user || user[entry[1].flag] !== 1) {
+      return sendFail(res, 'This module is not unlocked for you', STATUS.FORBIDDEN)
+    }
+
+    await prisma.content.update({ where: { id: item.id }, data: { plays: { increment: 1 } } })
+    return sendOk(res, 'OK')
+  } catch {
+    return sendFail(res, 'Could not record play', STATUS.SERVER_ERROR)
+  }
+}
+
 // ── apicall → handler map (mirrors the PHP switch) ─────────────
 export const handlers = {
   loginuser,
@@ -274,6 +390,10 @@ export const handlers = {
   audio_donation_user: fetch_user, // identical to fetch_user in the PHP
   update_session,
   check_active_session,
+  // New: content delivery for the app (all require a Bearer token).
+  home,
+  get_content,
+  mark_played,
 }
 
 // apicalls that do NOT need a Bearer token — they run before a token

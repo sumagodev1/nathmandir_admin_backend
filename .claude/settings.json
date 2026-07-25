@@ -35,7 +35,12 @@
       "Read(//d/Nathmandir fronted/nathmandir_admin_frontend/src/data/**)",
       "Read(//d/Nathmandir fronted/nathmandir_admin_frontend/src/services/**)",
       "Bash(node _addtrans3.mjs)",
-      "Bash(rm -f _addtrans3.mjs)"
+      "Bash(rm -f _addtrans3.mjs)",
+      "Bash(curl -s -o /dev/null -w \"api-docs.html: %{http_code}\\\\n\" http://localhost:5000/uploads/api-docs.html)",
+      "Bash(curl -s -o /dev/null -w \"openapi.yaml: %{http_code}\\\\n\" http://localhost:5000/uploads/openapi.yaml)",
+      "Bash(node -e \"try{const y=require\\('yaml'\\);}catch\\(e\\){console.log\\('\\(yaml pkg not installed — validating via js-yaml or skipping\\)'\\)}\")",
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(npx --yes js-yaml docs/openapi.yaml)"
     ],
     "additionalDirectories": [
       "D:\\Nathmandir fronted\\nathmandir_admin_frontend\\src\\services",

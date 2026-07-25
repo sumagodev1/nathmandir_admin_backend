@@ -95,22 +95,64 @@ If unlocked → play the songs exactly as before.
 
 ---
 
-## 4. Songs / content — unchanged
+## 4. Songs / content — new mobile endpoints
 
-The songs for each module are managed by the **admin panel** and served by the
-existing content endpoints. **Nothing about content fetching changes** — only
-the *gating* (which module is unlocked) is now driven by the flags above.
+The songs for each module are managed by the **admin panel** and now served to
+the app by **new authenticated `apicall` operations** on the same
+`/api/mobile` endpoint. Ownership is enforced **server-side** from the token —
+locked modules never leak their audio/lyrics.
+
+| Operation | Params | Returns |
+|-----------|--------|---------|
+| `home` | — | `{ modules: [{ code, name, price, owned, songCount }] }` — for the home screen |
+| `get_content` | `product` (module code) | `{ owned, product, content: [ …songs… ] }` |
+| `mark_played` | `id` (content id) | `{ }` — +1 play count (only if owned) |
+
+**Song item shape** (from `get_content`):
+```json
+{
+  "id": 1,
+  "title": "Mangalacharan",
+  "type": "audio",          // "audio" (has audioUrl) or "text" (lyrics only)
+  "duration": 312,           // seconds
+  "sortOrder": 1,            // render ascending
+  "plays": 1841,
+  "locked": false,           // true when the user hasn't purchased this module
+  "audioUrl": "https://<host>/uploads/audio/mangalacharan.mp3",  // null when locked
+  "lyrics": "…"              // null when locked
+}
+```
+
+Rules:
+- `product` is the module **code**: `gita1` | `gita2` | `upasana` | `nithya`.
+- **Owned** → `owned: true`, full `audioUrl` (absolute, ready to stream) + `lyrics`.
+- **Not owned** → `owned: false`, items come back with `locked: true` and
+  `audioUrl`/`lyrics` = `null`. Show a locked state (no price, no buy button,
+  no website link).
+- Only **published** songs are returned.
+- `audioUrl` is already an **absolute URL** — play it directly. (`/uploads/*`
+  is served without auth.)
+
+See `postman/NathMandir-Mobile-API.postman_collection.json` for live payloads
+and example responses for every operation.
 
 ---
 
 ## 5. End‑to‑end flow (for testing)
 
-1. User pays on the website (`/subscribe`) with mobile `9112223334`, buys
-   "Upasana".
-2. Backend sets `upasanaPaid = 1` for that number.
-3. User opens the app → `loginuser` → `verifyOTP` with `9112223334`.
-4. App reads `upasanaPaid = 1` → **Upasana songs unlocked**.
-5. If already logged in, `check_status` on resume picks up the unlock.
+1. User opens the website (`/subscribe`), picks "Upasana", fills name + mobile
+   `9112223334` + email.
+2. **Website sends an OTP to `9112223334` and the user verifies it** — this
+   confirms they control the number (the number is the identity key). Works the
+   same whether the number is brand‑new OR already an existing "Free" app user.
+3. User pays via Razorpay. Backend sets `upasanaPaid = 1` for that number
+   (on the **existing** account if the number already had one).
+4. User opens the app → `loginuser` → `verifyOTP` with `9112223334`.
+5. App reads `upasanaPaid = 1` → **Upasana songs unlocked**.
+6. If already logged in, `check_status` on resume picks up the unlock.
+
+> Website checkout OTP endpoints (not called by the app): `POST /api/checkout/send-otp`,
+> `POST /api/checkout/verify-otp`. The app is unaffected — it still just reads the flags.
 
 **Test account:** mobile `1234567890` always gets OTP `1947` (backend shortcut).
 
@@ -119,9 +161,14 @@ the *gating* (which module is unlocked) is now driven by the flags above.
 ## 6. Summary of deliverables to the app developer
 
 - This document.
+- **Postman collection:** `postman/NathMandir-Mobile-API.postman_collection.json`
+  (import it — every operation has example payloads + responses; `verifyOTP`
+  auto-saves the token so authed calls just work).
 - Backend base URL (dev: `http://localhost:5000/api/mobile`; production URL TBD).
 - The module→flag table above.
-- Instruction: **remove all in‑app payment**, gate by flags, refresh via
-  `check_status`.
+- The content endpoints in §4 (`home`, `get_content`, `mark_played`).
+- Instruction: **remove all in‑app payment**, gate by flags, fetch songs via
+  `get_content`, refresh via `check_status`.
 - Note for store review: it's a **reader app** — content is purchased on the
   website; the app must not advertise or link to that purchase.
+- Test account: mobile `1234567890`, OTP `1947`.

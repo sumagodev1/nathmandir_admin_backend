@@ -41,6 +41,7 @@ export async function list(req, res) {
       gateway: 'Instamojo',
       userId: r.userId,
       user: r.userName || '',
+      mobile: r.mobile || '',
       module: r.donationFor === '1' ? 'Audio' : '—',
       amount: Number(r.amount) || 0,
       txn: r.paymentId && r.paymentId !== 'None' ? r.paymentId : '',
@@ -58,7 +59,7 @@ export async function list(req, res) {
       if (status === 'completed') return /completed|credit/i.test(r.status)
       return !/completed|credit/i.test(r.status) // pending / started / failed
     })
-    .filter((r) => !q || r.user.toLowerCase().includes(q) || r.txn.toLowerCase().includes(q) || r.module.toLowerCase().includes(q))
+    .filter((r) => !q || r.user.toLowerCase().includes(q) || r.mobile.toLowerCase().includes(q) || r.txn.toLowerCase().includes(q) || r.module.toLowerCase().includes(q))
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
 
   const completed = rows.filter((r) => /completed|credit/i.test(r.status))

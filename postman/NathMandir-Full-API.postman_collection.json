@@ -1,0 +1,384 @@
+{
+  "info": {
+    "_postman_id": "d1f6a3c4-8b22-4e90-9c17-5a2e7f0b1c88",
+    "name": "Nath Mandir — Full API (Checkout + Mobile App)",
+    "description": "Complete API for the Shreenath Gitanjali platform.\n\nTWO surfaces:\n\n1. WEBSITE CHECKOUT  (base: {{baseUrl}}/api/checkout)  — JSON body.\n   Pay-on-website 'Spotify model'. The devotee picks ONE OR MORE modules,\n   verifies their mobile by OTP, pays via Razorpay; the backend sets the\n   unlock flag(s) on that mobile number's account.\n\n2. MOBILE APP API   (base: {{baseUrl}}/api/mobile?apicall=<op>)  — form fields.\n   The app logs in with the SAME mobile number, reads the flags, and plays\n   the songs of the modules that are unlocked.\n\nENTITLEMENT FLAGS (on the user object; 1 = owned, 0 = locked):\n| Module | code | Flag field |\n| Gitanjali Part 1 | gita1 | Part_1 |\n| Gitanjali Part 2 | gita2 | Part_2 |\n| Upasana Part | upasana | upasanaPaid |\n| Nityaniyam Part | nithya | nityaniyamPaid |\n\nRESPONSE ENVELOPE (every endpoint below):\n  success -> { \"status\": 200, \"error\": \"false\", \"message\": \"...\", ... }\n  failure -> { \"status\": 4xx, \"error\": \"true\",  \"message\": \"...\" }\n(`error` is the STRING \"false\"/\"true\" — branch on it.)\n\nQUICK START (website): Modules -> Send OTP -> Verify OTP -> Create Order -> (Razorpay) -> Verify Payment.\nQUICK START (app): loginuser -> verifyOTP (auto-saves {{token}}) -> home / get_content.\n\nTEST ACCOUNT: mobile 1234567890 always gets OTP 1947.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "mobile", "value": "1234567890", "type": "string" },
+    { "key": "otp", "value": "1947", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Website Checkout (pay on website)",
+      "description": "Public JSON endpoints used by the website /subscribe page.",
+      "item": [
+        {
+          "name": "GET modules — list + prices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/checkout/modules", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "modules"] },
+            "description": "The purchasable modules with live prices."
+          },
+          "response": [
+            {
+              "name": "200",
+              "originalRequest": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/checkout/modules", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "modules"] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Modules\",\n  \"modules\": [\n    { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251 },\n    { \"code\": \"gita2\", \"name\": \"Gitanjali Part 2\", \"price\": 251 },\n    { \"code\": \"upasana\", \"name\": \"Upasana Part\", \"price\": 151 },\n    { \"code\": \"nithya\", \"name\": \"Nityaniyam Part\", \"price\": 251 }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST send-otp — OTP to the entered number",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "const j = pm.response.json();",
+              "if (j && j.otp) { pm.collectionVariables.set('otp', String(j.otp)); }  // dev: backend echoes the OTP"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"mobile\": \"{{mobile}}\",\n  \"name\": \"Test Devotee\",\n  \"email\": \"test@example.com\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/checkout/send-otp", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "send-otp"] },
+            "description": "Sends an OTP to confirm the number BEFORE payment. Finds-or-creates the account by phone (existing 'Free' app users are reused). In production the OTP is sent by SMS and withheld from the response; in dev (no SMS gateway) it is returned as `otp`."
+          },
+          "response": [
+            {
+              "name": "200 — sent (production, OTP withheld)",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"1234567890\",\"name\":\"Test Devotee\",\"email\":\"test@example.com\"}" }, "url": { "raw": "{{baseUrl}}/api/checkout/send-otp", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "send-otp"] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"OTP sent to your mobile\"\n}"
+            },
+            {
+              "name": "200 — sent (dev, OTP echoed)",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"9998887770\",\"name\":\"Dev\",\"email\":\"\"}" }, "url": { "raw": "{{baseUrl}}/api/checkout/send-otp", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "send-otp"] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"OTP sent to your mobile\",\n  \"otp\": \"4821\"\n}"
+            },
+            {
+              "name": "400 — invalid mobile",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"123\"}" }, "url": { "raw": "{{baseUrl}}/api/checkout/send-otp", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "send-otp"] } },
+              "status": "Bad Request", "code": 400, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 400,\n  \"error\": \"true\",\n  \"message\": \"Enter a valid mobile number\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST verify-otp — confirm the number",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"mobile\": \"{{mobile}}\",\n  \"otp\": \"{{otp}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/checkout/verify-otp", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "verify-otp"] },
+            "description": "Confirms the OTP. Single-use (cleared on success). After this the website proceeds to create-order + pay."
+          },
+          "response": [
+            {
+              "name": "200 — verified",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"1234567890\",\"otp\":\"1947\"}" }, "url": { "raw": "{{baseUrl}}/api/checkout/verify-otp", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "verify-otp"] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Mobile verified\",\n  \"verified\": true\n}"
+            },
+            {
+              "name": "401 — incorrect / expired",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"1234567890\",\"otp\":\"0000\"}" }, "url": { "raw": "{{baseUrl}}/api/checkout/verify-otp", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "verify-otp"] } },
+              "status": "Unauthorized", "code": 401, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 401,\n  \"error\": \"true\",\n  \"message\": \"Incorrect OTP. Please try again.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST create-order — ONE OR MORE modules",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"mobile\": \"{{mobile}}\",\n  \"name\": \"Test Devotee\",\n  \"email\": \"test@example.com\",\n  \"modules\": [\"gita1\", \"upasana\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/api/checkout/create-order", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "create-order"] },
+            "description": "Creates a Razorpay order for the TOTAL of all selected modules. `modules` is an array of codes (multi-buy). A single `\"module\": \"gita1\"` string is also accepted (backward compatible). `amount` is the total in paise. Returns 409 if the number already owns any selected module."
+          },
+          "response": [
+            {
+              "name": "200 — order created (multi)",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"8888800000\",\"name\":\"Multi Tester\",\"email\":\"m@t.com\",\"modules\":[\"gita1\",\"upasana\"]}" }, "url": { "raw": "{{baseUrl}}/api/checkout/create-order", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "create-order"] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Order created\",\n  \"orderId\": \"order_QabcXYZ123\",\n  \"amount\": 40200,\n  \"currency\": \"INR\",\n  \"keyId\": \"rzp_test_xxxxxxxx\",\n  \"modules\": [\"gita1\", \"upasana\"],\n  \"name\": \"Gitanjali Part 1, Upasana Part\",\n  \"prefill\": { \"contact\": \"8888800000\", \"name\": \"Multi Tester\", \"email\": \"m@t.com\" }\n}"
+            },
+            {
+              "name": "409 — already owns one of them",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"1234567890\",\"name\":\"Test\",\"modules\":[\"gita1\",\"gita2\"]}" }, "url": { "raw": "{{baseUrl}}/api/checkout/create-order", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "create-order"] } },
+              "status": "Conflict", "code": 409, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 409,\n  \"error\": \"true\",\n  \"message\": \"This number already owns: Gitanjali Part 1. Please deselect it.\"\n}"
+            },
+            {
+              "name": "400 — no module selected",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"8888800002\",\"name\":\"X\",\"modules\":[]}" }, "url": { "raw": "{{baseUrl}}/api/checkout/create-order", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "create-order"] } },
+              "status": "Bad Request", "code": 400, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 400,\n  \"error\": \"true\",\n  \"message\": \"Select at least one module\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST verify-payment — unlock after Razorpay",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"razorpay_order_id\": \"order_QabcXYZ123\",\n  \"razorpay_payment_id\": \"pay_QabcPAYMENT\",\n  \"razorpay_signature\": \"<signature-from-razorpay-handler>\",\n  \"mobile\": \"{{mobile}}\",\n  \"name\": \"Test Devotee\",\n  \"email\": \"test@example.com\",\n  \"modules\": [\"gita1\", \"upasana\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/api/checkout/verify-payment", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "verify-payment"] },
+            "description": "Called by the website's Razorpay success handler. Verifies the signature server-side, then unlocks EVERY purchased module for the mobile number. The order/payment/signature values come from Razorpay Checkout — you cannot forge them in Postman; this request is here for reference/shape."
+          },
+          "response": [
+            {
+              "name": "200 — payment successful (flags set)",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{ ... }" }, "url": { "raw": "{{baseUrl}}/api/checkout/verify-payment", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "verify-payment"] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Payment successful\",\n  \"user\": { \"id\": 42, \"name\": \"Test Devotee\", \"mobile\": \"1234567890\" },\n  \"owned\": { \"gita1\": true, \"gita2\": false, \"upasana\": true, \"nithya\": false }\n}"
+            },
+            {
+              "name": "401 — signature verification failed",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{ ...bad signature... }" }, "url": { "raw": "{{baseUrl}}/api/checkout/verify-payment", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "verify-payment"] } },
+              "status": "Unauthorized", "code": 401, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 401,\n  \"error\": \"true\",\n  \"message\": \"Payment verification failed\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Mobile App — Auth (no token)",
+      "item": [
+        {
+          "name": "loginuser — send OTP",
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "{{mobile}}", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=loginuser", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "loginuser" } ] },
+            "description": "Sends an OTP to a REGISTERED mobile number (else 404). OTP echoed in the response (legacy). Test number 1234567890 => 1947."
+          },
+          "response": [
+            {
+              "name": "200",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=loginuser", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "loginuser" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"OTP Sent Successfully\",\n  \"otp\": \"1947\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "register — create account",
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "name", "value": "Test Devotee", "type": "text" }, { "key": "email", "value": "test@example.com", "type": "text" }, { "key": "mobile", "value": "{{mobile}}", "type": "text" }, { "key": "city", "value": "Nashik", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=register", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "register" } ] },
+            "description": "Create a devotee account. 409 if the mobile already exists."
+          },
+          "response": [
+            {
+              "name": "201",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=register", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "register" } ] } },
+              "status": "Created", "code": 201, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 201,\n  \"error\": \"false\",\n  \"message\": \"Register Successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "verifyOTP — login (auto-saves {{token}})",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "const json = pm.response.json();",
+              "if (json && json.token) { pm.collectionVariables.set('token', json.token); }",
+              "pm.test('login ok', function () { pm.expect(json.error).to.eql('false'); });"
+            ] } }
+          ],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "{{mobile}}", "type": "text" }, { "key": "otp", "value": "{{otp}}", "type": "text" }, { "key": "DID", "value": "test-device-1", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "verifyOTP" } ] },
+            "description": "Verify OTP and log in. Returns JWT (token) + the full user object with the entitlement flags."
+          },
+          "response": [
+            {
+              "name": "200",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" }, { "key": "otp", "value": "1947" }, { "key": "DID", "value": "test-device-1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "verifyOTP" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Login Success\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"data\": {\n    \"id\": 22,\n    \"name\": \"Test Devotee\",\n    \"mobile\": \"1234567890\",\n    \"email\": \"test@example.com\",\n    \"active\": 1,\n    \"isPaid\": 1,\n    \"Part_1\": 1,\n    \"Part_2\": 0,\n    \"upasanaPaid\": 1,\n    \"nityaniyamPaid\": 0,\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Mobile App — Content (Bearer token)",
+      "item": [
+        {
+          "name": "home — modules + owned + song counts",
+          "request": {
+            "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=home", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "home" } ] },
+            "description": "Home screen: all 4 modules with name, price, whether THIS user owns it (owned), and published song count."
+          },
+          "response": [
+            {
+              "name": "200",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=home", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "home" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Modules\",\n  \"modules\": [\n    { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251, \"owned\": true,  \"songCount\": 3 },\n    { \"code\": \"gita2\", \"name\": \"Gitanjali Part 2\", \"price\": 251, \"owned\": false, \"songCount\": 3 },\n    { \"code\": \"upasana\", \"name\": \"Upasana Part\", \"price\": 151, \"owned\": true, \"songCount\": 4 },\n    { \"code\": \"nithya\", \"name\": \"Nityaniyam Part\", \"price\": 251, \"owned\": false, \"songCount\": 3 }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "get_content — songs of a module (OWNED)",
+          "request": {
+            "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita1", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_content", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_content" } ] },
+            "description": "Songs of a module. product = code (gita1|gita2|upasana|nithya). OWNED => full absolute audioUrl + lyrics. type is 'audio' or 'text'. Render by sortOrder."
+          },
+          "response": [
+            {
+              "name": "200 — owned",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_content", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_content" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Content loaded\",\n  \"owned\": true,\n  \"product\": { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251 },\n  \"content\": [\n    { \"id\": 1, \"title\": \"Mangalacharan\", \"type\": \"audio\", \"duration\": 312, \"sortOrder\": 1, \"plays\": 1841, \"locked\": false, \"audioUrl\": \"http://localhost:5000/uploads/audio/mangalacharan.mp3\", \"lyrics\": \"Om Namah Shivaya...\" },\n    { \"id\": 3, \"title\": \"Gitanjali Part 1 — Lyrics\", \"type\": \"text\", \"duration\": 0, \"sortOrder\": 3, \"plays\": 980, \"locked\": false, \"audioUrl\": null, \"lyrics\": \"Full lyrics text here...\" }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "get_content — songs of a module (LOCKED)",
+          "request": {
+            "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita2", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_content", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_content" } ] },
+            "description": "NOT owned => titles listed with locked=true; audioUrl & lyrics withheld (null). App shows a locked state (no price, no buy button, no website link)."
+          },
+          "response": [
+            {
+              "name": "200 — locked",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita2" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_content", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_content" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Content loaded\",\n  \"owned\": false,\n  \"product\": { \"code\": \"gita2\", \"name\": \"Gitanjali Part 2\", \"price\": 251 },\n  \"content\": [\n    { \"id\": 4, \"title\": \"Song A\", \"type\": \"audio\", \"duration\": 260, \"sortOrder\": 1, \"plays\": 120, \"locked\": true, \"audioUrl\": null, \"lyrics\": null }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "mark_played — +1 play count",
+          "request": {
+            "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "1", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=mark_played", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "mark_played" } ] },
+            "description": "Call when a song starts playing. id = content id. 403 if the module is not owned."
+          },
+          "response": [
+            {
+              "name": "200",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=mark_played", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "mark_played" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"OK\"\n}"
+            },
+            {
+              "name": "403 — not unlocked",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "5" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=mark_played", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "mark_played" } ] } },
+              "status": "Forbidden", "code": 403, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 403,\n  \"error\": \"true\",\n  \"message\": \"This module is not unlocked for you\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "check_status — refresh flags",
+          "request": {
+            "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "{{mobile}}", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=check_status", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "check_status" } ] },
+            "description": "Re-fetch the user with fresh flags. Call on app open/resume and pull-to-refresh so a website purchase unlocks WITHOUT reinstall."
+          },
+          "response": [
+            {
+              "name": "200",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=check_status", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "check_status" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Active User Save Successfully\",\n  \"data\": { \"id\": 22, \"name\": \"Test Devotee\", \"mobile\": \"1234567890\", \"isPaid\": 1, \"Part_1\": 1, \"Part_2\": 0, \"upasanaPaid\": 1, \"nityaniyamPaid\": 0, \"token\": \"eyJ...\" }\n}"
+            }
+          ]
+        },
+        {
+          "name": "receipts — paid receipts for a user",
+          "request": {
+            "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "22", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=receipts", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "receipts" } ] },
+            "description": "Successful payments for a user (id = user id)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Mobile App — Session / device",
+      "item": [
+        {
+          "name": "check_active_session",
+          "request": {
+            "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "{{mobile}}", "type": "text" }, { "key": "DID", "value": "test-device-1", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=check_active_session", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "check_active_session" } ] },
+            "description": "Success if THIS device (DID) is still the active session; 401 'Is Logged Out' if logged in elsewhere."
+          },
+          "response": []
+        },
+        {
+          "name": "active_session — logout all devices",
+          "request": {
+            "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "22", "type": "text" }, { "key": "mobile", "value": "{{mobile}}", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=active_session", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "active_session" } ] },
+            "description": "Log the user out from all devices."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Error cases",
+      "item": [
+        {
+          "name": "Missing apicall (400)",
+          "request": {
+            "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": { "raw": "{{baseUrl}}/api/mobile", "host": ["{{baseUrl}}"], "path": ["api", "mobile"] },
+            "description": "No apicall -> 400."
+          },
+          "response": [
+            {
+              "name": "400",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile", "host": ["{{baseUrl}}"], "path": ["api", "mobile"] } },
+              "status": "Bad Request", "code": 400, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 400,\n  \"error\": \"true\",\n  \"message\": \"Invalid API Call\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Protected call without token (401)",
+          "request": {
+            "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=home", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "home" } ] },
+            "description": "Authenticated apicall without a Bearer token -> 401."
+          },
+          "response": [
+            {
+              "name": "401",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=home", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "home" } ] } },
+              "status": "Unauthorized", "code": 401, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 401,\n  \"error\": \"true\",\n  \"message\": \"Not authenticated. Please log in.\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

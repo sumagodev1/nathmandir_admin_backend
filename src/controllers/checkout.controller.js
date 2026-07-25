@@ -16,6 +16,7 @@
 import { prisma } from '../lib/prisma.js'
 import { jsonSafe } from '../lib/helpers.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
+import { sendOtpSms } from '../lib/sms.js'
 import {
   MODULES,
   razorpayConfigured,
@@ -59,7 +60,65 @@ export async function modules(req, res) {
   return sendOk(res, 'Modules', { modules: await moduleList() })
 }
 
-// ── 2. POST /create-order { mobile, name, email, module } ─────
+// ── OTP: send ─ POST /send-otp { mobile, name?, email? } ──────
+// Proves the devotee controls the number BEFORE payment. Creates/finds the
+// account by phone (so an EXISTING app user keeps the same account and their
+// purchase attaches to it), stores an OTP, and sends it by SMS.
+export async function sendOtp(req, res) {
+  const mobile = String(req.body?.mobile ?? '').trim()
+  const name = String(req.body?.name ?? '').trim()
+  const email = String(req.body?.email ?? '').trim()
+  if (!/^\d{10,15}$/.test(mobile)) {
+    return sendFail(res, 'Enter a valid mobile number', STATUS.BAD_REQUEST)
+  }
+
+  // Find-or-create by phone: existing (incl. "Free" app) users are reused.
+  const user = await findOrCreateUser({ mobile, name, email })
+
+  // Fixed OTP for the test account, random 4-digit otherwise (same as the app).
+  const otp = mobile === '1234567890' ? '1947' : String(Math.floor(1000 + Math.random() * 9000))
+  await prisma.user.update({ where: { id: user.id }, data: { otp } })
+
+  const sent = await sendOtpSms(mobile, otp)
+  // In dev (no SMS gateway configured) sendOtpSms returns false and we echo the
+  // OTP so testing works — exactly like the mobile API. In production it is withheld.
+  return sendOk(res, 'OTP sent to your mobile', sent ? {} : { otp })
+}
+
+// ── OTP: verify ─ POST /verify-otp { mobile, otp } ────────────
+// Confirms the OTP for the number entered on the form. On success the OTP is
+// cleared; the frontend then proceeds to create the Razorpay order and pay.
+export async function verifyOtp(req, res) {
+  const mobile = String(req.body?.mobile ?? '').trim()
+  const otp = String(req.body?.otp ?? '').trim()
+  if (!mobile || !otp) return sendFail(res, 'Enter the OTP', STATUS.BAD_REQUEST)
+
+  const user = await prisma.user.findFirst({ where: { phone: mobile, otp } })
+  if (!user) return sendFail(res, 'Incorrect OTP. Please try again.', STATUS.UNAUTHORIZED)
+
+  await prisma.user.update({ where: { id: user.id }, data: { otp: '' } })
+  return sendOk(res, 'Mobile verified', { verified: true })
+}
+
+// Normalise the requested module code(s) from the body. Accepts either
+// `modules: ['gita1','gita2']` (new, multi-buy) or `module: 'gita1'` (single).
+// Returns a de-duplicated array of valid codes (unknown codes dropped).
+function readModuleCodes(body) {
+  const raw = Array.isArray(body?.modules)
+    ? body.modules
+    : body?.module != null
+      ? [body.module]
+      : []
+  const codes = []
+  for (const c of raw) {
+    const code = String(c).trim()
+    if (MODULES[code] && !codes.includes(code)) codes.push(code)
+  }
+  return codes
+}
+
+// ── 2. POST /create-order { mobile, name, email, modules[] } ──
+// Supports buying ONE OR MORE modules in a single payment.
 export async function createOrder(req, res) {
   if (!razorpayConfigured()) {
     return sendFail(res, 'Payment gateway not configured yet.', STATUS.SERVER_ERROR)
@@ -67,48 +126,62 @@ export async function createOrder(req, res) {
   const mobile = String(req.body?.mobile ?? '').trim()
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
-  const moduleCode = String(req.body?.module ?? '').trim()
-  const m = MODULES[moduleCode]
+  const codes = readModuleCodes(req.body)
 
   if (!mobile) return sendFail(res, 'Mobile number required', STATUS.BAD_REQUEST)
   if (!name) return sendFail(res, 'Name required', STATUS.BAD_REQUEST)
-  if (!m) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
+  if (!codes.length) return sendFail(res, 'Select at least one module', STATUS.BAD_REQUEST)
 
-  const product = await prisma.product.findUnique({ where: { id: m.productId } })
-  if (!product) return sendFail(res, 'Module not found', STATUS.NOT_FOUND)
-
-  // If the number already exists AND already owns this module, stop early.
-  const existing = await prisma.user.findFirst({ where: { phone: mobile } })
-  if (existing && existing[m.flag] === 1) {
-    return sendFail(res, 'This number already owns this module', STATUS.CONFLICT)
+  // Load the products for every selected module.
+  const items = []
+  for (const code of codes) {
+    const m = MODULES[code]
+    const product = await prisma.product.findUnique({ where: { id: m.productId } })
+    if (!product) return sendFail(res, `Module not found: ${code}`, STATUS.NOT_FOUND)
+    items.push({ code, m, product })
   }
+
+  // If the number already owns any of the selected modules, stop early so the
+  // devotee isn't charged twice — tell them which ones to deselect.
+  const existing = await prisma.user.findFirst({ where: { phone: mobile } })
+  if (existing) {
+    const owned = items.filter((it) => existing[it.m.flag] === 1).map((it) => it.product.name)
+    if (owned.length) {
+      return sendFail(res, `This number already owns: ${owned.join(', ')}. Please deselect it.`, STATUS.CONFLICT)
+    }
+  }
+
+  const totalRupees = items.reduce((sum, it) => sum + it.product.price, 0)
 
   let order
   try {
     order = await createRazorpayOrder({
-      amountPaise: product.price * 100,
-      receipt: `rcpt_${moduleCode}_${Date.now()}`,
-      notes: { mobile, name, email, module: moduleCode },
+      amountPaise: totalRupees * 100,
+      receipt: `rcpt_${Date.now()}`,
+      // Store the full module list on the order so the webhook can unlock all.
+      notes: { mobile, name, email, module: codes.join(','), modules: codes.join(',') },
     })
   } catch (err) {
     return sendFail(res, err.message || 'Could not create order', STATUS.SERVER_ERROR)
   }
 
-  // Pending payment row (user_id filled in once the user is created).
-  await prisma.$executeRawUnsafe(
-    `INSERT INTO user_payment
-       (user_id, package_id, amount, razorpay_order_id, razorpay_stageOfPayment, payment_type, status, created_at)
-     VALUES (NULL, ?, ?, ?, 'created', ?, '0', NOW())`,
-    m.packageId, String(product.price), order.id, moduleCode
-  )
+  // One pending payment row per module (all share the razorpay_order_id).
+  for (const it of items) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO user_payment
+         (user_id, package_id, amount, razorpay_order_id, razorpay_stageOfPayment, payment_type, status, created_at)
+       VALUES (NULL, ?, ?, ?, 'created', ?, '0', NOW())`,
+      it.m.packageId, String(it.product.price), order.id, it.code
+    )
+  }
 
   return sendOk(res, 'Order created', {
     orderId: order.id,
-    amount: order.amount, // paise
+    amount: order.amount, // paise (total)
     currency: order.currency,
     keyId: RAZORPAY_PUBLIC_KEY,
-    module: moduleCode,
-    name: product.name,
+    modules: codes,
+    name: items.map((it) => it.product.name).join(', '),
     prefill: { contact: mobile, name, email },
   })
 }
@@ -125,10 +198,9 @@ export async function verifyPayment(req, res) {
   const mobile = String(req.body?.mobile ?? '').trim()
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
-  const moduleCode = String(req.body?.module ?? '').trim()
-  const m = MODULES[moduleCode]
+  const codes = readModuleCodes(req.body)
 
-  if (!orderId || !paymentId || !signature || !mobile || !m) {
+  if (!orderId || !paymentId || !signature || !mobile || !codes.length) {
     return sendFail(res, 'Missing payment parameters', STATUS.BAD_REQUEST)
   }
 
@@ -141,12 +213,11 @@ export async function verifyPayment(req, res) {
   }
 
   // Payment is genuine → create/find the account (auto-register) and
-  // unlock the module straight away against the mobile from the form.
+  // unlock EVERY purchased module against the mobile from the form.
   const user = await findOrCreateUser({ mobile, name, email })
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { [m.flag]: 1, isPaid: 1 },
-  })
+  const unlock = { isPaid: 1 }
+  for (const code of codes) unlock[MODULES[code].flag] = 1
+  await prisma.user.update({ where: { id: user.id }, data: unlock })
 
   // Finalise the payment row (status '1' = complete, unlocked).
   await prisma.$executeRawUnsafe(
@@ -180,9 +251,13 @@ export async function webhook(req, res) {
     const orderId = entity.order_id
     const paymentId = entity.id
     const notes = entity.notes || {}
-    const m = MODULES[notes.module]
+    // notes.module(s) may be a single code or a comma-separated list (multi-buy).
+    const codes = String(notes.modules || notes.module || '')
+      .split(',')
+      .map((c) => c.trim())
+      .filter((c) => MODULES[c])
 
-    if (orderId && m && notes.mobile) {
+    if (orderId && codes.length && notes.mobile) {
       // Idempotent: only act if this order hasn't been unlocked already
       // (the browser's verify-payment usually gets there first).
       const rows = jsonSafe(
@@ -193,7 +268,9 @@ export async function webhook(req, res) {
       )
       if (!rows.length || rows[0].status !== '1') {
         const user = await findOrCreateUser({ mobile: notes.mobile, name: notes.name, email: notes.email })
-        await prisma.user.update({ where: { id: user.id }, data: { [m.flag]: 1, isPaid: 1 } })
+        const unlock = { isPaid: 1 }
+        for (const code of codes) unlock[MODULES[code].flag] = 1
+        await prisma.user.update({ where: { id: user.id }, data: unlock })
         await prisma.$executeRawUnsafe(
           `UPDATE user_payment
              SET user_id = ?, razorpay_payment_id = COALESCE(razorpay_payment_id, ?),

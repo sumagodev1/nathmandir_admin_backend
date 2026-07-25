@@ -22,6 +22,9 @@
 //   audio_donation_user                                   [auth]   → all users
 //   update_session      { mobile, active }               [auth]
 //   check_active_session{ mobile, DID }                  [auth]
+//   home                                                 [auth]   → all modules + owned flag + song counts
+//   get_content         { product }                      [auth]   → songs of a module (gated by ownership)
+//   mark_played         { id }                           [auth]   → +1 play count for a song
 //
 // NOTE: this uses its own mobile JWT — separate from the admin panel auth.
 import { Router } from 'express'

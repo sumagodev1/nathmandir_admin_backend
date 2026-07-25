@@ -5,6 +5,8 @@
 // verified payment (no separate OTP step). The account is auto-created.
 //
 //   GET  /api/checkout/modules                         → [{code,name,price}]
+//   POST /api/checkout/send-otp       { mobile, name?, email? }  → OTP to the number
+//   POST /api/checkout/verify-otp     { mobile, otp }            → confirm the number
 //   POST /api/checkout/create-order   { mobile, name, email, module }
 //   POST /api/checkout/verify-payment { razorpay_order_id, razorpay_payment_id,
 //                                       razorpay_signature, mobile, name, email, module }
@@ -15,6 +17,8 @@ import * as checkout from '../controllers/checkout.controller.js'
 const router = Router()
 
 router.get('/modules', checkout.modules)
+router.post('/send-otp', checkout.sendOtp)
+router.post('/verify-otp', checkout.verifyOtp)
 router.post('/create-order', checkout.createOrder)
 router.post('/verify-payment', checkout.verifyPayment)
 router.post('/webhook', checkout.webhook)

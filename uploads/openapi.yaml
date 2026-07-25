@@ -1,0 +1,294 @@
+openapi: 3.0.3
+info:
+  title: Shreenath Gitanjali — Website Payment, Donation & Mobile API
+  version: 1.0.0
+  description: >
+    Test surface for the website payment (subscription) flow, the website
+    donation flow, and the mobile-app endpoints. All responses use the
+    envelope `{ status, error: "false"|"true", message, ... }` — success is
+    `error: "false"`, failure is `error: "true"`.
+
+
+    NOTE on Razorpay: `create-order` calls really create a Razorpay **test**
+    order. `verify-payment` needs a genuine `razorpay_signature` produced by a
+    real (test-mode) payment, so it can only be exercised after paying through
+    Razorpay Checkout — it will return 401 for hand-made values.
+servers:
+  - url: http://localhost:5000
+    description: Local dev
+tags:
+  - name: Health
+  - name: Checkout (Subscriptions)
+  - name: Donations
+  - name: Mobile App
+
+paths:
+  /:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        '200':
+          description: Backend up + DB reachable
+          content:
+            application/json:
+              example: { status: ok, message: "✅ Backend running + connected to shreenath_admin" }
+
+  # ─────────────── Checkout (subscriptions) ───────────────
+  /api/checkout/modules:
+    get:
+      tags: [Checkout (Subscriptions)]
+      summary: List purchasable modules with prices
+      responses:
+        '200':
+          description: Module list
+          content:
+            application/json:
+              example:
+                status: 200
+                error: "false"
+                message: Modules
+                modules:
+                  - { code: gita1, name: Gitanjali Part 1, price: 251 }
+                  - { code: gita2, name: Gitanjali Part 2, price: 251 }
+                  - { code: upasana, name: Upasana Part, price: 151 }
+                  - { code: nithya, name: Nityaniyam Part, price: 251 }
+
+  /api/checkout/create-order:
+    post:
+      tags: [Checkout (Subscriptions)]
+      summary: Create a Razorpay order for a module
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mobile, name, module]
+              properties:
+                mobile: { type: string, example: "9112223334" }
+                name: { type: string, example: "Test Devotee" }
+                email: { type: string, example: "test@example.com" }
+                module:
+                  type: string
+                  enum: [gita1, gita2, upasana, nithya]
+                  example: upasana
+      responses:
+        '200':
+          description: Order created
+          content:
+            application/json:
+              example:
+                status: 200
+                error: "false"
+                message: Order created
+                orderId: order_ABC123
+                amount: 15100
+                currency: INR
+                keyId: rzp_test_xxx
+                name: Upasana Part
+                prefill: { contact: "9112223334", name: "Test Devotee", email: "test@example.com" }
+        '400': { $ref: '#/components/responses/Fail' }
+        '409': { $ref: '#/components/responses/Fail' }
+        '500': { $ref: '#/components/responses/Fail' }
+
+  /api/checkout/verify-payment:
+    post:
+      tags: [Checkout (Subscriptions)]
+      summary: Verify a completed payment and unlock the module
+      description: Requires a genuine Razorpay signature from Checkout. Auto-creates the account and sets the module flag.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [razorpay_order_id, razorpay_payment_id, razorpay_signature, mobile, module]
+              properties:
+                razorpay_order_id: { type: string, example: order_ABC123 }
+                razorpay_payment_id: { type: string, example: pay_ABC123 }
+                razorpay_signature: { type: string, example: "<hmac_sha256>" }
+                mobile: { type: string, example: "9112223334" }
+                name: { type: string, example: "Test Devotee" }
+                email: { type: string, example: "test@example.com" }
+                module: { type: string, enum: [gita1, gita2, upasana, nithya], example: upasana }
+      responses:
+        '200':
+          description: Payment verified, module unlocked
+          content:
+            application/json:
+              example:
+                status: 200
+                error: "false"
+                message: Payment successful
+                user: { id: 42, name: "Test Devotee", mobile: "9112223334" }
+                owned: { gita1: false, gita2: false, upasana: true, nithya: false }
+        '401': { $ref: '#/components/responses/Fail' }
+        '400': { $ref: '#/components/responses/Fail' }
+
+  /api/checkout/webhook:
+    post:
+      tags: [Checkout (Subscriptions)]
+      summary: Razorpay server-to-server webhook (reliability net)
+      description: Razorpay calls this. Requires header `x-razorpay-signature` verified with the webhook secret.
+      parameters:
+        - in: header
+          name: x-razorpay-signature
+          schema: { type: string }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              event: payment.captured
+              payload:
+                payment:
+                  entity:
+                    id: pay_ABC123
+                    order_id: order_ABC123
+                    notes: { mobile: "9112223334", name: "Test Devotee", module: upasana }
+      responses:
+        '200': { description: Acknowledged }
+        '401': { $ref: '#/components/responses/Fail' }
+
+  # ─────────────── Donations ───────────────
+  /api/donate/create-order:
+    post:
+      tags: [Donations]
+      summary: Create a Razorpay order for a donation (any amount)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, mobile, amount]
+              properties:
+                name: { type: string, example: "Sita Deshmukh" }
+                mobile: { type: string, example: "9112223334" }
+                email: { type: string, example: "s@d.com" }
+                amount: { type: number, description: Amount in rupees, example: 2100 }
+                category:
+                  type: string
+                  enum: [temple-development, annadan, festival-support, general]
+                  example: annadan
+      responses:
+        '200':
+          description: Order created
+          content:
+            application/json:
+              example:
+                status: 200
+                error: "false"
+                message: Order created
+                orderId: order_DON123
+                amount: 210000
+                currency: INR
+                keyId: rzp_test_xxx
+                prefill: { name: "Sita Deshmukh", contact: "9112223334", email: "s@d.com" }
+        '400': { $ref: '#/components/responses/Fail' }
+        '500': { $ref: '#/components/responses/Fail' }
+
+  /api/donate/verify-payment:
+    post:
+      tags: [Donations]
+      summary: Verify a completed donation payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [razorpay_order_id, razorpay_payment_id, razorpay_signature]
+              properties:
+                razorpay_order_id: { type: string, example: order_DON123 }
+                razorpay_payment_id: { type: string, example: pay_DON123 }
+                razorpay_signature: { type: string, example: "<hmac_sha256>" }
+      responses:
+        '200':
+          description: Donation recorded
+          content:
+            application/json:
+              example: { status: 200, error: "false", message: "Thank you for your donation" }
+        '401': { $ref: '#/components/responses/Fail' }
+        '400': { $ref: '#/components/responses/Fail' }
+
+  # ─────────────── Mobile App ───────────────
+  /api/mobile:
+    post:
+      tags: [Mobile App]
+      summary: Mobile app operations (select operation via `apicall`)
+      description: >
+        Single endpoint, legacy API.php style. Choose the operation with the
+        `apicall` query param and send the matching form fields.
+          • loginuser  { mobile }                → sends OTP
+          • verifyOTP  { otp, mobile, DID }      → { token, data: user }
+          • check_status { mobile }  [Bearer]    → { data: user } (refresh entitlements)
+          • register   { name, email, mobile }   → creates a user
+
+        Test account: mobile 1234567890 always gets OTP 1947.
+      parameters:
+        - in: query
+          name: apicall
+          required: true
+          schema:
+            type: string
+            enum: [loginuser, verifyOTP, check_status, register]
+          example: loginuser
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                mobile: { type: string, example: "1234567890" }
+                otp: { type: string, example: "1947" }
+                DID: { type: string, example: "test-device-01" }
+                name: { type: string, example: "New Devotee" }
+                email: { type: string, example: "new@example.com" }
+      responses:
+        '200':
+          description: Operation result (shape depends on apicall)
+          content:
+            application/json:
+              examples:
+                loginuser:
+                  value: { status: 200, error: "false", message: "OTP Sent Successfully", otp: "1947" }
+                verifyOTP:
+                  value:
+                    status: 200
+                    error: "false"
+                    message: Login Success
+                    token: "<jwt>"
+                    data:
+                      id: 42
+                      name: "Test Devotee"
+                      mobile: "1234567890"
+                      isPaid: 1
+                      Part_1: 1
+                      Part_2: 0
+                      upasanaPaid: 1
+                      nityaniyamPaid: 0
+                      token: "<jwt>"
+        '400': { $ref: '#/components/responses/Fail' }
+        '401': { $ref: '#/components/responses/Fail' }
+        '404': { $ref: '#/components/responses/Fail' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Fail:
+      description: Failure envelope
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status: { type: integer, example: 400 }
+              error: { type: string, example: "true" }
+              message: { type: string, example: "Invalid module" }
