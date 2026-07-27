@@ -26,12 +26,18 @@ const field = (req, key) => {
   return v === undefined || v === null ? undefined : String(v)
 }
 
+// Optional hard override for the public origin (e.g. https://api.nathmandir.sumago.ai).
+// Set PUBLIC_BASE_URL in production to guarantee https file URLs even if the reverse
+// proxy doesn't forward X-Forwarded-Proto. When unset we derive it from the request
+// (with `trust proxy` enabled, that already resolves to https behind nginx).
+const PUBLIC_BASE = (process.env.PUBLIC_BASE_URL || '').replace(/\/+$/, '')
+
 // Turn a stored file reference into a full URL the app can play directly.
 // Relative "/uploads/…" paths get this server's origin; full http(s) URLs pass through.
 const absUrl = (req, ref) => {
   if (!ref) return null
   if (/^https?:\/\//i.test(ref)) return ref
-  const base = `${req.protocol}://${req.get('host')}`
+  const base = PUBLIC_BASE || `${req.protocol}://${req.get('host')}`
   return `${base}${ref.startsWith('/') ? '' : '/'}${ref}`
 }
 

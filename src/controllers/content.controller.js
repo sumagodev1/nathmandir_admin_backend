@@ -65,7 +65,12 @@ export async function update(req, res) {
   if (lyrics !== undefined) data.lyrics = lyrics
   if (title !== undefined) data.title = String(title).trim()
   if (sortOrder !== undefined) data.sortOrder = Number(sortOrder)
-  if (audioUrl !== undefined) data.audioUrl = audioUrl || null
+  if (audioUrl !== undefined) {
+    data.audioUrl = audioUrl || null
+    // Attaching/replacing an audio file makes this an audio item so the app
+    // (and the admin "Play" button) treat it correctly. Never auto-downgrade.
+    if (audioUrl) data.type = 'audio'
+  }
 
   try {
     const updated = await prisma.content.update({ where: { id }, data, include: { product: true } })

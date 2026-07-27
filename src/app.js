@@ -28,6 +28,11 @@ import sectionsRoutes from './routes/sections.routes.js'
 
 export const app = express()
 
+// Behind nginx (TLS terminated at the proxy), honour X-Forwarded-Proto/Host so
+// req.protocol is "https" and generated file URLs come back as
+// https://api.nathmandir.sumago.ai/uploads/... instead of http://...
+app.set('trust proxy', true)
+
 app.use(cors())         // allow the React admin panel to call this API
 // Parse JSON, keeping the raw bytes on req.rawBody so the Razorpay webhook
 // can verify its signature (which is computed over the exact raw body).
