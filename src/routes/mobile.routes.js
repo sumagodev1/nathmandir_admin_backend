@@ -25,6 +25,9 @@
 //   home                                                 [auth]   → all modules + owned flag + song counts
 //   get_content         { product }                      [auth]   → songs of a module (gated by ownership)
 //   mark_played         { id }                           [auth]   → +1 play count for a song
+//   subscribed_items                                     [auth]   → main items the user has subscribed to
+//   sub_items           { product }                      [auth]   → detailed sub-items of a subscribed module
+//   get_media           { id }                           [auth]   → media URL + lyrics for a tapped item
 //
 // NOTE: this uses its own mobile JWT — separate from the admin panel auth.
 import { Router } from 'express'

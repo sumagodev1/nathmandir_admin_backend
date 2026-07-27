@@ -1,0 +1,286 @@
+{
+  "info": {
+    "_postman_id": "d9a3f5e2-4b1a-4d2c-9e77-1a8f5b6c7d81",
+    "name": "Nath Mandir — App Developer API",
+    "description": "Hand-off collection for the mobile app developer.\n\nOnly the 6 APIs needed to build the app flow: Register → Login (send OTP) → Verify OTP → See subscribed items → Open a subscribed item → Play media.\n\n## Base pattern\nEvery request is `POST {{baseUrl}}/api/mobile?apicall=<name>` with the body as **x-www-form-urlencoded**.\n\n## Auth\n- **Public (no header):** `register`, `loginuser`, `verifyOTP`\n- **Protected (Bearer token):** `subscribed_items`, `sub_items`, `get_media`\n\nProtected requests require the header `Authorization: Bearer <token>`. The token is issued by `verifyOTP` and this collection auto-saves it into the `{{token}}` variable — the protected requests already reference `{{token}}` so no manual copy is needed.\n\n## Response envelope\nAll responses share the same shape:\n```json\n{ \"status\": 200, \"error\": \"false\", \"message\": \"...\", ... }\n```\n`error` is a **string** (`\"true\"` / `\"false\"`), not a boolean. HTTP status code matches the `status` field.\n\n## Recommended call order (first-time)\n1. `register` — create the account (skip if already registered → 409).\n2. `loginuser` — server generates + sends OTP (also echoes it in the response for dev testing).\n3. `verifyOTP` — returns the JWT `token`. Save it in the app; send as `Bearer <token>` on every future call.\n4. `subscribed_items` — main items the user has paid for.\n5. `sub_items` — tap a main item → detailed list of sub-items inside.\n6. `get_media` — tap a sub-item → get the playable audio URL + lyrics.\n\n## Test account\nMobile `1234567890` always gets OTP `1947`. Use it to iterate without waiting for real SMS.\n\n## Notes for the app\n- Store `token` in secure storage. Send as `Authorization: Bearer <token>` on every protected call.\n- Server invalidates old tokens when the user logs in on another device — on any `401`, re-run the login flow.\n- `sub_items` returns metadata only (`hasAudio`, `hasLyrics`) — no media URL. Call `get_media` on tap. This keeps content URLs from being harvested from lists.\n- `subscribed_items` returns an empty `items: []` array when the user hasn't paid for anything — show an empty-state UI, not an error.\n- `get_content` (older endpoint) is NOT part of this hand-off — use `sub_items` + `get_media` instead.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string", "description": "Backend base URL. Change to the staging/production URL when handed off." },
+    { "key": "token", "value": "", "type": "string", "description": "Filled automatically by verifyOTP." },
+    { "key": "mobile", "value": "1234567890", "type": "string", "description": "Test mobile number." },
+    { "key": "otp", "value": "1947", "type": "string", "description": "Filled automatically by loginuser." }
+  ],
+  "item": [
+    {
+      "name": "1. Auth flow",
+      "description": "Public endpoints used to onboard + log in. Run in order the first time; the app will typically skip 1 (if the mobile is already registered) and 2/3 only when there is no cached token.",
+      "item": [
+        {
+          "name": "1. register — create account (public)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "name", "value": "Test Devotee", "type": "text", "description": "Required" },
+                { "key": "email", "value": "test@example.com", "type": "text", "description": "Required" },
+                { "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Required — 10-digit number" },
+                { "key": "city", "value": "Nashik", "type": "text", "description": "Optional" },
+                { "key": "address", "value": "", "type": "text", "description": "Optional" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [ { "key": "apicall", "value": "register" } ]
+            },
+            "description": "Create a devotee account.\n\n**Required:** name, email, mobile.\n**Optional:** city, address.\n\n**Responses**\n- `201` — account created.\n- `400` — missing required field.\n- `409` — mobile already registered (the app should treat this as \"go to login\")."
+          },
+          "response": [
+            {
+              "name": "201 — registered",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "name", "value": "Test Devotee" }, { "key": "email", "value": "test@example.com" }, { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=register", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "register" } ] } },
+              "status": "Created", "code": 201, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 201,\n  \"error\": \"false\",\n  \"message\": \"Register Successfully\"\n}"
+            },
+            {
+              "name": "409 — already exists",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "name", "value": "Test Devotee" }, { "key": "email", "value": "test@example.com" }, { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=register", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "register" } ] } },
+              "status": "Conflict", "code": 409, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 409,\n  \"error\": \"true\",\n  \"message\": \"Mobile Number Already exist\"\n}"
+            },
+            {
+              "name": "400 — missing field",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=register", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "register" } ] } },
+              "status": "Bad Request", "code": 400, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 400,\n  \"error\": \"true\",\n  \"message\": \"Check parameter\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "2. loginuser — send OTP (public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j && j.otp) { pm.collectionVariables.set('otp', String(j.otp)); }",
+                  "pm.test('otp sent', function () { pm.expect(j.error).to.eql('false'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Required — registered mobile number" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=loginuser",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [ { "key": "apicall", "value": "loginuser" } ]
+            },
+            "description": "Send an OTP to a REGISTERED mobile. In dev the OTP is echoed in the response body — in production the app should ignore that field and wait for SMS.\n\n**Responses**\n- `200` — OTP sent. Response includes `otp` in dev only.\n- `400` — missing mobile.\n- `404` — mobile is not registered (app should route to register)."
+          },
+          "response": [
+            {
+              "name": "200 — OTP sent",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=loginuser", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "loginuser" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"OTP Sent Successfully\",\n  \"otp\": \"1947\"\n}"
+            },
+            {
+              "name": "404 — not registered",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "9999999999" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=loginuser", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "loginuser" } ] } },
+              "status": "Not Found", "code": 404, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 404,\n  \"error\": \"true\",\n  \"message\": \"Please Register First\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "3. verifyOTP — login (public, auto-saves {{token}})",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j && j.token) {",
+                  "  pm.collectionVariables.set('token', j.token);",
+                  "  console.log('Saved token to {{token}}');",
+                  "}",
+                  "pm.test('login ok', function () { pm.expect(j.error).to.eql('false'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "mobile", "value": "{{mobile}}", "type": "text", "description": "Required" },
+                { "key": "otp", "value": "{{otp}}", "type": "text", "description": "Required — 4-digit OTP from step 2" },
+                { "key": "DID", "value": "test-device-1", "type": "text", "description": "Required — unique device id (binds session)" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [ { "key": "apicall", "value": "verifyOTP" } ]
+            },
+            "description": "Verify OTP and log in. Returns a JWT `token` — store it and send as `Authorization: Bearer <token>` on every protected call.\n\nA new login on another device invalidates old tokens, so protected calls can return 401 at any time. On 401 → re-run steps 2–3.\n\n**Responses**\n- `200` — login success, `token` returned.\n- `400` — missing mobile/otp.\n- `401` — OTP incorrect (or expired)."
+          },
+          "response": [
+            {
+              "name": "200 — login success",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" }, { "key": "otp", "value": "1947" }, { "key": "DID", "value": "test-device-1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "verifyOTP" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Login Success\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"data\": {\n    \"id\": 22,\n    \"name\": \"Test Devotee\",\n    \"mobile\": \"1234567890\",\n    \"email\": \"test@example.com\",\n    \"city\": \"\",\n    \"address\": \"\",\n    \"active\": 1,\n    \"isPaid\": 1,\n    \"Part_1\": 1,\n    \"Part_2\": 0,\n    \"upasanaPaid\": 0,\n    \"nityaniyamPaid\": 0,\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  }\n}"
+            },
+            {
+              "name": "401 — wrong OTP",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" }, { "key": "otp", "value": "0000" }, { "key": "DID", "value": "test-device-1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "verifyOTP" } ] } },
+              "status": "Unauthorized", "code": 401, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 401,\n  \"error\": \"true\",\n  \"message\": \"OTP Incorrect\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Content flow (Bearer token)",
+      "description": "All requests here require `Authorization: Bearer {{token}}` — Postman fills that in from the value saved by step 3. The app must do the same: attach the JWT on every call.\n\nSuggested UX mapping:\n- Home / \"My Subscriptions\" screen → `subscribed_items`\n- Tap a main item → `sub_items` (list screen)\n- Tap a sub-item → `get_media` (player screen)",
+      "item": [
+        {
+          "name": "4. subscribed_items — list main items the user has subscribed to",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [ { "key": "apicall", "value": "subscribed_items" } ]
+            },
+            "description": "Returns only the modules (main items) the logged-in user has purchased.\n\nEach entry has:\n- `code` — pass this as `product` to `sub_items`.\n- `name`, `price` — display info.\n- `itemCount` — how many sub-items are inside.\n\n**Responses**\n- `200` with `items: [...]` — one entry per subscribed module.\n- `200` with `items: []` — user has no subscriptions. Show empty-state, not an error.\n- `401` — token missing/invalid → re-run auth flow."
+          },
+          "response": [
+            {
+              "name": "200 — has subscriptions",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "subscribed_items" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Subscribed items\",\n  \"items\": [\n    { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251, \"itemCount\": 3 },\n    { \"code\": \"upasana\", \"name\": \"Upasana Part\", \"price\": 151, \"itemCount\": 4 }\n  ]\n}"
+            },
+            {
+              "name": "200 — no subscriptions",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "subscribed_items" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"No subscriptions\",\n  \"items\": []\n}"
+            },
+            {
+              "name": "401 — token missing/invalid",
+              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "subscribed_items" } ] } },
+              "status": "Unauthorized", "code": 401, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 401,\n  \"error\": \"true\",\n  \"message\": \"Not authenticated. Please log in.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "5. sub_items — detailed sub-items inside a subscribed module",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "product", "value": "gita1", "type": "text", "description": "Required — module code: gita1 | gita2 | upasana | nithya" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=sub_items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [ { "key": "apicall", "value": "sub_items" } ]
+            },
+            "description": "Returns the sub-items (songs / lyrics) inside a subscribed module. Metadata only — no media URL.\n\nEach item has:\n- `id` — pass this to `get_media` when the user taps.\n- `title`, `type` (`audio` | `text`), `duration` (seconds).\n- `sortOrder` — display order.\n- `plays` — play count (for badges/analytics).\n- `hasAudio`, `hasLyrics` — UI hints for what the player will show.\n\n**Responses**\n- `200` — items array.\n- `400` — missing `product`, or invalid module code.\n- `403` — user has not subscribed to this module (app should route to the website subscription page).\n- `401` — token missing/invalid."
+          },
+          "response": [
+            {
+              "name": "200 — subscribed",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=sub_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "sub_items" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Sub items loaded\",\n  \"product\": { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251 },\n  \"items\": [\n    { \"id\": 1, \"title\": \"Mangalacharan\", \"type\": \"audio\", \"duration\": 312, \"sortOrder\": 1, \"plays\": 1841, \"hasAudio\": true,  \"hasLyrics\": true },\n    { \"id\": 2, \"title\": \"Aarti — Sukhkarta Dukhharta\", \"type\": \"audio\", \"duration\": 248, \"sortOrder\": 2, \"plays\": 2615, \"hasAudio\": true,  \"hasLyrics\": true },\n    { \"id\": 3, \"title\": \"Gitanjali Part 1 — Lyrics\", \"type\": \"text\",  \"duration\": 0,   \"sortOrder\": 3, \"plays\": 980,  \"hasAudio\": false, \"hasLyrics\": true }\n  ]\n}"
+            },
+            {
+              "name": "403 — module not subscribed",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita2" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=sub_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "sub_items" } ] } },
+              "status": "Forbidden", "code": 403, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 403,\n  \"error\": \"true\",\n  \"message\": \"This module is not subscribed\"\n}"
+            },
+            {
+              "name": "400 — invalid module code",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "nope" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=sub_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "sub_items" } ] } },
+              "status": "Bad Request", "code": 400, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 400,\n  \"error\": \"true\",\n  \"message\": \"Invalid module\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "6. get_media — media file for a tapped sub-item",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "id", "value": "1", "type": "text", "description": "Required — content id from sub_items" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=get_media",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mobile"],
+              "query": [ { "key": "apicall", "value": "get_media" } ]
+            },
+            "description": "Called when the user taps a sub-item. Returns the absolute playable URL + lyrics — but only if the user has subscribed to the parent module.\n\nResponse fields:\n- `id`, `title`, `type`, `duration`.\n- `audioUrl` — absolute URL (starts with `http(s)://`). Play as-is. `null` when the item has no audio (text-only lyric row).\n- `lyrics` — full text (may be empty string).\n\n**Responses**\n- `200` — media returned.\n- `400` — missing `id`, or module code lookup failed for this content.\n- `403` — user has not subscribed to the parent module.\n- `404` — content id does not exist (or is unpublished).\n- `401` — token missing/invalid."
+          },
+          "response": [
+            {
+              "name": "200 — media returned",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Media loaded\",\n  \"id\": 1,\n  \"title\": \"Mangalacharan\",\n  \"type\": \"audio\",\n  \"duration\": 312,\n  \"audioUrl\": \"http://localhost:5000/uploads/audio/mangalacharan.mp3\",\n  \"lyrics\": \"Om Namah Shivaya...\"\n}"
+            },
+            {
+              "name": "403 — module not subscribed",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "5" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] } },
+              "status": "Forbidden", "code": 403, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 403,\n  \"error\": \"true\",\n  \"message\": \"This module is not subscribed\"\n}"
+            },
+            {
+              "name": "404 — content not found",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "99999" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] } },
+              "status": "Not Found", "code": 404, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 404,\n  \"error\": \"true\",\n  \"message\": \"Content not found\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

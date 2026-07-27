@@ -175,6 +175,84 @@
           ]
         },
         {
+          "name": "subscribed_items — main items the user has subscribed to",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "subscribed_items" } ] },
+            "description": "List ONLY the main items (modules/products) the logged-in user has subscribed to. Same shape as `home` but filters out locked modules. Each entry has code, name, price, and itemCount (published sub-items inside)."
+          },
+          "response": [
+            {
+              "name": "200 — subscribed items",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "subscribed_items" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Subscribed items\",\n  \"items\": [\n    { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251, \"itemCount\": 3 }\n  ]\n}"
+            },
+            {
+              "name": "200 — no subscriptions",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "subscribed_items" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"No subscriptions\",\n  \"items\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "sub_items — detailed list of sub-items of a subscribed module",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita1", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=sub_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "sub_items" } ] },
+            "description": "Detailed list of the sub-items (Content rows) inside a subscribed module. `product` = module code (gita1 | gita2 | upasana | nithya). Returns metadata only — no media URL. Call `get_media` when the user taps an item to fetch the playable URL. Returns 403 if the module is NOT subscribed."
+          },
+          "response": [
+            {
+              "name": "200 — sub items",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=sub_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "sub_items" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Sub items loaded\",\n  \"product\": { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251 },\n  \"items\": [\n    { \"id\": 1, \"title\": \"Mangalacharan\", \"type\": \"audio\", \"duration\": 312, \"sortOrder\": 1, \"plays\": 1841, \"hasAudio\": true,  \"hasLyrics\": true },\n    { \"id\": 2, \"title\": \"Aarti — Sukhkarta Dukhharta\", \"type\": \"audio\", \"duration\": 248, \"sortOrder\": 2, \"plays\": 2615, \"hasAudio\": true,  \"hasLyrics\": true },\n    { \"id\": 3, \"title\": \"Gitanjali Part 1 — Lyrics\", \"type\": \"text\",  \"duration\": 0,   \"sortOrder\": 3, \"plays\": 980,  \"hasAudio\": false, \"hasLyrics\": true }\n  ]\n}"
+            },
+            {
+              "name": "403 — module not subscribed",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita2" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=sub_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "sub_items" } ] } },
+              "status": "Forbidden", "code": 403, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 403,\n  \"error\": \"true\",\n  \"message\": \"This module is not subscribed\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "get_media — media file for a tapped item",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "1", "type": "text" } ] },
+            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] },
+            "description": "Called when the user taps an item in the sub-items list. `id` = content id. Returns absolute audioUrl + lyrics — but only if the caller has subscribed to the parent module (else 403)."
+          },
+          "response": [
+            {
+              "name": "200 — media",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] } },
+              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Media loaded\",\n  \"id\": 1,\n  \"title\": \"Mangalacharan\",\n  \"type\": \"audio\",\n  \"duration\": 312,\n  \"audioUrl\": \"http://localhost:5000/uploads/audio/mangalacharan.mp3\",\n  \"lyrics\": \"Om Namah Shivaya...\"\n}"
+            },
+            {
+              "name": "403 — module not subscribed",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "5" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] } },
+              "status": "Forbidden", "code": 403, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 403,\n  \"error\": \"true\",\n  \"message\": \"This module is not subscribed\"\n}"
+            },
+            {
+              "name": "404 — content not found",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "99999" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] } },
+              "status": "Not Found", "code": 404, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 404,\n  \"error\": \"true\",\n  \"message\": \"Content not found\"\n}"
+            }
+          ]
+        },
+        {
           "name": "mark_played — +1 play count for a song",
           "request": {
             "method": "POST",

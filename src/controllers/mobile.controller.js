@@ -358,6 +358,115 @@ async function get_content(req, res) {
   })
 }
 
+// ── subscribed_items ─ [auth] → only modules the user has subscribed to ─
+// Same shape as `home` but filters out modules the user does NOT own.
+// Powers the "My Subscriptions" screen: what the devotee has actually
+// unlocked, with the count of sub-items (songs) inside each.
+async function subscribed_items(req, res) {
+  const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
+  if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
+
+  const ownedEntries = Object.entries(MODULES).filter(([, m]) => user[m.flag] === 1)
+  if (!ownedEntries.length) {
+    return sendOk(res, 'No subscriptions', { items: [] })
+  }
+
+  const productIds = ownedEntries.map(([, m]) => m.productId)
+  const products = await prisma.product.findMany({ where: { id: { in: productIds } } })
+  const byId = new Map(products.map((p) => [p.id, p]))
+
+  const counts = await prisma.content.groupBy({
+    by: ['productId'],
+    where: { productId: { in: productIds }, published: true },
+    _count: { _all: true },
+  })
+  const countMap = new Map(counts.map((c) => [c.productId, c._count._all]))
+
+  const items = ownedEntries.map(([code, m]) => {
+    const p = byId.get(m.productId)
+    return {
+      code,
+      name: p?.name || code,
+      price: p?.price ?? 0,
+      itemCount: countMap.get(m.productId) || 0,
+    }
+  })
+
+  return sendOk(res, 'Subscribed items', { items })
+}
+
+// ── sub_items ─ [auth] { product } → detailed list of sub-items ─
+// Returns the published sub-items (Content rows) of a subscribed module.
+// Unlike `get_content`, this refuses outright if the user has NOT paid
+// for the module — the "My Subscriptions → detail" screen never shows
+// locked rows because it only lists modules the user already owns.
+// Media/lyrics are withheld here; the app calls `get_media` on tap.
+async function sub_items(req, res) {
+  const code = field(req, 'product')
+  if (!code) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
+
+  const m = MODULES[code]
+  if (!m) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
+
+  const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
+  if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
+  if (user[m.flag] !== 1) {
+    return sendFail(res, 'This module is not subscribed', STATUS.FORBIDDEN)
+  }
+
+  const product = await prisma.product.findUnique({ where: { id: m.productId } })
+  const rows = await prisma.content.findMany({
+    where: { productId: m.productId, published: true },
+    orderBy: { sortOrder: 'asc' },
+  })
+
+  const items = rows.map((c) => ({
+    id: c.id,
+    title: c.title,
+    type: c.type,
+    duration: c.duration,
+    sortOrder: c.sortOrder,
+    plays: c.plays,
+    hasAudio: !!c.audioUrl,
+    hasLyrics: !!c.lyrics,
+  }))
+
+  return sendOk(res, 'Sub items loaded', {
+    product: { code, name: product?.name || code, price: product?.price ?? 0 },
+    items,
+  })
+}
+
+// ── get_media ─ [auth] { id } → media file for a tapped item ───
+// Called when the user taps an item in the sub-items list. Returns
+// the absolute audio URL + lyrics, but only if the caller has paid
+// for the module that owns this content. Ownership is checked via
+// the same MODULES map used everywhere else.
+async function get_media(req, res) {
+  const id = field(req, 'id')
+  if (!id) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
+
+  const item = await prisma.content.findUnique({ where: { id: Number(id) } })
+  if (!item || !item.published) return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
+
+  const entry = Object.entries(MODULES).find(([, m]) => m.productId === item.productId)
+  if (!entry) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
+
+  const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
+  if (!user || user[entry[1].flag] !== 1) {
+    return sendFail(res, 'This module is not subscribed', STATUS.FORBIDDEN)
+  }
+
+  return sendOk(res, 'Media loaded', {
+    id: item.id,
+    title: item.title,
+    type: item.type,
+    duration: item.duration,
+    audioUrl: absUrl(req, item.audioUrl),
+    lyrics: item.lyrics || '',
+  })
+}
+
 // ── mark_played ─ [auth] { id } → +1 play count ────────────────
 // Called by the app when a song actually starts playing. Only counts if
 // the caller owns the module the song belongs to.
@@ -400,6 +509,10 @@ export const handlers = {
   home,
   get_content,
   mark_played,
+  // Subscription-scoped variants (used by the "My Subscriptions" flow).
+  subscribed_items,
+  sub_items,
+  get_media,
 }
 
 // apicalls that do NOT need a Bearer token — they run before a token
