@@ -15,6 +15,7 @@
 // module flag is set against the mobile number entered on the form.
 import { prisma } from '../lib/prisma.js'
 import { jsonSafe } from '../lib/helpers.js'
+import { normalizeMobile, isValidMobile } from '../lib/phone.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
 import { sendOtpSms } from '../lib/sms.js'
 import {
@@ -42,17 +43,56 @@ function ownedFlags(user) {
 }
 
 // Find a user by phone, or create a lightweight account (auto-register).
+// Always keyed on the canonical 10-digit number so a devotee is one account
+// no matter how the number was typed (09420…, +91 9420…, 9420…).
 async function findOrCreateUser({ mobile, name, email }) {
-  const existing = await prisma.user.findFirst({ where: { phone: mobile } })
+  const phone = normalizeMobile(mobile)
+  const existing = await prisma.user.findFirst({ where: { phone } })
   if (existing) return existing
   return prisma.user.create({
     data: {
-      name: (name || '').trim() || mobile, // fall back to the number if no name
-      phone: mobile,
+      name: (name || '').trim() || phone, // fall back to the number if no name
+      phone,
       email: (email || '').trim(),
       city: '',
     },
   })
+}
+
+// Grant purchased modules in the ROW-based model the admin panel reads from.
+// The website checkout already sets the flag columns (part1/part2/…) for the
+// mobile app; this additionally writes UserAccess + Sale rows so the purchase
+// shows up in the admin Users / Sales / Access pages (which read those tables).
+// Idempotent: safe to call from both verify-payment and the webhook.
+async function recordAccessAndSales({ userId, codes, paymentId, orderId }) {
+  for (const code of codes) {
+    const productId = MODULES[code].productId
+    const product = await prisma.product.findUnique({ where: { id: productId } })
+
+    // Access row (purchased). Upsert on the (userId, productId) unique key.
+    await prisma.userAccess.upsert({
+      where: { userId_productId: { userId, productId } },
+      update: { source: 'purchased', expiresOn: null },
+      create: { userId, productId, source: 'purchased' },
+    })
+
+    // Sale row — one per module, keyed by a unique txn id so a replayed
+    // verify-payment / webhook can't create duplicates.
+    const txnId = `${paymentId || orderId}:${code}`
+    await prisma.sale.upsert({
+      where: { txnId },
+      update: {},
+      create: {
+        txnId,
+        userId,
+        productId,
+        amount: product?.price ?? 0,
+        status: 'success',
+        ref: orderId || null,
+        gateway: 'razorpay',
+      },
+    })
+  }
 }
 
 // ── 1. GET /modules — public list with prices ─────────────────
@@ -65,11 +105,11 @@ export async function modules(req, res) {
 // account by phone (so an EXISTING app user keeps the same account and their
 // purchase attaches to it), stores an OTP, and sends it by SMS.
 export async function sendOtp(req, res) {
-  const mobile = String(req.body?.mobile ?? '').trim()
+  const mobile = normalizeMobile(req.body?.mobile)
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
-  if (!/^\d{10,15}$/.test(mobile)) {
-    return sendFail(res, 'Enter a valid mobile number', STATUS.BAD_REQUEST)
+  if (!isValidMobile(mobile)) {
+    return sendFail(res, 'Enter a valid 10-digit mobile number', STATUS.BAD_REQUEST)
   }
 
   // Find-or-create by phone: existing (incl. "Free" app) users are reused.
@@ -89,7 +129,7 @@ export async function sendOtp(req, res) {
 // Confirms the OTP for the number entered on the form. On success the OTP is
 // cleared; the frontend then proceeds to create the Razorpay order and pay.
 export async function verifyOtp(req, res) {
-  const mobile = String(req.body?.mobile ?? '').trim()
+  const mobile = normalizeMobile(req.body?.mobile)
   const otp = String(req.body?.otp ?? '').trim()
   if (!mobile || !otp) return sendFail(res, 'Enter the OTP', STATUS.BAD_REQUEST)
 
@@ -123,12 +163,12 @@ export async function createOrder(req, res) {
   if (!razorpayConfigured()) {
     return sendFail(res, 'Payment gateway not configured yet.', STATUS.SERVER_ERROR)
   }
-  const mobile = String(req.body?.mobile ?? '').trim()
+  const mobile = normalizeMobile(req.body?.mobile)
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
   const codes = readModuleCodes(req.body)
 
-  if (!mobile) return sendFail(res, 'Mobile number required', STATUS.BAD_REQUEST)
+  if (!isValidMobile(mobile)) return sendFail(res, 'Enter a valid 10-digit mobile number', STATUS.BAD_REQUEST)
   if (!name) return sendFail(res, 'Name required', STATUS.BAD_REQUEST)
   if (!codes.length) return sendFail(res, 'Select at least one module', STATUS.BAD_REQUEST)
 
@@ -142,10 +182,17 @@ export async function createOrder(req, res) {
   }
 
   // If the number already owns any of the selected modules, stop early so the
-  // devotee isn't charged twice — tell them which ones to deselect.
-  const existing = await prisma.user.findFirst({ where: { phone: mobile } })
+  // devotee isn't charged twice — tell them which ones to deselect. Ownership =
+  // a paid flag on the row OR an access grant, checked on the canonical number.
+  const existing = await prisma.user.findFirst({
+    where: { phone: mobile },
+    include: { access: true },
+  })
   if (existing) {
-    const owned = items.filter((it) => existing[it.m.flag] === 1).map((it) => it.product.name)
+    const grantedIds = new Set(existing.access.map((a) => a.productId))
+    const owned = items
+      .filter((it) => existing[it.m.flag] === 1 || grantedIds.has(it.m.productId))
+      .map((it) => it.product.name)
     if (owned.length) {
       return sendFail(res, `This number already owns: ${owned.join(', ')}. Please deselect it.`, STATUS.CONFLICT)
     }
@@ -195,7 +242,7 @@ export async function verifyPayment(req, res) {
   const orderId = String(req.body?.razorpay_order_id ?? '')
   const paymentId = String(req.body?.razorpay_payment_id ?? '')
   const signature = String(req.body?.razorpay_signature ?? '')
-  const mobile = String(req.body?.mobile ?? '').trim()
+  const mobile = normalizeMobile(req.body?.mobile)
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
   const codes = readModuleCodes(req.body)
@@ -218,6 +265,10 @@ export async function verifyPayment(req, res) {
   const unlock = { isPaid: 1 }
   for (const code of codes) unlock[MODULES[code].flag] = 1
   await prisma.user.update({ where: { id: user.id }, data: unlock })
+
+  // Mirror the purchase into the row-based tables the admin panel reads, so
+  // it shows as "Subscribed" with the module plans (not "Free").
+  await recordAccessAndSales({ userId: user.id, codes, paymentId, orderId })
 
   // Finalise the payment row (status '1' = complete, unlocked).
   await prisma.$executeRawUnsafe(
@@ -267,10 +318,11 @@ export async function webhook(req, res) {
         )
       )
       if (!rows.length || rows[0].status !== '1') {
-        const user = await findOrCreateUser({ mobile: notes.mobile, name: notes.name, email: notes.email })
+        const user = await findOrCreateUser({ mobile: normalizeMobile(notes.mobile), name: notes.name, email: notes.email })
         const unlock = { isPaid: 1 }
         for (const code of codes) unlock[MODULES[code].flag] = 1
         await prisma.user.update({ where: { id: user.id }, data: unlock })
+        await recordAccessAndSales({ userId: user.id, codes, paymentId, orderId })
         await prisma.$executeRawUnsafe(
           `UPDATE user_payment
              SET user_id = ?, razorpay_payment_id = COALESCE(razorpay_payment_id, ?),
