@@ -29,7 +29,28 @@ export async function list(req, res) {
     include: { product: true },
     orderBy: [{ productId: 'asc' }, { sortOrder: 'asc' }],
   })
-  res.json({ content: rows.map(shape), total: rows.length })
+
+  // Listeners = active subscribers to each content item's product.
+  // The `listeners` DB column is never written by the app, so we compute it
+  // from user_access: count distinct users with a non-expired grant per product.
+  const now = new Date()
+  const productIds = [...new Set(rows.map((r) => r.productId))]
+  const accessCounts = productIds.length
+    ? await prisma.userAccess.groupBy({
+        by: ['productId'],
+        where: {
+          productId: { in: productIds },
+          OR: [{ expiresOn: null }, { expiresOn: { gt: now } }],
+        },
+        _count: { _all: true },
+      })
+    : []
+  const listenerMap = new Map(accessCounts.map((a) => [a.productId, a._count._all]))
+
+  res.json({
+    content: rows.map((c) => ({ ...shape(c), listeners: listenerMap.get(c.productId) ?? 0 })),
+    total: rows.length,
+  })
 }
 
 // POST /api/content   { productId, title, audioUrl?, lyrics?, type?, published? }

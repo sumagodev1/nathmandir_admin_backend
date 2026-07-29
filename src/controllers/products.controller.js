@@ -41,17 +41,27 @@ export async function update(req, res) {
 }
 
 // DELETE /api/products/:id  — remove a part and all its content
-// Blocked if the part has purchase records (sales/access) to preserve history.
+// Blocked if the part has purchase records (sales) or active access grants.
+// Expired grants (7d/15d) are not counted — only current active subscribers block deletion.
 export async function remove(req, res) {
   const id = req.params.id
+  const now = new Date()
   const [salesCount, accessCount] = await Promise.all([
     prisma.sale.count({ where: { productId: id } }),
-    prisma.userAccess.count({ where: { productId: id } }),
+    prisma.userAccess.count({
+      where: {
+        productId: id,
+        OR: [
+          { expiresOn: null },        // permanent (purchases + permanent grants)
+          { expiresOn: { gt: now } }, // not yet expired (7d / 15d grants still active)
+        ],
+      },
+    }),
   ])
 
   if (salesCount > 0 || accessCount > 0) {
     return res.status(409).json({
-      error: `Cannot delete: this Part has ${salesCount} purchase record(s) and ${accessCount} subscriber(s). Deactivate it instead using the Edit button.`,
+      error: `Cannot delete: this Part has ${salesCount} purchase record(s) and ${accessCount} active subscriber(s). Deactivate it instead using the Edit button.`,
     })
   }
 
