@@ -38,10 +38,21 @@ export async function gallery(req, res) {
   })
 
   const shaped = albums.map(shapeAlbum)
-  // Also expose a flat photo list (handy for a single gallery grid).
-  const photos = shaped.flatMap((a) =>
-    a.photos.map((p) => ({ ...p, albumId: a.id, category: a.category, albumTitle: a.title }))
-  )
+
+  // Build a flat photo list for the website's gallery grid.
+  // For albums that have individual gallery photos, use those.
+  // For albums that only have a cover image (no photos added yet via Manage Photos),
+  // surface the cover so the album still appears on the website rather than being invisible.
+  const photos = shaped.flatMap((a) => {
+    if (a.photos.length > 0) {
+      return a.photos.map((p) => ({ ...p, albumId: a.id, category: a.category, albumTitle: a.title }))
+    }
+    if (a.cover) {
+      return [{ id: `cover-${a.id}`, url: a.cover, caption: '', albumId: a.id, category: a.category, albumTitle: a.title }]
+    }
+    return []
+  })
+
   res.json({ albums: shaped, photos, total: shaped.length })
 }
 

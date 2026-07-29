@@ -88,6 +88,42 @@ export async function create(req, res) {
   res.status(201).json({ user: shapeUserRow(user) })
 }
 
+// PATCH /api/users/:id   body: { name?, phone?, city?, email?, address? }
+export async function update(req, res) {
+  const id = Number(req.params.id)
+  if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid user id.' })
+
+  const u = await prisma.user.findUnique({ where: { id } })
+  if (!u) return res.status(404).json({ error: 'User not found.' })
+
+  const { name, phone, city, email, address } = req.body || {}
+  const data = {}
+  if (name !== undefined) {
+    const n = String(name).trim()
+    if (!n) return res.status(400).json({ error: 'Name cannot be empty.' })
+    data.name = n
+  }
+  if (phone !== undefined) {
+    const p = String(phone).trim()
+    if (!p) return res.status(400).json({ error: 'Phone cannot be empty.' })
+    data.phone = p
+  }
+  if (city !== undefined) {
+    const c = String(city).trim()
+    if (!c) return res.status(400).json({ error: 'City cannot be empty.' })
+    data.city = c
+  }
+  if (email !== undefined) data.email = String(email).trim()
+  if (address !== undefined) data.address = String(address).trim()
+
+  const updated = await prisma.user.update({
+    where: { id },
+    data,
+    include: { access: true, sales: true },
+  })
+  res.json({ user: shapeUserRow(updated) })
+}
+
 // PATCH /api/users/:id/status   body optional { status: 'active'|'disabled' }; otherwise toggles
 export async function updateStatus(req, res) {
   const id = Number(req.params.id)

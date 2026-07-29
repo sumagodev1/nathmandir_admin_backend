@@ -28,18 +28,16 @@ import {
 } from '../lib/razorpay.js'
 
 // Build the public module list (code, name, price) from the products table.
+// Returns ALL active products so newly created Parts appear on the website immediately.
 async function moduleList() {
-  const products = await prisma.product.findMany()
-  const byId = new Map(products.map((p) => [p.id, p]))
-  return Object.entries(MODULES).map(([code, m]) => {
-    const p = byId.get(m.productId)
-    return { code, name: p?.name || code, price: p?.price ?? 0 }
-  })
+  const products = await prisma.product.findMany({ where: { active: true }, orderBy: { id: 'asc' } })
+  return products.map((p) => ({ code: p.id, name: p.name, price: p.price }))
 }
 
-// Which modules a given user already owns (for the "owned" badges).
-function ownedFlags(user) {
-  return Object.fromEntries(Object.entries(MODULES).map(([code, m]) => [code, user[m.flag] === 1]))
+// Fetch all product IDs from the DB (used for code validation in orders/payments).
+async function fetchAllProductIds() {
+  const products = await prisma.product.findMany({ select: { id: true } })
+  return new Set(products.map((p) => p.id))
 }
 
 // Find a user by phone, or create a lightweight account (auto-register).
@@ -59,14 +57,13 @@ async function findOrCreateUser({ mobile, name, email }) {
   })
 }
 
-// Grant purchased modules in the ROW-based model the admin panel reads from.
-// The website checkout already sets the flag columns (part1/part2/…) for the
-// mobile app; this additionally writes UserAccess + Sale rows so the purchase
-// shows up in the admin Users / Sales / Access pages (which read those tables).
+// Grant purchased modules: write UserAccess + Sale rows.
+// user_access is the single source of truth for ownership — no flag columns are touched.
 // Idempotent: safe to call from both verify-payment and the webhook.
 async function recordAccessAndSales({ userId, codes, paymentId, orderId }) {
   for (const code of codes) {
-    const productId = MODULES[code].productId
+    // Product code IS the product ID in our DB for all products.
+    const productId = code
     const product = await prisma.product.findUnique({ where: { id: productId } })
 
     // Access row (purchased). Upsert on the (userId, productId) unique key.
@@ -142,8 +139,9 @@ export async function verifyOtp(req, res) {
 
 // Normalise the requested module code(s) from the body. Accepts either
 // `modules: ['gita1','gita2']` (new, multi-buy) or `module: 'gita1'` (single).
-// Returns a de-duplicated array of valid codes (unknown codes dropped).
-function readModuleCodes(body) {
+// Returns a de-duplicated array of valid codes (unknown product IDs dropped).
+// `validIds` is a Set<string> of known product IDs fetched from the DB.
+function readModuleCodes(body, validIds) {
   const raw = Array.isArray(body?.modules)
     ? body.modules
     : body?.module != null
@@ -152,7 +150,7 @@ function readModuleCodes(body) {
   const codes = []
   for (const c of raw) {
     const code = String(c).trim()
-    if (MODULES[code] && !codes.includes(code)) codes.push(code)
+    if (validIds.has(code) && !codes.includes(code)) codes.push(code)
   }
   return codes
 }
@@ -166,17 +164,22 @@ export async function createOrder(req, res) {
   const mobile = normalizeMobile(req.body?.mobile)
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
-  const codes = readModuleCodes(req.body)
+
+  // Validate codes against all products in the DB so newly created Parts are accepted.
+  const allProductIds = await fetchAllProductIds()
+  const codes = readModuleCodes(req.body, allProductIds)
 
   if (!isValidMobile(mobile)) return sendFail(res, 'Enter a valid 10-digit mobile number', STATUS.BAD_REQUEST)
   if (!name) return sendFail(res, 'Name required', STATUS.BAD_REQUEST)
   if (!codes.length) return sendFail(res, 'Select at least one module', STATUS.BAD_REQUEST)
 
   // Load the products for every selected module.
+  // For legacy MODULES entries use their productId; for new products the code IS the productId.
   const items = []
   for (const code of codes) {
-    const m = MODULES[code]
-    const product = await prisma.product.findUnique({ where: { id: m.productId } })
+    const m = MODULES[code] ?? null
+    const productId = m?.productId ?? code
+    const product = await prisma.product.findUnique({ where: { id: productId } })
     if (!product) return sendFail(res, `Module not found: ${code}`, STATUS.NOT_FOUND)
     items.push({ code, m, product })
   }
@@ -189,9 +192,14 @@ export async function createOrder(req, res) {
     include: { access: true },
   })
   if (existing) {
-    const grantedIds = new Set(existing.access.map((a) => a.productId))
+    const now = new Date()
+    const activeIds = new Set(
+      existing.access
+        .filter((a) => !a.expiresOn || a.expiresOn > now)
+        .map((a) => a.productId)
+    )
     const owned = items
-      .filter((it) => existing[it.m.flag] === 1 || grantedIds.has(it.m.productId))
+      .filter((it) => activeIds.has(it.m?.productId ?? it.code))
       .map((it) => it.product.name)
     if (owned.length) {
       return sendFail(res, `This number already owns: ${owned.join(', ')}. Please deselect it.`, STATUS.CONFLICT)
@@ -212,14 +220,17 @@ export async function createOrder(req, res) {
     return sendFail(res, err.message || 'Could not create order', STATUS.SERVER_ERROR)
   }
 
-  // One pending payment row per module (all share the razorpay_order_id).
+  // One pending payment row per legacy module that has a packageId.
+  // New products (no MODULES entry) skip this legacy table — access is tracked via UserAccess.
   for (const it of items) {
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO user_payment
-         (user_id, package_id, amount, razorpay_order_id, razorpay_stageOfPayment, payment_type, status, created_at)
-       VALUES (NULL, ?, ?, ?, 'created', ?, '0', NOW())`,
-      it.m.packageId, String(it.product.price), order.id, it.code
-    )
+    if (it.m?.packageId) {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO user_payment
+           (user_id, package_id, amount, razorpay_order_id, razorpay_stageOfPayment, payment_type, status, created_at)
+         VALUES (NULL, ?, ?, ?, 'created', ?, '0', NOW())`,
+        it.m.packageId, String(it.product.price), order.id, it.code
+      )
+    }
   }
 
   return sendOk(res, 'Order created', {
@@ -245,7 +256,10 @@ export async function verifyPayment(req, res) {
   const mobile = normalizeMobile(req.body?.mobile)
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
-  const codes = readModuleCodes(req.body)
+
+  // Validate codes against all products (active or not) — payment already captured.
+  const allProductIds = await fetchAllProductIds()
+  const codes = readModuleCodes(req.body, allProductIds)
 
   if (!orderId || !paymentId || !signature || !mobile || !codes.length) {
     return sendFail(res, 'Missing payment parameters', STATUS.BAD_REQUEST)
@@ -259,15 +273,10 @@ export async function verifyPayment(req, res) {
     return sendFail(res, 'Payment verification failed', STATUS.UNAUTHORIZED)
   }
 
-  // Payment is genuine → create/find the account (auto-register) and
-  // unlock EVERY purchased module against the mobile from the form.
+  // Payment is genuine → create/find the account and grant access via user_access.
+  // No flag columns are written — user_access is the single source of truth.
   const user = await findOrCreateUser({ mobile, name, email })
-  const unlock = { isPaid: 1 }
-  for (const code of codes) unlock[MODULES[code].flag] = 1
-  await prisma.user.update({ where: { id: user.id }, data: unlock })
-
-  // Mirror the purchase into the row-based tables the admin panel reads, so
-  // it shows as "Subscribed" with the module plans (not "Free").
+  await prisma.user.update({ where: { id: user.id }, data: { isPaid: 1 } })
   await recordAccessAndSales({ userId: user.id, codes, paymentId, orderId })
 
   // Finalise the payment row (status '1' = complete, unlocked).
@@ -278,10 +287,19 @@ export async function verifyPayment(req, res) {
     user.id, paymentId, orderId
   )
 
-  const fresh = await prisma.user.findUnique({ where: { id: user.id } })
+  // Build owned map from user_access so it covers ALL products (not just the 4 hardcoded ones).
+  const now = new Date()
+  const freshAccess = await prisma.userAccess.findMany({
+    where: { userId: user.id, OR: [{ expiresOn: null }, { expiresOn: { gt: now } }] },
+    select: { productId: true },
+  })
+  const ownedSet = new Set(freshAccess.map((a) => a.productId))
+  const allProducts = await prisma.product.findMany({ where: { active: true }, select: { id: true } })
+  const owned = Object.fromEntries(allProducts.map((p) => [p.id, ownedSet.has(p.id)]))
+
   return sendOk(res, 'Payment successful', {
-    user: { id: fresh.id, name: fresh.name, mobile: fresh.phone },
-    owned: ownedFlags(fresh),
+    user: { id: user.id, name: user.name, mobile: user.phone },
+    owned,
   })
 }
 
@@ -303,10 +321,12 @@ export async function webhook(req, res) {
     const paymentId = entity.id
     const notes = entity.notes || {}
     // notes.module(s) may be a single code or a comma-separated list (multi-buy).
+    // Validate against all products in DB so newly created Parts are accepted.
+    const allProductIds = await fetchAllProductIds()
     const codes = String(notes.modules || notes.module || '')
       .split(',')
       .map((c) => c.trim())
-      .filter((c) => MODULES[c])
+      .filter((c) => allProductIds.has(c))
 
     if (orderId && codes.length && notes.mobile) {
       // Idempotent: only act if this order hasn't been unlocked already
@@ -319,9 +339,7 @@ export async function webhook(req, res) {
       )
       if (!rows.length || rows[0].status !== '1') {
         const user = await findOrCreateUser({ mobile: normalizeMobile(notes.mobile), name: notes.name, email: notes.email })
-        const unlock = { isPaid: 1 }
-        for (const code of codes) unlock[MODULES[code].flag] = 1
-        await prisma.user.update({ where: { id: user.id }, data: unlock })
+        await prisma.user.update({ where: { id: user.id }, data: { isPaid: 1 } })
         await recordAccessAndSales({ userId: user.id, codes, paymentId, orderId })
         await prisma.$executeRawUnsafe(
           `UPDATE user_payment

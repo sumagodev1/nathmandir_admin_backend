@@ -39,3 +39,26 @@ export async function update(req, res) {
     res.status(404).json({ error: 'Product not found.' })
   }
 }
+
+// DELETE /api/products/:id  — remove a part and all its content
+// Blocked if the part has purchase records (sales/access) to preserve history.
+export async function remove(req, res) {
+  const id = req.params.id
+  const [salesCount, accessCount] = await Promise.all([
+    prisma.sale.count({ where: { productId: id } }),
+    prisma.userAccess.count({ where: { productId: id } }),
+  ])
+
+  if (salesCount > 0 || accessCount > 0) {
+    return res.status(409).json({
+      error: `Cannot delete: this Part has ${salesCount} purchase record(s) and ${accessCount} subscriber(s). Deactivate it instead using the Edit button.`,
+    })
+  }
+
+  try {
+    await prisma.product.delete({ where: { id } })
+    res.json({ ok: true })
+  } catch {
+    res.status(404).json({ error: 'Part not found.' })
+  }
+}

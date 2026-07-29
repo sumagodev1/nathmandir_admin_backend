@@ -14,5 +14,6 @@ router.get('/', users.list)
 router.get('/:id', users.get)
 router.post('/', users.create)
 router.patch('/:id/status', users.updateStatus)
+router.patch('/:id', users.update)
 
 export default router

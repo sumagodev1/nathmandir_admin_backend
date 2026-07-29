@@ -1,14 +1,4 @@
 // Small shared helpers used across routes.
-import { MODULES } from './razorpay.js'
-
-// Module codes a user owns via the paid FLAG columns on their row
-// (part1/part2/upasanaPaid/nityaniyamPaid). Website purchases set these, so
-// this makes flag-only buyers show as subscribed even before/without a
-// matching UserAccess row.
-const flagOwnedCodes = (u) =>
-  Object.entries(MODULES)
-    .filter(([, m]) => u[m.flag] === 1)
-    .map(([, m]) => m.productId)
 
 // ── Pagination ────────────────────────────────────────────────
 // Slice an already-built (and already-filtered) array using the
@@ -65,9 +55,12 @@ export const grantExpiry = (durationKey, fromDate = new Date()) => {
 
 // Shape a user (with `access` + `sales` included) into the row the UI expects.
 export const shapeUserRow = (u) => {
-  // Union of access rows and paid-flag modules, so a website purchase (which
-  // sets flags) shows the same as a manual grant (which writes UserAccess).
-  const access = [...new Set([...u.access.map((a) => a.productId), ...flagOwnedCodes(u)])]
+  // Ownership comes solely from user_access rows. Expired rows are excluded so
+  // the "subscribed" badge and access list reflect what the user can actually use.
+  const now = new Date()
+  const access = u.access
+    .filter((a) => !a.expiresOn || a.expiresOn > now)
+    .map((a) => a.productId)
   const totalPaid = u.sales.reduce((sum, s) => sum + s.amount, 0)
   const saleDates = u.sales.map((s) => ymd(s.createdAt)).sort()
   return {

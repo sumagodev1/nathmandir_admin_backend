@@ -12,5 +12,6 @@ router.use(requireAuth)
 router.get('/', products.list)
 router.post('/', products.create)
 router.patch('/:id', products.update)
+router.delete('/:id', products.remove)
 
 export default router

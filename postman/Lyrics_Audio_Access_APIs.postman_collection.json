@@ -1,0 +1,323 @@
+{
+  "info": {
+    "name": "Nathmandir — Lyrics & Audio Access (Modified APIs)",
+    "description": "Contains ONLY the two existing Mobile APIs that were modified to implement the Lyrics/Audio access rule:\n\n  • Unpaid User  → lyrics returned, audioUrl = null, locked = true\n  • Paid User    → lyrics returned, audioUrl = full URL, locked = false\n\nNo new APIs were created. These are existing apicall handlers inside POST /api/mobile.",
+    "_postman_id": "nathmandir-lyrics-audio-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "description": "Backend base URL. Change to your production URL when deploying."
+    },
+    {
+      "key": "paid_token",
+      "value": "REPLACE_WITH_PAID_USER_JWT",
+      "description": "JWT for a paid user (has rows in user_access table). Obtain via apicall=verifyOTP."
+    },
+    {
+      "key": "free_token",
+      "value": "REPLACE_WITH_FREE_USER_JWT",
+      "description": "JWT for an unpaid user (no rows in user_access table). Obtain via apicall=verifyOTP."
+    }
+  ],
+  "item": [
+    {
+      "name": "1. get_content — Content list with Lyrics + Audio gating",
+      "description": "Returns the published song list for a module.\n\nLyrics rule (implemented in get_content function, mobile.controller.js):\n  - lyrics field: ALWAYS returned regardless of subscription\n  - audioUrl field: returned only when user owns the module; null otherwise\n  - locked field: true = unpaid, false = paid\n\nThis folder contains two example requests — one for each user type.",
+      "item": [
+        {
+          "name": "get_content — UNPAID USER (locked=true, audioUrl=null, lyrics visible)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{free_token}}",
+                "type": "text",
+                "description": "JWT for a user who has NOT purchased this module"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/mobile?apicall=get_content",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile"],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "get_content",
+                  "description": "Existing apicall value — not a new API"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"upasana\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Calls the existing get_content handler for an unpaid user.\n\nExpected behavior:\n  - owned: false\n  - locked: true  (on every content item)\n  - audioUrl: null  (audio is blocked)\n  - lyrics: returned as a non-empty string (FREE to all logged-in users)\n\nThe app uses 'locked' to show/hide the audio player button.\nThe app uses 'lyrics' to display the text — always visible."
+          },
+          "response": [
+            {
+              "name": "Unpaid User — lyrics visible, audio locked",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Content loaded\",\n  \"owned\": false,\n  \"product\": {\n    \"code\": \"upasana\",\n    \"name\": \"Upasana Part\",\n    \"price\": 151\n  },\n  \"content\": [\n    {\n      \"id\": 8,\n      \"title\": \"Upasana — Morning Chant\",\n      \"type\": \"audio\",\n      \"duration\": 0,\n      \"sortOrder\": 1,\n      \"plays\": 0,\n      \"locked\": true,\n      \"audioUrl\": null,\n      \"lyrics\": \"\"\n    },\n    {\n      \"id\": 9,\n      \"title\": \"Upasana — Evening Aarti\",\n      \"type\": \"audio\",\n      \"duration\": 0,\n      \"sortOrder\": 2,\n      \"plays\": 0,\n      \"locked\": true,\n      \"audioUrl\": null,\n      \"lyrics\": \"\"\n    },\n    {\n      \"id\": 14,\n      \"title\": \"krishna rinngtone\",\n      \"type\": \"audio\",\n      \"duration\": 0,\n      \"sortOrder\": 0,\n      \"plays\": 0,\n      \"locked\": true,\n      \"audioUrl\": null,\n      \"lyrics\": \"\\u0913\\u0902 \\u0928\\u092e\\u094b \\u092d\\u0917\\u0935\\u0924\\u0947 \\u0935\\u093e\\u0938\\u0941\\u0926\\u0947\\u0935\\u093e\\u092f \\u0964\\n\\u0915\\u0943\\u0937\\u094d\\u0923\\u093e\\u092f \\u0935\\u093e\\u0938\\u0941\\u0926\\u0947\\u0935\\u093e\\u092f \\u0939\\u0930\\u092f\\u0947 \\u092a\\u0930\\u092e\\u093e\\u0924\\u094d\\u092e\\u0928\\u0947 \\u0964\\n\\u092a\\u094d\\u0930\\u0923\\u0924\\u0915\\u094d\\u0932\\u0947\\u0936\\u0928\\u093e\\u0936\\u093e\\u092f \\u0917\\u094b\\u0935\\u093f\\u0928\\u094d\\u0926\\u093e\\u092f \\u0928\\u092e\\u094b \\u0928\\u092e\\u0903 \\u0964\\u0964\"\n    }\n  ]\n}",
+              "_postman_previewlanguage": "json",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{free_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/mobile?apicall=get_content",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "mobile"],
+                  "query": [{ "key": "apicall", "value": "get_content" }]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product\": \"upasana\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "get_content — PAID USER (locked=false, audioUrl=URL, lyrics visible)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{paid_token}}",
+                "type": "text",
+                "description": "JWT for a user who HAS purchased this module (has a row in user_access)"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/mobile?apicall=get_content",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile"],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "get_content",
+                  "description": "Existing apicall value — not a new API"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"upasana\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Calls the existing get_content handler for a paid user.\n\nExpected behavior:\n  - owned: true\n  - locked: false  (on every content item)\n  - audioUrl: full URL to the audio file\n  - lyrics: returned as a non-empty string\n\nBoth lyrics AND audio are accessible for a paid user."
+          },
+          "response": [
+            {
+              "name": "Paid User — lyrics visible + audio unlocked",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Content loaded\",\n  \"owned\": true,\n  \"product\": {\n    \"code\": \"upasana\",\n    \"name\": \"Upasana Part\",\n    \"price\": 151\n  },\n  \"content\": [\n    {\n      \"id\": 8,\n      \"title\": \"Upasana — Morning Chant\",\n      \"type\": \"audio\",\n      \"duration\": 0,\n      \"sortOrder\": 1,\n      \"plays\": 0,\n      \"locked\": false,\n      \"audioUrl\": null,\n      \"lyrics\": \"\"\n    },\n    {\n      \"id\": 9,\n      \"title\": \"Upasana — Evening Aarti\",\n      \"type\": \"audio\",\n      \"duration\": 0,\n      \"sortOrder\": 2,\n      \"plays\": 0,\n      \"locked\": false,\n      \"audioUrl\": null,\n      \"lyrics\": \"\"\n    },\n    {\n      \"id\": 14,\n      \"title\": \"krishna rinngtone\",\n      \"type\": \"audio\",\n      \"duration\": 0,\n      \"sortOrder\": 0,\n      \"plays\": 0,\n      \"locked\": false,\n      \"audioUrl\": \"http://localhost:5000/uploads/audio/1784804103746-845940-krishna-ringtone.mp3\",\n      \"lyrics\": \"\\u0913\\u0902 \\u0928\\u092e\\u094b \\u092d\\u0917\\u0935\\u0924\\u0947 \\u0935\\u093e\\u0938\\u0941\\u0926\\u0947\\u0935\\u093e\\u092f \\u0964\\n\\u0915\\u0943\\u0937\\u094d\\u0923\\u093e\\u092f \\u0935\\u093e\\u0938\\u0941\\u0926\\u0947\\u0935\\u093e\\u092f \\u0939\\u0930\\u092f\\u0947 \\u092a\\u0930\\u092e\\u093e\\u0924\\u094d\\u092e\\u0928\\u0947 \\u0964\\n\\u092a\\u094d\\u0930\\u0923\\u0924\\u0915\\u094d\\u0932\\u0947\\u0936\\u0928\\u093e\\u0936\\u093e\\u092f \\u0917\\u094b\\u0935\\u093f\\u0928\\u094d\\u0926\\u093e\\u092f \\u0928\\u092e\\u094b \\u0928\\u092e\\u0903 \\u0964\\u0964\"\n    }\n  ]\n}",
+              "_postman_previewlanguage": "json",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{paid_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/mobile?apicall=get_content",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "mobile"],
+                  "query": [{ "key": "apicall", "value": "get_content" }]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product\": \"upasana\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. get_media — Single item Lyrics + Audio gating",
+      "description": "Called when the user taps a single song. Returns lyrics and optionally the audio URL.\n\nLyrics rule (implemented in get_media function, mobile.controller.js):\n  - lyrics field: ALWAYS returned regardless of subscription\n  - audioUrl field: returned only when user owns the module; null otherwise\n  - locked field: true = unpaid, false = paid\n\nThis folder contains two example requests — one for each user type.",
+      "item": [
+        {
+          "name": "get_media — UNPAID USER (locked=true, audioUrl=null, lyrics visible)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{free_token}}",
+                "type": "text",
+                "description": "JWT for a user who has NOT purchased the module this content belongs to"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/mobile?apicall=get_media",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile"],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "get_media",
+                  "description": "Existing apicall value — not a new API"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"14\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Calls the existing get_media handler for an unpaid user.\n\n'id' is the content item ID (integer). The server looks up which product this\nitem belongs to and checks user_access for ownership.\n\nExpected behavior:\n  - locked: true\n  - audioUrl: null  (audio is blocked)\n  - lyrics: returned (free to all logged-in users)\n\nContent id=14 belongs to product 'upasana'.\nThis user has no row in user_access for 'upasana', so audio is blocked."
+          },
+          "response": [
+            {
+              "name": "Unpaid User — lyrics visible, audio locked",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Media loaded\",\n  \"id\": 14,\n  \"title\": \"krishna rinngtone\",\n  \"type\": \"audio\",\n  \"duration\": 0,\n  \"audioUrl\": null,\n  \"lyrics\": \"\\u0913\\u0902 \\u0928\\u092e\\u094b \\u092d\\u0917\\u0935\\u0924\\u0947 \\u0935\\u093e\\u0938\\u0941\\u0926\\u0947\\u0935\\u093e\\u092f \\u0964\\n\\u0915\\u0943\\u0937\\u094d\\u0923\\u093e\\u092f \\u0935\\u093e\\u0938\\u0941\\u0926\\u0947\\u0935\\u093e\\u092f \\u0939\\u0930\\u092f\\u0947 \\u092a\\u0930\\u092e\\u093e\\u0924\\u094d\\u092e\\u0928\\u0947 \\u0964\\n\\u092a\\u094d\\u0930\\u0923\\u0924\\u0915\\u094d\\u0932\\u0947\\u0936\\u0928\\u093e\\u0936\\u093e\\u092f \\u0917\\u094b\\u0935\\u093f\\u0928\\u094d\\u0926\\u093e\\u092f \\u0928\\u092e\\u094b \\u0928\\u092e\\u0903 \\u0964\\u0964\",\n  \"locked\": true\n}",
+              "_postman_previewlanguage": "json",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{free_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/mobile?apicall=get_media",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "mobile"],
+                  "query": [{ "key": "apicall", "value": "get_media" }]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": \"14\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "get_media — PAID USER (locked=false, audioUrl=URL, lyrics visible)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{paid_token}}",
+                "type": "text",
+                "description": "JWT for a user who HAS purchased the module this content belongs to"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/mobile?apicall=get_media",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile"],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "get_media",
+                  "description": "Existing apicall value — not a new API"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"14\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Calls the existing get_media handler for a paid user.\n\n'id' is the content item ID (integer). The server looks up which product this\nitem belongs to and checks user_access for ownership.\n\nExpected behavior:\n  - locked: false\n  - audioUrl: full URL to the audio file\n  - lyrics: returned\n\nContent id=14 belongs to product 'upasana'.\nThis user has a row in user_access for 'upasana' (source=purchased, expiresOn=null),\nso both lyrics and audio are returned."
+          },
+          "response": [
+            {
+              "name": "Paid User — lyrics visible + audio unlocked",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Media loaded\",\n  \"id\": 14,\n  \"title\": \"krishna rinngtone\",\n  \"type\": \"audio\",\n  \"duration\": 0,\n  \"audioUrl\": \"http://localhost:5000/uploads/audio/1784804103746-845940-krishna-ringtone.mp3\",\n  \"lyrics\": \"\\u0913\\u0902 \\u0928\\u092e\\u094b \\u092d\\u0917\\u0935\\u0924\\u0947 \\u0935\\u093e\\u0938\\u0941\\u0926\\u0947\\u0935\\u093e\\u092f \\u0964\\n\\u0915\\u0943\\u0937\\u094d\\u0923\\u093e\\u092f \\u0935\\u093e\\u0938\\u0941\\u0926\\u0947\\u0935\\u093e\\u092f \\u0939\\u0930\\u092f\\u0947 \\u092a\\u0930\\u092e\\u093e\\u0924\\u094d\\u092e\\u0928\\u0947 \\u0964\\n\\u092a\\u094d\\u0930\\u0923\\u0924\\u0915\\u094d\\u0932\\u0947\\u0936\\u0928\\u093e\\u0936\\u093e\\u092f \\u0917\\u094b\\u0935\\u093f\\u0928\\u094d\\u0926\\u093e\\u092f \\u0928\\u092e\\u094b \\u0928\\u092e\\u0903 \\u0964\\u0964\",\n  \"locked\": false\n}",
+              "_postman_previewlanguage": "json",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{paid_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/mobile?apicall=get_media",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "mobile"],
+                  "query": [{ "key": "apicall", "value": "get_media" }]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": \"14\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

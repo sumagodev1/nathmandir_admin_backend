@@ -18,7 +18,6 @@ import { prisma } from '../lib/prisma.js'
 import { jsonSafe } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
-import { MODULES } from '../lib/razorpay.js'
 
 // Read a POST field (falls back to query string), matching PHP $_POST.
 const field = (req, key) => {
@@ -41,35 +40,54 @@ const absUrl = (req, ref) => {
   return `${base}${ref.startsWith('/') ? '' : '/'}${ref}`
 }
 
-// Does this user own the module identified by its website `code`?
-// Access is stored as an integer flag on the user row (1 = owned).
-const ownsModule = (user, code) => {
-  const m = MODULES[code]
-  return !!m && user[m.flag] === 1
+// Returns the Set of product IDs the user currently owns.
+// Reads only from user_access (the single source of truth after migration).
+// Expired rows (expiresOn in the past) are excluded — only active grants count.
+async function getOwnedProductIds(userId) {
+  const now = new Date()
+  const access = await prisma.userAccess.findMany({
+    where: {
+      userId,
+      OR: [
+        { expiresOn: null },        // permanent (purchases + perm grants)
+        { expiresOn: { gt: now } }, // not yet expired (7d / 15d grants still active)
+      ],
+    },
+    select: { productId: true },
+  })
+  return new Set(access.map((a) => a.productId))
 }
 
-// Shape a Prisma user as the PHP `user` row the app expects.
-const toPhpUser = (u) => ({
-  id: u.id,
-  name: u.name,
-  mobile: u.phone,
-  email: u.email || '',
-  city: u.city || '',
-  address: u.address || '',
-  otp: u.otp || '',
-  active: u.status === 'active' ? 1 : 0,
-  isPaid: u.isPaid ?? 0,
-  donation: u.donation ?? 0,
-  donation_audio: u.donationAudio ?? 0,
-  amount: u.amount || '',
-  Part_1: u.part1 ?? 0,
-  Part_2: u.part2 ?? 0,
-  // Upasana & Nityaniyam unlocks — needed so the app can gate all 4
-  // modules (previously missing, so those modules never unlocked).
-  upasanaPaid: u.upasanaPaid ?? 0,
-  nityaniyamPaid: u.nityaniyamPaid ?? 0,
-  token: u.token || '',
-})
+// Shape a Prisma user (with access included) as the PHP `user` row the app expects.
+// Part_1, Part_2, upasanaPaid, nityaniyamPaid are computed from user_access rows
+// (not from flag columns) so they remain accurate for newly purchased products.
+const toPhpUser = (u) => {
+  const now = new Date()
+  const owned = new Set(
+    (u.access || [])
+      .filter((a) => !a.expiresOn || a.expiresOn > now)
+      .map((a) => a.productId)
+  )
+  return {
+    id: u.id,
+    name: u.name,
+    mobile: u.phone,
+    email: u.email || '',
+    city: u.city || '',
+    address: u.address || '',
+    otp: u.otp || '',
+    active: u.status === 'active' ? 1 : 0,
+    isPaid: u.isPaid ?? 0,
+    donation: u.donation ?? 0,
+    donation_audio: u.donationAudio ?? 0,
+    amount: u.amount || '',
+    Part_1: owned.has('gita1') ? 1 : 0,
+    Part_2: owned.has('gita2') ? 1 : 0,
+    upasanaPaid: owned.has('upasana') ? 1 : 0,
+    nityaniyamPaid: owned.has('nithya') ? 1 : 0,
+    token: u.token || '',
+  }
+}
 
 // ── loginuser ─ POST { mobile } → generate + send OTP ──────────
 async function loginuser(req, res) {
@@ -125,9 +143,11 @@ async function verifyOTP(req, res) {
     )
   }
 
+  // Reload with access so toPhpUser can compute Part_1/Part_2/etc. from user_access.
+  const freshUser = await prisma.user.findUnique({ where: { id: user.id }, include: { access: true } })
   return sendOk(res, 'Login Success', {
     token,
-    data: toPhpUser({ ...user, otp: '', status: 'active', token }),
+    data: toPhpUser({ ...freshUser, otp: '', status: 'active', token }),
   })
 }
 
@@ -206,11 +226,21 @@ async function save_payment(req, res) {
       paymentStatus
     )
 
-    // Mirror the PHP user update: mark paid + set the purchased part(s).
-    const data = { donationAudio: 1, isPaid: 1, amount }
-    if (field(req, 'partOne') === '1') data.part1 = 1
-    if (field(req, 'partTwo') === '1') data.part2 = 1
-    await prisma.user.update({ where: { id: Number(userId) }, data })
+    // Mark the user as paid (general flag — not product-specific).
+    await prisma.user.update({ where: { id: Number(userId) }, data: { donationAudio: 1, isPaid: 1, amount } })
+
+    // Write product ownership to user_access (the single source of truth).
+    // Never write to flag columns — user_access is product-agnostic and scalable.
+    const accessCodes = []
+    if (field(req, 'partOne') === '1') accessCodes.push('gita1')
+    if (field(req, 'partTwo') === '1') accessCodes.push('gita2')
+    for (const productId of accessCodes) {
+      await prisma.userAccess.upsert({
+        where: { userId_productId: { userId: Number(userId), productId } },
+        update: { source: 'purchased', expiresOn: null },
+        create: { userId: Number(userId), productId, source: 'purchased' },
+      })
+    }
 
     return sendOk(res, 'Payment Save Successfully', {}, STATUS.CREATED)
   } catch {
@@ -236,14 +266,14 @@ async function check_status(req, res) {
   const mobile = field(req, 'mobile')
   if (!mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
-  const user = await prisma.user.findFirst({ where: { phone: mobile } })
+  const user = await prisma.user.findFirst({ where: { phone: mobile }, include: { access: true } })
   if (!user) return sendFail(res, 'Inactive User', STATUS.NOT_FOUND)
   return sendOk(res, 'Active User Save Successfully', { data: toPhpUser(user) })
 }
 
 // ── fetch_user / audio_donation_user ─ all users ───────────────
 async function fetch_user(req, res) {
-  const users = await prisma.user.findMany({ orderBy: { id: 'asc' } })
+  const users = await prisma.user.findMany({ orderBy: { id: 'asc' }, include: { access: true } })
   if (!users.length) return sendFail(res, 'Credentials not matched', STATUS.NOT_FOUND)
   return sendOk(res, 'User loaded', { data: users.map(toPhpUser) })
 }
@@ -283,17 +313,17 @@ async function check_active_session(req, res) {
   return sendFail(res, 'Is Logged Out', STATUS.UNAUTHORIZED)
 }
 
-// ── home ─ [auth] → all modules with owned flag + song counts ──
-// Drives the app's home screen: which of the 4 modules are unlocked for
-// THIS logged-in user, their price/name, and how many songs each has.
+// ── home ─ [auth] → all active modules with owned flag + song counts ──
+// Drives the app's home screen. DB-driven: newly created Parts appear
+// automatically without any code change.
 async function home(req, res) {
   const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
   if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
 
-  const products = await prisma.product.findMany()
-  const byId = new Map(products.map((p) => [p.id, p]))
+  // All active products from DB — no hardcoded list
+  const products = await prisma.product.findMany({ where: { active: true }, orderBy: { id: 'asc' } })
 
-  // Published-song count per module (for the badge under each module).
+  // Published-song count per module (for the badge under each module)
   const counts = await prisma.content.groupBy({
     by: ['productId'],
     where: { published: true },
@@ -301,77 +331,78 @@ async function home(req, res) {
   })
   const countMap = new Map(counts.map((c) => [c.productId, c._count._all]))
 
-  const modules = Object.entries(MODULES).map(([code, m]) => {
-    const p = byId.get(m.productId)
-    return {
-      code,
-      name: p?.name || code,
-      price: p?.price ?? 0,
-      owned: user[m.flag] === 1,
-      songCount: countMap.get(m.productId) || 0,
-    }
-  })
+  // Owned product IDs (legacy flag columns + UserAccess table)
+  const ownedIds = await getOwnedProductIds(user.id)
+
+  const modules = products.map((p) => ({
+    code: p.id,
+    name: p.name,
+    price: p.price,
+    owned: ownedIds.has(p.id),
+    songCount: countMap.get(p.id) || 0,
+  }))
 
   return sendOk(res, 'Modules', { modules })
 }
 
 // ── get_content ─ [auth] { product } → songs of a module ───────
 // Returns the published songs/lyrics of a module. The user is taken from
-// the Bearer token (not a param) so ownership can't be spoofed. If the
-// user has NOT purchased the module, titles are still listed (locked=true)
-// but audioUrl & lyrics are withheld — the app shows a locked state.
+// the Bearer token (not a param) so ownership can't be spoofed.
+// Lyrics are always returned (free for all users).
+// audioUrl is withheld until the module is owned — the app shows a locked state.
 async function get_content(req, res) {
   const code = field(req, 'product')
   if (!code) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
-  const m = MODULES[code]
-  if (!m) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
+  // Validate against DB — accepts any product, not just the 4 hardcoded ones
+  const product = await prisma.product.findUnique({ where: { id: code } })
+  if (!product) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
 
   const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
   if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
 
-  const owned = user[m.flag] === 1
-  const product = await prisma.product.findUnique({ where: { id: m.productId } })
+  const ownedIds = await getOwnedProductIds(user.id)
+  const owned = ownedIds.has(code)
 
   const rows = await prisma.content.findMany({
-    where: { productId: m.productId, published: true },
+    where: { productId: code, published: true },
     orderBy: { sortOrder: 'asc' },
   })
 
   const content = rows.map((c) => ({
     id: c.id,
     title: c.title,
-    type: c.type, // 'audio' | 'text'
-    duration: c.duration, // seconds
+    type: c.type,
+    duration: c.duration,
     sortOrder: c.sortOrder,
     plays: c.plays,
     locked: !owned,
-    // Withhold the actual media/lyrics until the module is owned.
     audioUrl: owned ? absUrl(req, c.audioUrl) : null,
-    lyrics: owned ? c.lyrics || '' : null,
+    lyrics: c.lyrics || '',
   }))
 
   return sendOk(res, 'Content loaded', {
     owned,
-    product: { code, name: product?.name || code, price: product?.price ?? 0 },
+    product: { code, name: product.name, price: product.price },
     content,
   })
 }
 
 // ── subscribed_items ─ [auth] → only modules the user has subscribed to ─
 // Same shape as `home` but filters out modules the user does NOT own.
-// Powers the "My Subscriptions" screen: what the devotee has actually
-// unlocked, with the count of sub-items (songs) inside each.
+// Powers the "My Subscriptions" screen. DB-driven: new Parts appear here
+// immediately after purchase with no code changes required.
 async function subscribed_items(req, res) {
   const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
   if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
 
-  const ownedEntries = Object.entries(MODULES).filter(([, m]) => user[m.flag] === 1)
-  if (!ownedEntries.length) {
+  // Owned product IDs from both legacy flags and UserAccess (covers all products)
+  const ownedIds = await getOwnedProductIds(user.id)
+  if (!ownedIds.size) {
     return sendOk(res, 'No subscriptions', { items: [] })
   }
 
-  const productIds = ownedEntries.map(([, m]) => m.productId)
+  const productIds = [...ownedIds]
   const products = await prisma.product.findMany({ where: { id: { in: productIds } } })
   const byId = new Map(products.map((p) => [p.id, p]))
 
@@ -382,13 +413,13 @@ async function subscribed_items(req, res) {
   })
   const countMap = new Map(counts.map((c) => [c.productId, c._count._all]))
 
-  const items = ownedEntries.map(([code, m]) => {
-    const p = byId.get(m.productId)
+  const items = productIds.map((id) => {
+    const p = byId.get(id)
     return {
-      code,
-      name: p?.name || code,
+      code: id,
+      name: p?.name || id,
       price: p?.price ?? 0,
-      itemCount: countMap.get(m.productId) || 0,
+      itemCount: countMap.get(id) || 0,
     }
   })
 
@@ -405,18 +436,20 @@ async function sub_items(req, res) {
   const code = field(req, 'product')
   if (!code) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
-  const m = MODULES[code]
-  if (!m) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
+  // Validate against DB — accepts any product, not just the 4 hardcoded ones
+  const product = await prisma.product.findUnique({ where: { id: code } })
+  if (!product) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
 
   const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
   if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
-  if (user[m.flag] !== 1) {
+
+  const ownedIds = await getOwnedProductIds(user.id)
+  if (!ownedIds.has(code)) {
     return sendFail(res, 'This module is not subscribed', STATUS.FORBIDDEN)
   }
 
-  const product = await prisma.product.findUnique({ where: { id: m.productId } })
   const rows = await prisma.content.findMany({
-    where: { productId: m.productId, published: true },
+    where: { productId: code, published: true },
     orderBy: { sortOrder: 'asc' },
   })
 
@@ -432,16 +465,16 @@ async function sub_items(req, res) {
   }))
 
   return sendOk(res, 'Sub items loaded', {
-    product: { code, name: product?.name || code, price: product?.price ?? 0 },
+    product: { code, name: product.name, price: product.price },
     items,
   })
 }
 
 // ── get_media ─ [auth] { id } → media file for a tapped item ───
-// Called when the user taps an item in the sub-items list. Returns
-// the absolute audio URL + lyrics, but only if the caller has paid
-// for the module that owns this content. Ownership is checked via
-// the same MODULES map used everywhere else.
+// Called when the user taps an item. Lyrics are returned for all logged-in
+// users (no subscription required). audioUrl is only returned when the user
+// owns the module; otherwise audioUrl is null and locked is true so the app
+// can show the locked audio state without blocking the lyrics view.
 async function get_media(req, res) {
   const id = field(req, 'id')
   if (!id) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
@@ -449,21 +482,21 @@ async function get_media(req, res) {
   const item = await prisma.content.findUnique({ where: { id: Number(id) } })
   if (!item || !item.published) return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
 
-  const entry = Object.entries(MODULES).find(([, m]) => m.productId === item.productId)
-  if (!entry) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
-
   const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
-  if (!user || user[entry[1].flag] !== 1) {
-    return sendFail(res, 'This module is not subscribed', STATUS.FORBIDDEN)
-  }
+  if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
+
+  // Check ownership by productId — works for all products via UserAccess + legacy flags
+  const ownedIds = await getOwnedProductIds(user.id)
+  const owned = ownedIds.has(item.productId)
 
   return sendOk(res, 'Media loaded', {
     id: item.id,
     title: item.title,
     type: item.type,
     duration: item.duration,
-    audioUrl: absUrl(req, item.audioUrl),
+    audioUrl: owned ? absUrl(req, item.audioUrl) : null,
     lyrics: item.lyrics || '',
+    locked: !owned,
   })
 }
 
@@ -478,9 +511,11 @@ async function mark_played(req, res) {
     const item = await prisma.content.findUnique({ where: { id: Number(id) } })
     if (!item) return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
 
-    const entry = Object.entries(MODULES).find(([, m]) => m.productId === item.productId)
     const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
-    if (!entry || !user || user[entry[1].flag] !== 1) {
+    if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
+
+    const ownedIds = await getOwnedProductIds(user.id)
+    if (!ownedIds.has(item.productId)) {
       return sendFail(res, 'This module is not unlocked for you', STATUS.FORBIDDEN)
     }
 
