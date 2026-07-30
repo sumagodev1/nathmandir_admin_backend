@@ -103,6 +103,9 @@ model User {
   access UserAccess[]
   sales  Sale[]
 
+  @@index([phone]) // mobile app OTP login + admin search
+  @@index([status])
+  @@index([registeredOn])
   @@map("users")
 }
 
@@ -123,6 +126,8 @@ model Content {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
+  @@index([productId, sortOrder]) // matches the list orderBy exactly
+  @@index([published])
   @@map("content")
 }
 
@@ -140,6 +145,8 @@ model UserAccess {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+  @@index([productId]) // groupBy productId (listeners, dashboard, content)
+  @@index([expiresOn]) // active-vs-expired filtering
   @@map("user_access")
 }
 
@@ -160,6 +167,8 @@ model Sale {
 
   @@index([userId])
   @@index([productId])
+  @@index([status])
+  @@index([createdAt]) // sales/revenue date-range reports
   @@map("sales")
 }
 
@@ -172,6 +181,8 @@ model Notification {
   reach    Int      @default(0)
   sentOn   DateTime @default(now()) @map("sent_on")
 
+  @@index([sentOn])
+  @@index([audience])
   @@map("notifications")
 }
 
@@ -188,6 +199,8 @@ model Book {
 
   chapters Chapter[]
 
+  @@index([published, category]) // public library listing
+  @@index([sortOrder])
   @@map("books")
 }
 
@@ -201,6 +214,7 @@ model Chapter {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@index([bookId])
+  @@index([bookId, sortOrder])
   @@map("chapters")
 }
 
@@ -215,6 +229,7 @@ model Album {
 
   photos Photo[]
 
+  @@index([published, category]) // public gallery listing
   @@map("albums")
 }
 
@@ -228,6 +243,7 @@ model Photo {
   album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
 
   @@index([albumId])
+  @@index([albumId, sortOrder])
   @@map("photos")
 }
 
@@ -240,6 +256,7 @@ model Page {
   published Boolean  @default(true)
   updatedOn DateTime @default(now()) @updatedAt @map("updated_on")
 
+  @@index([published])
   @@map("pages")
 }
 

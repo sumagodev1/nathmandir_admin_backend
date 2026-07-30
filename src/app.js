@@ -2,6 +2,7 @@
 // Builds the app and mounts all API routes. server.js starts it.
 import express from 'express'
 import cors from 'cors'
+import compression from 'compression'
 import { prisma } from './lib/prisma.js'
 import uploadsRoutes, { UPLOADS_ROOT } from './routes/uploads.routes.js'
 import authRoutes from './routes/auth.routes.js'
@@ -34,13 +35,39 @@ export const app = express()
 app.set('trust proxy', true)
 
 app.use(cors())         // allow the React admin panel to call this API
+
+// gzip every response above 1 KB. The admin list endpoints return sizeable
+// JSON (users ≈170 KB, payments ≈275 KB, access ≈187 KB) and this cuts them by
+// roughly 85–90%, which is where most of the "loading is slow" time went.
+app.use(compression({ threshold: 1024 }))
+
 // Parse JSON, keeping the raw bytes on req.rawBody so the Razorpay webhook
 // can verify its signature (which is computed over the exact raw body).
 app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf } }))
 app.use(express.urlencoded({ extended: true })) // parse form fields (mobile app / API.php style)
 
-// Serve uploaded files (audio, images) — public, no auth (mobile app fetches directly)
-app.use('/uploads', express.static(UPLOADS_ROOT))
+// Serve uploaded files (audio, images) — public, no auth (mobile app fetches directly).
+// Uploaded files are written under a unique name and never rewritten in place,
+// so browsers and the mobile app can cache them hard: repeat page views skip
+// the download entirely instead of re-fetching every image and audio file.
+app.use(
+  '/uploads',
+  express.static(UPLOADS_ROOT, {
+    maxAge: '365d',
+    immutable: true,
+    etag: true,
+    lastModified: true,
+  })
+)
+
+// Public + admin GETs are revalidated with the ETag Express already generates:
+// "no-cache" means the browser always asks, but an unchanged response comes
+// back as a bodyless 304 instead of the full payload. That keeps the website
+// and panel showing live data while making repeat loads near-instant.
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET') res.set('Cache-Control', 'no-cache')
+  next()
+})
 
 // Health check — open http://localhost:5000/
 app.get('/', async (req, res) => {

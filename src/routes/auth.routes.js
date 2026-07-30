@@ -2,6 +2,7 @@
 // POST /api/auth/login            — email + password → JWT token
 // GET  /api/auth/me               — current admin (from token)
 // POST /api/auth/logout           — stateless; client just discards the token
+// PATCH /api/auth/profile         — { name?, email? } → updated admin + fresh token
 // POST /api/auth/change-password  — { currentPassword, newPassword }
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
@@ -12,6 +13,7 @@ const router = Router()
 router.post('/login', auth.login)
 router.get('/me', requireAuth, auth.me)
 router.post('/logout', requireAuth, auth.logout)
+router.patch('/profile', requireAuth, auth.updateProfile)
 router.post('/change-password', requireAuth, auth.changePassword)
 
 export default router

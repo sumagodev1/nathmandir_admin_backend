@@ -13,10 +13,30 @@ const CATEGORY_LABEL = {
   general: 'General Donation',
 }
 
+// Both sources are legacy raw tables created by prisma/legacy-tables.sql
+// rather than by a Prisma migration. If one of them was never applied, an
+// unguarded query takes the whole endpoint down with a bare 500 — the admin
+// screen then just says "Something went wrong on the server", which says
+// nothing about which table is missing. Serve whichever source is available
+// and name the missing one in the server log instead.
+async function readSource(label, sql) {
+  try {
+    return await prisma.$queryRawUnsafe(sql)
+  } catch (err) {
+    const detail = err.message.split('\n').map((l) => l.trim()).filter(Boolean).pop()
+    console.error(
+      `⚠️  /api/donations: skipping the "${label}" source — ${detail}\n` +
+        '   If the table is missing, run: node prisma/apply-legacy-tables.js'
+    )
+    return []
+  }
+}
+
 // GET /api/donations?page=&limit=
 export async function list(req, res) {
   // Legacy in-app donations.
-  const appRows = await prisma.$queryRawUnsafe(
+  const appRows = await readSource(
+    'user_donation (in-app)',
     `SELECT d.id, d.userID AS userId, u.name AS userName, d.mobile,
             d.donation_normal_amt AS amount, d.createdAt
      FROM user_donation d
@@ -24,7 +44,8 @@ export async function list(req, res) {
      ORDER BY d.createdAt DESC`
   )
   // New website Razorpay donations (successful only).
-  const webRows = await prisma.$queryRawUnsafe(
+  const webRows = await readSource(
+    'donation (website)',
     `SELECT id, name, mobile, amount, category, razorpay_payment_id AS paymentId, created_at AS createdAt
      FROM donation WHERE status = '1' ORDER BY created_at DESC`
   )

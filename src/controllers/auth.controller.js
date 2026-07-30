@@ -47,6 +47,54 @@ export function logout(req, res) {
   res.json({ ok: true })
 }
 
+// PATCH /api/auth/profile  { name?, email? }  — update the signed-in admin
+export async function updateProfile(req, res) {
+  const { name, email } = req.body || {}
+
+  const data = {}
+  if (name !== undefined) {
+    const trimmed = String(name).trim()
+    if (!trimmed) return res.status(400).json({ error: 'Name cannot be empty.' })
+    data.name = trimmed
+  }
+  if (email !== undefined) {
+    const normalized = String(email).trim().toLowerCase()
+    // Same shape check the login form relies on — one @, no spaces.
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+      return res.status(400).json({ error: 'Enter a valid email address.' })
+    }
+    // email is @unique — check first so we can return a readable message
+    // instead of a Prisma constraint error.
+    const clash = await prisma.admin.findUnique({ where: { email: normalized } })
+    if (clash && clash.id !== req.admin.id) {
+      return res.status(409).json({ error: 'That email is already used by another admin.' })
+    }
+    data.email = normalized
+  }
+
+  if (!Object.keys(data).length) {
+    return res.status(400).json({ error: 'Nothing to update.' })
+  }
+
+  const admin = await prisma.admin.update({
+    where: { id: req.admin.id },
+    data,
+    select: { id: true, name: true, email: true, role: true },
+  })
+
+  // The old JWT carries the previous name/email in its payload. Every guarded
+  // route resolves the admin by `id` (and /auth/me re-reads the row), so the
+  // stale copy is harmless — but re-issuing keeps the token honest and means
+  // the client never has to log in again after changing its email.
+  const token = jwt.sign(
+    { id: admin.id, email: admin.email, name: admin.name, role: admin.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  )
+
+  res.json({ admin, token })
+}
+
 // POST /api/auth/change-password  { currentPassword, newPassword }
 export async function changePassword(req, res) {
   const { currentPassword, newPassword } = req.body || {}
