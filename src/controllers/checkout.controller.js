@@ -14,6 +14,7 @@
 // The account is auto-created on the first successful payment, and the
 // module flag is set against the mobile number entered on the form.
 import { prisma } from '../lib/prisma.js'
+import { productMaps } from '../lib/products.js'
 import { jsonSafe } from '../lib/helpers.js'
 import { normalizeMobile, isValidMobile } from '../lib/phone.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
@@ -31,13 +32,14 @@ import {
 // Returns ALL active products so newly created Parts appear on the website immediately.
 async function moduleList() {
   const products = await prisma.product.findMany({ where: { active: true }, orderBy: { id: 'asc' } })
-  return products.map((p) => ({ code: p.id, name: p.name, price: p.price }))
+  return products.map((p) => ({ code: p.code, name: p.name, price: p.price }))
 }
 
 // Fetch all product IDs from the DB (used for code validation in orders/payments).
+// The set of valid module CODES (what the website posts), not numeric ids.
 async function fetchAllProductIds() {
-  const products = await prisma.product.findMany({ select: { id: true } })
-  return new Set(products.map((p) => p.id))
+  const products = await prisma.product.findMany({ select: { code: true } })
+  return new Set(products.map((p) => p.code))
 }
 
 // Find a user by phone, or create a lightweight account (auto-register).
@@ -62,9 +64,11 @@ async function findOrCreateUser({ mobile, name, email }) {
 // Idempotent: safe to call from both verify-payment and the webhook.
 async function recordAccessAndSales({ userId, codes, paymentId, orderId }) {
   for (const code of codes) {
-    // Product code IS the product ID in our DB for all products.
-    const productId = code
-    const product = await prisma.product.findUnique({ where: { id: productId } })
+    // `code` is the public module code the website posts; rows join on the
+    // numeric surrogate id.
+    const product = await prisma.product.findUnique({ where: { code } })
+    if (!product) continue // module removed since the order was created
+    const productId = product.id
 
     // Access row (purchased). Upsert on the (userId, productId) unique key.
     await prisma.userAccess.upsert({
@@ -178,8 +182,7 @@ export async function createOrder(req, res) {
   const items = []
   for (const code of codes) {
     const m = MODULES[code] ?? null
-    const productId = m?.productId ?? code
-    const product = await prisma.product.findUnique({ where: { id: productId } })
+    const product = await prisma.product.findUnique({ where: { code } })
     if (!product) return sendFail(res, `Module not found: ${code}`, STATUS.NOT_FOUND)
     items.push({ code, m, product })
   }
@@ -199,7 +202,7 @@ export async function createOrder(req, res) {
         .map((a) => a.productId)
     )
     const owned = items
-      .filter((it) => activeIds.has(it.m?.productId ?? it.code))
+      .filter((it) => activeIds.has(it.product.id))
       .map((it) => it.product.name)
     if (owned.length) {
       return sendFail(res, `This number already owns: ${owned.join(', ')}. Please deselect it.`, STATUS.CONFLICT)
@@ -294,8 +297,12 @@ export async function verifyPayment(req, res) {
     select: { productId: true },
   })
   const ownedSet = new Set(freshAccess.map((a) => a.productId))
-  const allProducts = await prisma.product.findMany({ where: { active: true }, select: { id: true } })
-  const owned = Object.fromEntries(allProducts.map((p) => [p.id, ownedSet.has(p.id)]))
+  const allProducts = await prisma.product.findMany({
+    where: { active: true },
+    select: { id: true, code: true },
+  })
+  // Keyed by code — the website identifies modules that way.
+  const owned = Object.fromEntries(allProducts.map((p) => [p.code, ownedSet.has(p.id)]))
 
   return sendOk(res, 'Payment successful', {
     user: { id: user.id, name: user.name, mobile: user.phone },

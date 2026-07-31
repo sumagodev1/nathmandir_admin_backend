@@ -15,22 +15,27 @@
 // The flag columns are left intact (no ALTER TABLE) so the data is preserved
 // and a rollback is safe. Code no longer reads them.
 
+
 import { PrismaClient } from '@prisma/client'
 
+// `code` is products.code — the public module code. Rows are written against
+// the numeric products.id, resolved once at startup below.
 const LEGACY_FLAGS = [
-  { flag: 'part1',          productId: 'gita1'   },
-  { flag: 'part2',          productId: 'gita2'   },
-  { flag: 'upasanaPaid',    productId: 'upasana' },
-  { flag: 'nityaniyamPaid', productId: 'nithya'  },
+  { flag: 'part1',          code: 'gita1'   },
+  { flag: 'part2',          code: 'gita2'   },
+  { flag: 'upasanaPaid',    code: 'upasana' },
+  { flag: 'nityaniyamPaid', code: 'nithya'  },
 ]
 
 const prisma = new PrismaClient()
 
 try {
-  // Verify all legacy products exist before migrating
-  for (const { productId } of LEGACY_FLAGS) {
-    const p = await prisma.product.findUnique({ where: { id: productId } })
-    if (!p) console.warn(`  WARN: product '${productId}' not found in products table — rows pointing to it will be skipped.`)
+  // Resolve each legacy code to its numeric product id up front.
+  const idByCode = new Map()
+  for (const { code } of LEGACY_FLAGS) {
+    const p = await prisma.product.findUnique({ where: { code } })
+    if (!p) console.warn(`  WARN: product '${code}' not found in products table — rows pointing to it will be skipped.`)
+    else idByCode.set(code, p.id)
   }
 
   // Fetch only users who have at least one flag set
@@ -61,13 +66,13 @@ try {
   let productMissing = 0
 
   for (const user of users) {
-    for (const { flag, productId } of LEGACY_FLAGS) {
+    for (const { flag, code } of LEGACY_FLAGS) {
       if (user[flag] !== 1) continue
 
       // Skip if the product doesn't exist (e.g. DB was reset)
-      const product = await prisma.product.findUnique({ where: { id: productId } })
-      if (!product) {
-        console.log(`  SKIP (no product): user ${user.id} (${user.name}) → '${productId}'`)
+      const productId = idByCode.get(code)
+      if (!productId) {
+        console.log(`  SKIP (no product): user ${user.id} (${user.name}) → '${code}'`)
         productMissing++
         continue
       }
@@ -77,7 +82,7 @@ try {
         where: { userId_productId: { userId: user.id, productId } },
       })
       if (existing) {
-        console.log(`  EXISTS [${existing.source}]: user ${user.id} (${user.name}) → '${productId}'`)
+        console.log(`  EXISTS [${existing.source}]: user ${user.id} (${user.name}) → '${code}'`)
         alreadyExisted++
         continue
       }
@@ -91,7 +96,7 @@ try {
           expiresOn: null, // permanent — they paid for it
         },
       })
-      console.log(`  MIGRATED: user ${user.id} (${user.name}) → '${productId}'`)
+      console.log(`  MIGRATED: user ${user.id} (${user.name}) → '${code}'`)
       migrated++
     }
   }

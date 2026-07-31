@@ -15,6 +15,7 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma.js'
+import { productMaps, resolveProductId } from '../lib/products.js'
 import { jsonSafe } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
@@ -58,15 +59,25 @@ async function getOwnedProductIds(userId) {
   return new Set(access.map((a) => a.productId))
 }
 
+// Same as above but keyed by the PUBLIC CODE, for the payloads the deployed
+// APK reads (Part_1/Part_2 flags, module `code` fields).
+async function getOwnedProductCodes(userId) {
+  const ids = await getOwnedProductIds(userId)
+  const { codeById } = await productMaps()
+  return new Set([...ids].map((id) => codeById.get(id)).filter(Boolean))
+}
+
 // Shape a Prisma user (with access included) as the PHP `user` row the app expects.
 // Part_1, Part_2, upasanaPaid, nityaniyamPaid are computed from user_access rows
 // (not from flag columns) so they remain accurate for newly purchased products.
-const toPhpUser = (u) => {
+// `codeById` maps numeric product id -> public code; pass the map from
+// productMaps() so the legacy Part_1/Part_2 flags stay correct.
+const toPhpUser = (u, codeById = new Map()) => {
   const now = new Date()
   const owned = new Set(
     (u.access || [])
       .filter((a) => !a.expiresOn || a.expiresOn > now)
-      .map((a) => a.productId)
+      .map((a) => codeById.get(a.productId))
   )
   return {
     id: u.id,
@@ -147,7 +158,7 @@ async function verifyOTP(req, res) {
   const freshUser = await prisma.user.findUnique({ where: { id: user.id }, include: { access: true } })
   return sendOk(res, 'Login Success', {
     token,
-    data: toPhpUser({ ...freshUser, otp: '', status: 'active', token }),
+    data: toPhpUser({ ...freshUser, otp: '', status: 'active', token }, (await productMaps()).codeById),
   })
 }
 
@@ -234,7 +245,9 @@ async function save_payment(req, res) {
     const accessCodes = []
     if (field(req, 'partOne') === '1') accessCodes.push('gita1')
     if (field(req, 'partTwo') === '1') accessCodes.push('gita2')
-    for (const productId of accessCodes) {
+    for (const code of accessCodes) {
+      const productId = await resolveProductId(code)
+      if (productId === null) continue // module removed — nothing to unlock
       await prisma.userAccess.upsert({
         where: { userId_productId: { userId: Number(userId), productId } },
         update: { source: 'purchased', expiresOn: null },
@@ -268,14 +281,15 @@ async function check_status(req, res) {
 
   const user = await prisma.user.findFirst({ where: { phone: mobile }, include: { access: true } })
   if (!user) return sendFail(res, 'Inactive User', STATUS.NOT_FOUND)
-  return sendOk(res, 'Active User Save Successfully', { data: toPhpUser(user) })
+  return sendOk(res, 'Active User Save Successfully', { data: toPhpUser(user, (await productMaps()).codeById) })
 }
 
 // ── fetch_user / audio_donation_user ─ all users ───────────────
 async function fetch_user(req, res) {
   const users = await prisma.user.findMany({ orderBy: { id: 'asc' }, include: { access: true } })
   if (!users.length) return sendFail(res, 'Credentials not matched', STATUS.NOT_FOUND)
-  return sendOk(res, 'User loaded', { data: users.map(toPhpUser) })
+  const { codeById } = await productMaps()
+  return sendOk(res, 'User loaded', { data: users.map((u) => toPhpUser(u, codeById)) })
 }
 
 // ── update_session ─ POST { mobile, active } ───────────────────
@@ -334,8 +348,10 @@ async function home(req, res) {
   // Owned product IDs (legacy flag columns + UserAccess table)
   const ownedIds = await getOwnedProductIds(user.id)
 
+  // `code` on the wire is the PUBLIC code the APK already knows ("gita1"),
+  // even though rows are now joined on the numeric id.
   const modules = products.map((p) => ({
-    code: p.id,
+    code: p.code,
     name: p.name,
     price: p.price,
     owned: ownedIds.has(p.id),
@@ -355,17 +371,17 @@ async function get_content(req, res) {
   if (!code) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   // Validate against DB — accepts any product, not just the 4 hardcoded ones
-  const product = await prisma.product.findUnique({ where: { id: code } })
+  const product = await prisma.product.findUnique({ where: { code } })
   if (!product) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
 
   const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
   if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
 
   const ownedIds = await getOwnedProductIds(user.id)
-  const owned = ownedIds.has(code)
+  const owned = ownedIds.has(product.id)
 
   const rows = await prisma.content.findMany({
-    where: { productId: code, published: true },
+    where: { productId: product.id, published: true },
     orderBy: { sortOrder: 'asc' },
   })
 
@@ -416,8 +432,8 @@ async function subscribed_items(req, res) {
   const items = productIds.map((id) => {
     const p = byId.get(id)
     return {
-      code: id,
-      name: p?.name || id,
+      code: p?.code || String(id),
+      name: p?.name || String(id),
       price: p?.price ?? 0,
       itemCount: countMap.get(id) || 0,
     }
@@ -437,19 +453,19 @@ async function sub_items(req, res) {
   if (!code) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   // Validate against DB — accepts any product, not just the 4 hardcoded ones
-  const product = await prisma.product.findUnique({ where: { id: code } })
+  const product = await prisma.product.findUnique({ where: { code } })
   if (!product) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
 
   const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
   if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
 
   const ownedIds = await getOwnedProductIds(user.id)
-  if (!ownedIds.has(code)) {
+  if (!ownedIds.has(product.id)) {
     return sendFail(res, 'This module is not subscribed', STATUS.FORBIDDEN)
   }
 
   const rows = await prisma.content.findMany({
-    where: { productId: code, published: true },
+    where: { productId: product.id, published: true },
     orderBy: { sortOrder: 'asc' },
   })
 

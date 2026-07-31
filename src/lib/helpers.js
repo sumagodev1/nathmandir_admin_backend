@@ -31,6 +31,7 @@ export const jsonSafe = (val) =>
   JSON.parse(JSON.stringify(val, (_k, v) => (typeof v === 'bigint' ? Number(v) : v)))
 
 // kebab-case product code from a name, kept unique against existing codes.
+// NOTE: products now use lib/products.js -> uniqueCode(). Kept for any other caller.
 export const slugify = (s, taken = []) => {
   const base =
     String(s).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'part'

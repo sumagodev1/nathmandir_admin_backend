@@ -23,14 +23,19 @@ export const razorpayConfigured = () =>
 export const RAZORPAY_PUBLIC_KEY = RAZORPAY_KEY_ID
 
 // ── Module → unlock map ───────────────────────────────────────
-// One entry per purchasable module. `flag` is the boolean column on the
-// User row that unlocks the module in the app; `packageId` matches the
-// PKG map in payments.controller.js; `productId` looks up the price.
+// One entry per LEGACY purchasable module. `flag` is the boolean column on the
+// User row that unlocks the module in the old app; `packageId` matches the PKG
+// map in payments.controller.js.
+//
+// NOTE: `code` is the public module code (products.code). It is NOT the row's
+// primary key — products.id is a numeric surrogate that happens to equal
+// packageId for these four legacy modules (1, 2, 4, 5). Look products up by
+// `code` and join on the id you get back.
 export const MODULES = {
-  gita1:   { flag: 'part1',          packageId: 1, productId: 'gita1' },
-  gita2:   { flag: 'part2',          packageId: 2, productId: 'gita2' },
-  upasana: { flag: 'upasanaPaid',    packageId: 4, productId: 'upasana' },
-  nithya:  { flag: 'nityaniyamPaid', packageId: 5, productId: 'nithya' },
+  gita1:   { flag: 'part1',          packageId: 1, code: 'gita1'   },
+  gita2:   { flag: 'part2',          packageId: 2, code: 'gita2'   },
+  upasana: { flag: 'upasanaPaid',    packageId: 4, code: 'upasana' },
+  nithya:  { flag: 'nityaniyamPaid', packageId: 5, code: 'nithya'  },
 }
 
 // ── Create an order ───────────────────────────────────────────

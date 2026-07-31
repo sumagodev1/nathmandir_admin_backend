@@ -54,8 +54,13 @@ model Admin {
 }
 
 // ── Product / Module (gita1, gita2, upasana, nithya) ─────────
+// `id` is a numeric surrogate key (it lines up with the legacy PHP
+// package_id: 1=gita1, 2=gita2, 4=upasana, 5=nithya). `code` is the STABLE
+// PUBLIC identifier — the deployed mobile APK and the website checkout both
+// send and receive it, so it must never change for an existing module.
 model Product {
-  id        String  @id // stable code, e.g. "gita1"
+  id        Int     @id @default(autoincrement())
+  code      String  @unique @db.VarChar(191) // e.g. "gita1"
   name      String
   shortName String  @map("short_name")
   price     Int
@@ -112,7 +117,7 @@ model User {
 // ── Content (audio + text per product) ───────────────────────
 model Content {
   id        Int         @id @default(autoincrement())
-  productId String      @map("product_id")
+  productId Int         @map("product_id")
   type      ContentType
   title     String
   duration  Int         @default(0) // seconds
@@ -135,7 +140,7 @@ model Content {
 model UserAccess {
   id        Int            @id @default(autoincrement())
   userId    Int            @map("user_id")
-  productId String         @map("product_id")
+  productId Int            @map("product_id")
   source    AccessSource
   duration  GrantDuration? // only meaningful for granted access
   grantedOn DateTime       @default(now()) @map("granted_on")
@@ -155,7 +160,7 @@ model Sale {
   id        Int        @id @default(autoincrement())
   txnId     String     @unique @map("txn_id")
   userId    Int        @map("user_id")
-  productId String     @map("product_id")
+  productId Int        @map("product_id")
   amount    Int
   status    SaleStatus @default(success)
   ref       String?

@@ -2,6 +2,7 @@
 // Handlers for /api/notifications.
 import { prisma } from '../lib/prisma.js'
 import { ymd, paginate } from '../lib/helpers.js'
+import { resolveProductId } from '../lib/products.js'
 
 const shape = (n) => ({
   id: n.id,
@@ -42,7 +43,8 @@ export async function create(req, res) {
   if (audience === 'all') {
     reach = await prisma.user.count()
   } else {
-    reach = await prisma.userAccess.count({ where: { productId: audience } })
+    const pid = await resolveProductId(audience)
+    reach = pid === null ? 0 : await prisma.userAccess.count({ where: { productId: pid } })
   }
 
   const created = await prisma.notification.create({
