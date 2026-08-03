@@ -2,6 +2,7 @@
 // Handlers for /api/access (access matrix, grant, revoke).
 import { prisma } from '../lib/prisma.js'
 import { ymd, accessLabel, grantExpiry, paginate } from '../lib/helpers.js'
+import { resolveProductId } from '../lib/products.js'
 
 // GET /api/access?query=&from=&to=&page=&limit=  — access matrix (users × products)
 export async function list(req, res) {
@@ -33,7 +34,7 @@ export async function list(req, res) {
 
   const pg = paginate(rows, req.query)
   res.json({
-    products: products.map((p) => ({ id: p.id, name: p.name })),
+    products: products.map((p) => ({ id: p.id, code: p.code, name: p.name })),
     users: pg.data,
     total: pg.total,
     page: pg.page,
@@ -47,6 +48,10 @@ export async function grant(req, res) {
   const { userId, productId, duration = 'perm' } = req.body || {}
   if (!userId || !productId) return res.status(400).json({ error: 'userId and productId are required.' })
 
+  // productId may arrive as the numeric id or the public code.
+  const pid = await resolveProductId(productId)
+  if (pid === null) return res.status(404).json({ error: 'Unknown Part.' })
+
   const now = new Date()
   const payload = {
     source: 'granted',
@@ -56,9 +61,9 @@ export async function grant(req, res) {
   }
 
   const access = await prisma.userAccess.upsert({
-    where: { userId_productId: { userId: Number(userId), productId } },
+    where: { userId_productId: { userId: Number(userId), productId: pid } },
     update: payload,
-    create: { userId: Number(userId), productId, ...payload },
+    create: { userId: Number(userId), productId: pid, ...payload },
   })
   res.json({ ok: true, access: { ...access, expiresOn: ymd(access.expiresOn) } })
 }
@@ -68,6 +73,9 @@ export async function revoke(req, res) {
   const { userId, productId } = req.body || {}
   if (!userId || !productId) return res.status(400).json({ error: 'userId and productId are required.' })
 
-  await prisma.userAccess.deleteMany({ where: { userId: Number(userId), productId } })
+  const pid = await resolveProductId(productId)
+  if (pid === null) return res.status(404).json({ error: 'Unknown Part.' })
+
+  await prisma.userAccess.deleteMany({ where: { userId: Number(userId), productId: pid } })
   res.json({ ok: true })
 }

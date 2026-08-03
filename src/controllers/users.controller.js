@@ -2,6 +2,7 @@
 // Handlers for /api/users.
 import { prisma } from '../lib/prisma.js'
 import { ymd, shapeUserRow, grantExpiry, paginate } from '../lib/helpers.js'
+import { resolveProductId } from '../lib/products.js'
 
 // GET /api/users?query=&status=all|active|disabled&subscription=all|subscribed|free&from=&to=&page=&limit=
 export async function list(req, res) {
@@ -44,6 +45,7 @@ export async function get(req, res) {
     const sale = u.sales.find((s) => s.productId === a.productId)
     return {
       product: a.productId,
+      productCode: a.product.code,
       name: a.product.name,
       amount: sale ? sale.amount : a.product.price,
       date: sale ? ymd(sale.createdAt) : null,
@@ -64,13 +66,23 @@ export async function create(req, res) {
   }
 
   const now = new Date()
+
+  // access[].productId may be a numeric id or a public code; resolve first so
+  // an unknown Part fails loudly instead of writing a dangling row.
+  const resolved = []
+  for (const a of access) {
+    const pid = await resolveProductId(a.productId)
+    if (pid === null) return res.status(400).json({ error: `Unknown Part: ${a.productId}` })
+    resolved.push({ ...a, productId: pid })
+  }
+
   const user = await prisma.user.create({
     data: {
       name: name.trim(),
       phone: phone.trim(),
       city: city.trim(),
       access: {
-        create: access.map((a) => {
+        create: resolved.map((a) => {
           const duration = a.duration || 'perm'
           return {
             productId: a.productId,

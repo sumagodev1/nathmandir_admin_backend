@@ -1,10 +1,14 @@
 // ── Dashboard controller ──────────────────────────────────────
 // Handler for /api/dashboard/stats — every KPI the dashboard shows.
 import { prisma } from '../lib/prisma.js'
+import { productMaps } from '../lib/products.js'
 
 // GET /api/dashboard/stats
 export async function stats(req, res) {
   const users = await prisma.user.findMany({ include: { access: true } })
+  // access rows hold numeric product ids; the part breakdown below is defined
+  // in terms of the public codes, so translate once up front.
+  const { codeById } = await productMaps()
 
   const totalUsers = users.length
   const subscribedUsers = users.filter((u) => u.access.length > 0).length
@@ -19,7 +23,7 @@ export async function stats(req, res) {
   // Gitanjali part breakdown.
   let onlyPart1 = 0, onlyPart2 = 0, both = 0
   for (const u of users) {
-    const codes = u.access.map((a) => a.productId)
+    const codes = u.access.map((a) => codeById.get(a.productId))
     const p1 = codes.includes('gita1')
     const p2 = codes.includes('gita2')
     if (p1 && p2) both++
@@ -30,7 +34,7 @@ export async function stats(req, res) {
   const [revenue, plays, products, accessByProduct, salesByProduct] = await Promise.all([
     prisma.sale.aggregate({ _sum: { amount: true } }),
     prisma.content.aggregate({ _sum: { plays: true } }),
-    prisma.product.findMany({ select: { id: true, name: true, shortName: true, price: true } }),
+    prisma.product.findMany({ select: { id: true, code: true, name: true, shortName: true, price: true } }),
     prisma.userAccess.groupBy({ by: ['productId'], _count: { productId: true } }),
     prisma.sale.groupBy({
       by: ['productId'],
@@ -48,6 +52,7 @@ export async function stats(req, res) {
   const popularModules = products
     .map((p) => ({
       id: p.id,
+      code: p.code,
       name: p.name,
       shortName: p.shortName,
       price: p.price,

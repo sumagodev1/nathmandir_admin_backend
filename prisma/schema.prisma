@@ -54,8 +54,13 @@ model Admin {
 }
 
 // ── Product / Module (gita1, gita2, upasana, nithya) ─────────
+// `id` is a numeric surrogate key (it lines up with the legacy PHP
+// package_id: 1=gita1, 2=gita2, 4=upasana, 5=nithya). `code` is the STABLE
+// PUBLIC identifier — the deployed mobile APK and the website checkout both
+// send and receive it, so it must never change for an existing module.
 model Product {
-  id        String  @id // stable code, e.g. "gita1"
+  id        Int     @id @default(autoincrement())
+  code      String  @unique @db.VarChar(191) // e.g. "gita1"
   name      String
   shortName String  @map("short_name")
   price     Int
@@ -103,13 +108,16 @@ model User {
   access UserAccess[]
   sales  Sale[]
 
+  @@index([phone]) // mobile app OTP login + admin search
+  @@index([status])
+  @@index([registeredOn])
   @@map("users")
 }
 
 // ── Content (audio + text per product) ───────────────────────
 model Content {
   id        Int         @id @default(autoincrement())
-  productId String      @map("product_id")
+  productId Int         @map("product_id")
   type      ContentType
   title     String
   duration  Int         @default(0) // seconds
@@ -123,6 +131,8 @@ model Content {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
+  @@index([productId, sortOrder]) // matches the list orderBy exactly
+  @@index([published])
   @@map("content")
 }
 
@@ -130,7 +140,7 @@ model Content {
 model UserAccess {
   id        Int            @id @default(autoincrement())
   userId    Int            @map("user_id")
-  productId String         @map("product_id")
+  productId Int            @map("product_id")
   source    AccessSource
   duration  GrantDuration? // only meaningful for granted access
   grantedOn DateTime       @default(now()) @map("granted_on")
@@ -140,6 +150,8 @@ model UserAccess {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+  @@index([productId]) // groupBy productId (listeners, dashboard, content)
+  @@index([expiresOn]) // active-vs-expired filtering
   @@map("user_access")
 }
 
@@ -148,7 +160,7 @@ model Sale {
   id        Int        @id @default(autoincrement())
   txnId     String     @unique @map("txn_id")
   userId    Int        @map("user_id")
-  productId String     @map("product_id")
+  productId Int        @map("product_id")
   amount    Int
   status    SaleStatus @default(success)
   ref       String?
@@ -160,6 +172,8 @@ model Sale {
 
   @@index([userId])
   @@index([productId])
+  @@index([status])
+  @@index([createdAt]) // sales/revenue date-range reports
   @@map("sales")
 }
 
@@ -172,6 +186,8 @@ model Notification {
   reach    Int      @default(0)
   sentOn   DateTime @default(now()) @map("sent_on")
 
+  @@index([sentOn])
+  @@index([audience])
   @@map("notifications")
 }
 
@@ -188,6 +204,8 @@ model Book {
 
   chapters Chapter[]
 
+  @@index([published, category]) // public library listing
+  @@index([sortOrder])
   @@map("books")
 }
 
@@ -201,6 +219,7 @@ model Chapter {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@index([bookId])
+  @@index([bookId, sortOrder])
   @@map("chapters")
 }
 
@@ -215,6 +234,7 @@ model Album {
 
   photos Photo[]
 
+  @@index([published, category]) // public gallery listing
   @@map("albums")
 }
 
@@ -228,6 +248,7 @@ model Photo {
   album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
 
   @@index([albumId])
+  @@index([albumId, sortOrder])
   @@map("photos")
 }
 
@@ -240,6 +261,7 @@ model Page {
   published Boolean  @default(true)
   updatedOn DateTime @default(now()) @updatedAt @map("updated_on")
 
+  @@index([published])
   @@map("pages")
 }
 
