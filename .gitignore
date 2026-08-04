@@ -1,3 +1,5 @@
 node_modules
 # Keep environment variables out of version control
 .env
+# Windows Prisma engine is only for local dev; the server uses the committed Linux engines
+src/generated/prisma/query_engine-windows.dll.node

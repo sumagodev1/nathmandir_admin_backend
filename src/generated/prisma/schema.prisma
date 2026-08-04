@@ -28,12 +28,12 @@ enum ContentType {
 
 enum AccessSource {
   purchased // devotee paid (has a matching Sale)
-  granted   // admin gave it manually
+  granted // admin gave it manually
 }
 
 enum GrantDuration {
-  d7   // 7 days
-  d15  // 15 days
+  d7 // 7 days
+  d15 // 15 days
   perm // till revoked
 }
 
