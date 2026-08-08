@@ -266,6 +266,16 @@ exports.Prisma.SiteSectionScalarFieldEnum = {
   updatedOn: 'updatedOn'
 };
 
+exports.Prisma.OtpChallengeScalarFieldEnum = {
+  id: 'id',
+  phone: 'phone',
+  otp: 'otp',
+  expiresAt: 'expiresAt',
+  verifiedAt: 'verifiedAt',
+  attempts: 'attempts',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -316,7 +326,8 @@ exports.Prisma.ModelName = {
   Photo: 'Photo',
   Page: 'Page',
   Setting: 'Setting',
-  SiteSection: 'SiteSection'
+  SiteSection: 'SiteSection',
+  OtpChallenge: 'OtpChallenge'
 };
 
 /**

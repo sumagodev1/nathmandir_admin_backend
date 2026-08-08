@@ -28,6 +28,11 @@ import {
   verifyWebhookSignature,
 } from '../lib/razorpay.js'
 
+// How long a website checkout OTP stays valid, and how many wrong guesses are
+// allowed before the devotee has to request a fresh code.
+const OTP_TTL_MS = 10 * 60 * 1000 // 10 minutes
+const OTP_MAX_ATTEMPTS = 5
+
 // Build the public module list (code, name, price) from the products table.
 // Returns ALL active products so newly created Parts appear on the website immediately.
 async function moduleList() {
@@ -107,18 +112,27 @@ export async function modules(req, res) {
 // purchase attaches to it), stores an OTP, and sends it by SMS.
 export async function sendOtp(req, res) {
   const mobile = normalizeMobile(req.body?.mobile)
-  const name = String(req.body?.name ?? '').trim()
-  const email = String(req.body?.email ?? '').trim()
   if (!isValidMobile(mobile)) {
     return sendFail(res, 'Enter a valid 10-digit mobile number', STATUS.BAD_REQUEST)
   }
 
-  // Find-or-create by phone: existing (incl. "Free" app) users are reused.
-  const user = await findOrCreateUser({ mobile, name, email })
-
+  // No account is created here. The number is unproven until the OTP comes
+  // back, and creating a User row on "Send OTP" left a permanent ghost entry
+  // in the admin Users list for every mistyped number or abandoned checkout.
+  // The pending code lives in otp_challenge; the account is created only once
+  // payment clears (verifyPayment → findOrCreateUser).
+  //
   // Fixed OTP for the test account, random 4-digit otherwise (same as the app).
   const otp = mobile === '1234567890' ? '1947' : String(Math.floor(1000 + Math.random() * 9000))
-  await prisma.user.update({ where: { id: user.id }, data: { otp } })
+  const expiresAt = new Date(Date.now() + OTP_TTL_MS)
+
+  // Upsert on phone so a resend replaces the previous code (and clears any
+  // earlier verification / attempt count) instead of piling up rows.
+  await prisma.otpChallenge.upsert({
+    where: { phone: mobile },
+    update: { otp, expiresAt, verifiedAt: null, attempts: 0 },
+    create: { phone: mobile, otp, expiresAt },
+  })
 
   const sent = await sendOtpSms(mobile, otp)
   // In dev (no SMS gateway configured) sendOtpSms returns false and we echo the
@@ -134,10 +148,31 @@ export async function verifyOtp(req, res) {
   const otp = String(req.body?.otp ?? '').trim()
   if (!mobile || !otp) return sendFail(res, 'Enter the OTP', STATUS.BAD_REQUEST)
 
-  const user = await prisma.user.findFirst({ where: { phone: mobile, otp } })
-  if (!user) return sendFail(res, 'Incorrect OTP. Please try again.', STATUS.UNAUTHORIZED)
+  const challenge = await prisma.otpChallenge.findUnique({ where: { phone: mobile } })
+  if (!challenge) return sendFail(res, 'Please request an OTP first.', STATUS.UNAUTHORIZED)
 
-  await prisma.user.update({ where: { id: user.id }, data: { otp: '' } })
+  if (challenge.expiresAt < new Date()) {
+    return sendFail(res, 'This OTP has expired. Please resend.', STATUS.UNAUTHORIZED)
+  }
+
+  if (challenge.attempts >= OTP_MAX_ATTEMPTS) {
+    return sendFail(res, 'Too many incorrect attempts. Please resend the OTP.', STATUS.UNAUTHORIZED)
+  }
+
+  if (challenge.otp !== otp) {
+    await prisma.otpChallenge.update({
+      where: { phone: mobile },
+      data: { attempts: { increment: 1 } },
+    })
+    return sendFail(res, 'Incorrect OTP. Please try again.', STATUS.UNAUTHORIZED)
+  }
+
+  // Verified. The row is kept (not deleted) so the order step can confirm this
+  // number was proven; it is cleared once payment completes.
+  await prisma.otpChallenge.update({
+    where: { phone: mobile },
+    data: { verifiedAt: new Date(), attempts: 0 },
+  })
   return sendOk(res, 'Mobile verified', { verified: true })
 }
 
@@ -281,6 +316,10 @@ export async function verifyPayment(req, res) {
   const user = await findOrCreateUser({ mobile, name, email })
   await prisma.user.update({ where: { id: user.id }, data: { isPaid: 1 } })
   await recordAccessAndSales({ userId: user.id, codes, paymentId, orderId })
+
+  // Checkout is done — drop the pending verification so a stale "verified"
+  // row can't be reused for a later order.
+  await prisma.otpChallenge.deleteMany({ where: { phone: mobile } })
 
   // Finalise the payment row (status '1' = complete, unlocked).
   await prisma.$executeRawUnsafe(

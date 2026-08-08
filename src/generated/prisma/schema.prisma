@@ -288,3 +288,23 @@ model SiteSection {
 
   @@map("site_sections")
 }
+
+// ── Pending mobile verification (website checkout OTP) ───────
+// Deliberately separate from User. Pressing "Send OTP" must not create an
+// account: the number is unproven at that point, and a mistyped digit would
+// leave a permanent ghost row in the Users list. The account is created only
+// once money actually clears, in checkout.verifyPayment().
+//
+// One row per phone number (upserted on resend). `verifiedAt` records a
+// successful OTP check so the order step can require it.
+model OtpChallenge {
+  id         Int       @id @default(autoincrement())
+  phone      String    @unique @db.VarChar(20)
+  otp        String    @db.VarChar(10)
+  expiresAt  DateTime  @map("expires_at")
+  verifiedAt DateTime? @map("verified_at")
+  attempts   Int       @default(0) // wrong guesses against the current otp
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@map("otp_challenge")
+}

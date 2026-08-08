@@ -8,9 +8,14 @@ import { resolveProductId } from '../lib/products.js'
 export async function list(req, res) {
   const { query = '', status = 'all', subscription = 'all', from = '', to = '' } = req.query
 
+  // Newest first: the admin screen is used to check who just registered or
+  // just bought, and ascending order buried them on the last page (a devotee
+  // who purchased today sat at #493 of 521 — page 50 at the panel's 10/page).
+  // Ordering by id rather than created_at because id is the primary key and
+  // some legacy rows carry an imported created_at that predates their row.
   const users = await prisma.user.findMany({
     include: { access: true, sales: true },
-    orderBy: { id: 'asc' },
+    orderBy: { id: 'desc' },
   })
 
   const q = String(query).trim().toLowerCase()
