@@ -298,7 +298,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\Nathmandir backend\\nathmandir_admin_backend\\src\\generated\\prisma",
+      "value": "C:\\NathMandir\\nathmandir_admin_backend\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -328,7 +328,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\Nathmandir backend\\nathmandir_admin_backend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\NathMandir\\nathmandir_admin_backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

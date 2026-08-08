@@ -1,6 +1,7 @@
 // ── Express app ───────────────────────────────────────────────
 // Builds the app and mounts all API routes. server.js starts it.
 import express from 'express'
+import { appendFileSync } from 'node:fs'
 import cors from 'cors'
 import compression from 'compression'
 import { prisma } from './lib/prisma.js'
@@ -35,6 +36,27 @@ export const app = express()
 app.set('trust proxy', true)
 
 app.use(cors())         // allow the React admin panel to call this API
+
+// ── TEMP DEBUG (remove once the panel save issue is closed) ──────────────
+// Records whether a request arrives, whether we answer it, and whether the
+// browser hung up before reading the answer. Set DEBUG_REQ_LOG to a file path.
+if (process.env.DEBUG_REQ_LOG) {
+  const put = (s) => { try { appendFileSync(process.env.DEBUG_REQ_LOG, s + '\n') } catch {} }
+  app.use((req, res, next) => {
+    const started = Date.now()
+    const tag = `${req.method} ${req.originalUrl}`
+    put(`${new Date().toISOString()}  -->  ${tag}  origin=${req.headers.origin || '-'}`)
+    res.on('finish', () =>
+      put(`${new Date().toISOString()}  <--  ${tag}  ${res.statusCode}  (${Date.now() - started}ms)`))
+    res.on('close', () => {
+      if (!res.writableFinished) {
+        put(`${new Date().toISOString()}  XXX  ${tag}  CLIENT HUNG UP before the response was sent (${Date.now() - started}ms)`)
+      }
+    })
+    next()
+  })
+}
+// ── end TEMP DEBUG ───────────────────────────────────────────────────────
 
 // gzip every response above 1 KB. The admin list endpoints return sizeable
 // JSON (users ≈170 KB, payments ≈275 KB, access ≈187 KB) and this cuts them by
