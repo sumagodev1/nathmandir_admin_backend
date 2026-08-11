@@ -16,7 +16,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma.js'
 import { productMaps, resolveProductId } from '../lib/products.js'
-import { jsonSafe } from '../lib/helpers.js'
+import { jsonSafe, ymd, paginate } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
 
@@ -542,6 +542,102 @@ async function mark_played(req, res) {
   }
 }
 
+// ── Photo gallery (छायाचित्रे) ─────────────────────────────────
+// Same albums/photos the admin panel manages at /admin/gallery and the
+// website shows at /events — so whatever an admin publishes appears in
+// the app with no rebuild. Only `published` albums are ever exposed.
+//
+// Image paths are stored relative ("/uploads/image/…"), so every url is
+// run through absUrl() and handed to the app as a full https URL it can
+// drop straight into an Image widget.
+const shapeGalleryAlbum = (req, a) => ({
+  id: a.id,
+  title: a.title,
+  category: a.category,
+  date: ymd(a.date),
+  cover: absUrl(req, a.cover),
+  photoCount: (a.photos || []).length,
+  photos: (a.photos || [])
+    .slice()
+    .sort((x, y) => x.sortOrder - y.sortOrder || x.id - y.id)
+    .map((p) => ({
+      key: `p${p.id}`,
+      id: p.id,
+      url: absUrl(req, p.url),
+      caption: p.caption || '',
+      sortOrder: p.sortOrder,
+      isCover: false,
+    })),
+})
+
+// ── gallery ─ [public] { category?, page?, limit? } ────────────
+// Returns both shapes the screen needs in ONE call:
+//   albums[] — for the album/category listing
+//   photos[] — one flat list for the carousel + grid
+async function gallery(req, res) {
+  const category = field(req, 'category') || 'all'
+  const where = { published: true }
+  if (category !== 'all') where.category = category
+
+  const rows = await prisma.album.findMany({
+    where,
+    include: { photos: true },
+    orderBy: { id: 'desc' }, // newest album first — matches panel and website
+  })
+  const albums = rows.map((a) => shapeGalleryAlbum(req, a))
+
+  // Flat photo list for the grid. An album with no photos added yet falls
+  // back to its cover, otherwise a freshly created album would be invisible.
+  const photos = albums.flatMap((a) => {
+    const from = { albumId: a.id, albumTitle: a.title, category: a.category }
+    if (a.photos.length) return a.photos.map((p) => ({ ...p, ...from }))
+    if (!a.cover) return []
+    return [{ key: `c${a.id}`, id: null, url: a.cover, caption: '', sortOrder: 0, isCover: true, ...from }]
+  })
+
+  // page/limit are optional — sent nothing, the app gets the whole list.
+  const pg = paginate(
+    photos,
+    { page: field(req, 'page'), limit: field(req, 'limit') },
+    { defaultLimit: 30, maxLimit: 200 }
+  )
+
+  // Tabs for the app: always every published category, never just the
+  // filtered one, so the tab bar does not shrink after a filter is applied.
+  const catRows = await prisma.album.groupBy({
+    by: ['category'],
+    where: { published: true },
+    _count: { _all: true },
+  })
+  const categories = catRows
+    .map((c) => ({ key: c.category, albumCount: c._count._all }))
+    .sort((a, b) => a.key.localeCompare(b.key))
+
+  return sendOk(res, 'Gallery loaded', {
+    categories,
+    albums,
+    photos: pg.data,
+    total: pg.total,
+    page: pg.page,
+    pages: pg.pages,
+    limit: pg.limit,
+  })
+}
+
+// ── gallery_album ─ [public] { id } → one published album ──────
+async function gallery_album(req, res) {
+  const id = Number(field(req, 'id'))
+  if (!id) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
+
+  const album = await prisma.album.findFirst({
+    where: { id, published: true },
+    include: { photos: true },
+  })
+  if (!album) return sendFail(res, 'Album not found', STATUS.NOT_FOUND)
+
+  return sendOk(res, 'Album loaded', { album: shapeGalleryAlbum(req, album) })
+}
+
 // ── apicall → handler map (mirrors the PHP switch) ─────────────
 export const handlers = {
   loginuser,
@@ -564,11 +660,22 @@ export const handlers = {
   subscribed_items,
   sub_items,
   get_media,
+  // Photo gallery — public, read-only.
+  gallery,
+  gallery_album,
 }
 
 // apicalls that do NOT need a Bearer token — they run before a token
-// exists (login flow) or use their own credentials.
-const PUBLIC_APICALLS = new Set(['loginuser', 'verifyOTP', 'register', 'admin_login'])
+// exists (login flow), use their own credentials, or serve content that
+// is already public on the website (the gallery).
+const PUBLIC_APICALLS = new Set([
+  'loginuser',
+  'verifyOTP',
+  'register',
+  'admin_login',
+  'gallery',
+  'gallery_album',
+])
 
 // Validate the mobile app's Bearer token: verify the JWT signature AND
 // confirm it is still the token stored on the user row (verifyOTP saves it).

@@ -6,10 +6,26 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" },
-    { "key": "token", "value": "", "type": "string" },
-    { "key": "mobile", "value": "1234567890", "type": "string" },
-    { "key": "otp", "value": "1947", "type": "string" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mobile",
+      "value": "1234567890",
+      "type": "string"
+    },
+    {
+      "key": "otp",
+      "value": "1947",
+      "type": "string"
+    }
   ],
   "item": [
     {
@@ -32,21 +48,117 @@
           "request": {
             "method": "POST",
             "header": [],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "{{mobile}}", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=loginuser", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "loginuser" } ] },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "mobile",
+                  "value": "{{mobile}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=loginuser",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "loginuser"
+                }
+              ]
+            },
             "description": "Send an OTP to a REGISTERED mobile number (else 404 'Please Register First'). The OTP is echoed in the response (legacy). Test number 1234567890 always gets 1947."
           },
           "response": [
             {
               "name": "200 — OTP sent",
-              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=loginuser", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "loginuser" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "mobile",
+                      "value": "1234567890"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=loginuser",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "loginuser"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"OTP Sent Successfully\",\n  \"otp\": \"1947\"\n}"
             },
             {
               "name": "404 — not registered",
-              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "9999999999" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=loginuser", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "loginuser" } ] } },
-              "status": "Not Found", "code": 404, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "mobile",
+                      "value": "9999999999"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=loginuser",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "loginuser"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 404,\n  \"error\": \"true\",\n  \"message\": \"Please Register First\"\n}"
             }
           ]
@@ -56,21 +168,153 @@
           "request": {
             "method": "POST",
             "header": [],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "name", "value": "Test Devotee", "type": "text" }, { "key": "email", "value": "test@example.com", "type": "text" }, { "key": "mobile", "value": "{{mobile}}", "type": "text" }, { "key": "city", "value": "Nashik", "type": "text" }, { "key": "address", "value": "", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=register", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "register" } ] },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "Test Devotee",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "test@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "mobile",
+                  "value": "{{mobile}}",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "Nashik",
+                  "type": "text"
+                },
+                {
+                  "key": "address",
+                  "value": "",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "register"
+                }
+              ]
+            },
             "description": "Create a devotee account. name, email, mobile required. 409 if the mobile already exists."
           },
           "response": [
             {
               "name": "201 — registered",
-              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "name", "value": "Test Devotee" }, { "key": "email", "value": "test@example.com" }, { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=register", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "register" } ] } },
-              "status": "Created", "code": 201, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "name",
+                      "value": "Test Devotee"
+                    },
+                    {
+                      "key": "email",
+                      "value": "test@example.com"
+                    },
+                    {
+                      "key": "mobile",
+                      "value": "1234567890"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "register"
+                    }
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 201,\n  \"error\": \"false\",\n  \"message\": \"Register Successfully\"\n}"
             },
             {
               "name": "409 — already exists",
-              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "name", "value": "Test Devotee" }, { "key": "email", "value": "test@example.com" }, { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=register", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "register" } ] } },
-              "status": "Conflict", "code": 409, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "name",
+                      "value": "Test Devotee"
+                    },
+                    {
+                      "key": "email",
+                      "value": "test@example.com"
+                    },
+                    {
+                      "key": "mobile",
+                      "value": "1234567890"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "register"
+                    }
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 409,\n  \"error\": \"true\",\n  \"message\": \"Mobile Number Already exist\"\n}"
             }
           ]
@@ -96,22 +340,362 @@
           "request": {
             "method": "POST",
             "header": [],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "{{mobile}}", "type": "text" }, { "key": "otp", "value": "{{otp}}", "type": "text" }, { "key": "DID", "value": "test-device-1", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "verifyOTP" } ] },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "mobile",
+                  "value": "{{mobile}}",
+                  "type": "text"
+                },
+                {
+                  "key": "otp",
+                  "value": "{{otp}}",
+                  "type": "text"
+                },
+                {
+                  "key": "DID",
+                  "value": "test-device-1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "verifyOTP"
+                }
+              ]
+            },
             "description": "Verify OTP and log in. Returns a JWT (token) + the full user object with the entitlement flags. DID = device id (binds this device; other devices logged out)."
           },
           "response": [
             {
               "name": "200 — login success",
-              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" }, { "key": "otp", "value": "1947" }, { "key": "DID", "value": "test-device-1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "verifyOTP" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "mobile",
+                      "value": "1234567890"
+                    },
+                    {
+                      "key": "otp",
+                      "value": "1947"
+                    },
+                    {
+                      "key": "DID",
+                      "value": "test-device-1"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "verifyOTP"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Login Success\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"data\": {\n    \"id\": 22,\n    \"name\": \"Test Devotee\",\n    \"mobile\": \"1234567890\",\n    \"email\": \"test@example.com\",\n    \"city\": \"\",\n    \"address\": \"\",\n    \"otp\": \"\",\n    \"active\": 1,\n    \"isPaid\": 1,\n    \"donation\": 0,\n    \"donation_audio\": 0,\n    \"amount\": \"\",\n    \"Part_1\": 1,\n    \"Part_2\": 0,\n    \"upasanaPaid\": 0,\n    \"nityaniyamPaid\": 0,\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  }\n}"
             },
             {
               "name": "401 — wrong OTP",
-              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" }, { "key": "otp", "value": "0000" }, { "key": "DID", "value": "test-device-1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "verifyOTP" } ] } },
-              "status": "Unauthorized", "code": 401, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "mobile",
+                      "value": "1234567890"
+                    },
+                    {
+                      "key": "otp",
+                      "value": "0000"
+                    },
+                    {
+                      "key": "DID",
+                      "value": "test-device-1"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=verifyOTP",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "verifyOTP"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 401,\n  \"error\": \"true\",\n  \"message\": \"OTP Incorrect\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gallery (no token)",
+      "description": "Photo gallery (छायाचित्रे) for the app. Public — no Bearer token needed. Only albums the admin marked Published are returned, and every image url is an absolute URL ready for an Image widget.",
+      "item": [
+        {
+          "name": "gallery — published albums + flat photo list",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "category",
+                  "value": "all",
+                  "type": "text",
+                  "description": "all | maharaj | events"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "30",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=gallery",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "gallery"
+                }
+              ]
+            },
+            "description": "One call gives both shapes the gallery screen needs:\n- albums[] — album/category listing\n- photos[] — one flat list for the top carousel and the grid\n\nOptional params: category (default all), page + limit (omit both to get every photo)."
+          },
+          "response": [
+            {
+              "name": "200 — gallery loaded",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "category",
+                      "value": "all"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=gallery",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "gallery"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Gallery loaded\",\n  \"categories\": [\n    {\n      \"key\": \"events\",\n      \"albumCount\": 1\n    },\n    {\n      \"key\": \"maharaj\",\n      \"albumCount\": 1\n    }\n  ],\n  \"albums\": [\n    {\n      \"id\": 3,\n      \"title\": \"demoo\",\n      \"category\": \"maharaj\",\n      \"date\": \"2026-08-10\",\n      \"cover\": \"https://<host>/uploads/image/1786358735697-659042-screenshot-1163.png\",\n      \"photoCount\": 2,\n      \"photos\": [\n        {\n          \"key\": \"p3\",\n          \"id\": 3,\n          \"url\": \"https://<host>/uploads/image/1786358886461-683277-15.png\",\n          \"caption\": \"test\",\n          \"sortOrder\": 1,\n          \"isCover\": false\n        }\n      ]\n    }\n  ],\n  \"photos\": [\n    {\n      \"key\": \"p3\",\n      \"id\": 3,\n      \"url\": \"https://<host>/uploads/image/1786358886461-683277-15.png\",\n      \"caption\": \"test\",\n      \"sortOrder\": 1,\n      \"isCover\": false,\n      \"albumId\": 3,\n      \"albumTitle\": \"demoo\",\n      \"category\": \"maharaj\"\n    }\n  ],\n  \"total\": 3,\n  \"page\": 1,\n  \"pages\": 1,\n  \"limit\": 3\n}"
+            }
+          ]
+        },
+        {
+          "name": "gallery_album — one album with its photos",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "3",
+                  "type": "text",
+                  "description": "album id"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=gallery_album",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "gallery_album"
+                }
+              ]
+            },
+            "description": "Album detail screen. 400 when id is missing/not a number, 404 when the album does not exist or is unpublished."
+          },
+          "response": [
+            {
+              "name": "200 — album loaded",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "id",
+                      "value": "3"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=gallery_album",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "gallery_album"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Album loaded\",\n  \"album\": {\n    \"id\": 3,\n    \"title\": \"demoo\",\n    \"category\": \"maharaj\",\n    \"date\": \"2026-08-10\",\n    \"cover\": \"https://<host>/uploads/image/1786358735697-659042-screenshot-1163.png\",\n    \"photoCount\": 2,\n    \"photos\": [\n      {\n        \"key\": \"p3\",\n        \"id\": 3,\n        \"url\": \"https://<host>/uploads/image/1786358886461-683277-15.png\",\n        \"caption\": \"test\",\n        \"sortOrder\": 1,\n        \"isCover\": false\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "404 — album not found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "id",
+                      "value": "999"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=gallery_album",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "gallery_album"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 404,\n  \"error\": \"true\",\n  \"message\": \"Album not found\"\n}"
             }
           ]
         }
@@ -124,16 +708,76 @@
           "name": "home — modules + owned flag + song counts",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=home", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "home" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=home",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "home"
+                }
+              ]
+            },
             "description": "Home screen for the logged-in user: all 4 modules with name, price, whether THIS user owns it (owned), and how many published songs it has (songCount). Drive locked/unlocked UI from `owned`."
           },
           "response": [
             {
               "name": "200 — modules",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=home", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "home" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=home",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "home"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Modules\",\n  \"modules\": [\n    { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251, \"owned\": true,  \"songCount\": 3 },\n    { \"code\": \"gita2\", \"name\": \"Gitanjali Part 2\", \"price\": 251, \"owned\": false, \"songCount\": 3 },\n    { \"code\": \"upasana\", \"name\": \"Upasana Part\", \"price\": 151, \"owned\": false, \"songCount\": 4 },\n    { \"code\": \"nithya\", \"name\": \"Nityaniyam Part\", \"price\": 251, \"owned\": false, \"songCount\": 3 }\n  ]\n}"
             }
           ]
@@ -142,16 +786,87 @@
           "name": "get_content — songs of a module (OWNED)",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita1", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_content", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_content" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "product",
+                  "value": "gita1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=get_content",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "get_content"
+                }
+              ]
+            },
             "description": "Songs of a module. `product` = module code (gita1 | gita2 | upasana | nithya).\nWhen the user OWNS it: owned=true and each item has a full playable audioUrl + lyrics.\ntype is 'audio' (has audioUrl) or 'text' (lyrics only). Render by sortOrder."
           },
           "response": [
             {
               "name": "200 — owned (full audio + lyrics)",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_content", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_content" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "product",
+                      "value": "gita1"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=get_content",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "get_content"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Content loaded\",\n  \"owned\": true,\n  \"product\": { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251 },\n  \"content\": [\n    {\n      \"id\": 1,\n      \"title\": \"Mangalacharan\",\n      \"type\": \"audio\",\n      \"duration\": 312,\n      \"sortOrder\": 1,\n      \"plays\": 1841,\n      \"locked\": false,\n      \"audioUrl\": \"http://localhost:5000/uploads/audio/mangalacharan.mp3\",\n      \"lyrics\": \"Om Namah Shivaya...\"\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Aarti — Sukhkarta Dukhharta\",\n      \"type\": \"audio\",\n      \"duration\": 248,\n      \"sortOrder\": 2,\n      \"plays\": 2615,\n      \"locked\": false,\n      \"audioUrl\": \"http://localhost:5000/uploads/audio/aarti.mp3\",\n      \"lyrics\": \"...\"\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Gitanjali Part 1 — Lyrics\",\n      \"type\": \"text\",\n      \"duration\": 0,\n      \"sortOrder\": 3,\n      \"plays\": 980,\n      \"locked\": false,\n      \"audioUrl\": null,\n      \"lyrics\": \"Full lyrics text here...\"\n    }\n  ]\n}"
             }
           ]
@@ -160,16 +875,87 @@
           "name": "get_content — songs of a module (LOCKED)",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita2", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_content", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_content" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "product",
+                  "value": "gita2",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=get_content",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "get_content"
+                }
+              ]
+            },
             "description": "When the user does NOT own the module: owned=false, titles still listed (locked=true) but audioUrl & lyrics are withheld (null). App shows a locked state — NO price, NO buy button, NO website link (app-store reader-app rule)."
           },
           "response": [
             {
               "name": "200 — locked (media withheld)",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita2" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_content", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_content" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "product",
+                      "value": "gita2"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=get_content",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "get_content"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Content loaded\",\n  \"owned\": false,\n  \"product\": { \"code\": \"gita2\", \"name\": \"Gitanjali Part 2\", \"price\": 251 },\n  \"content\": [\n    { \"id\": 4, \"title\": \"Song A\", \"type\": \"audio\", \"duration\": 260, \"sortOrder\": 1, \"plays\": 120, \"locked\": true, \"audioUrl\": null, \"lyrics\": null },\n    { \"id\": 5, \"title\": \"Song B\", \"type\": \"audio\", \"duration\": 300, \"sortOrder\": 2, \"plays\": 90, \"locked\": true, \"audioUrl\": null, \"lyrics\": null }\n  ]\n}"
             }
           ]
@@ -178,22 +964,118 @@
           "name": "subscribed_items — main items the user has subscribed to",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "subscribed_items" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "subscribed_items"
+                }
+              ]
+            },
             "description": "List ONLY the main items (modules/products) the logged-in user has subscribed to. Same shape as `home` but filters out locked modules. Each entry has code, name, price, and itemCount (published sub-items inside)."
           },
           "response": [
             {
               "name": "200 — subscribed items",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "subscribed_items" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "subscribed_items"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Subscribed items\",\n  \"items\": [\n    { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251, \"itemCount\": 3 }\n  ]\n}"
             },
             {
               "name": "200 — no subscriptions",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "subscribed_items" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=subscribed_items",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "subscribed_items"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"No subscriptions\",\n  \"items\": []\n}"
             }
           ]
@@ -202,22 +1084,134 @@
           "name": "sub_items — detailed list of sub-items of a subscribed module",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita1", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=sub_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "sub_items" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "product",
+                  "value": "gita1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=sub_items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "sub_items"
+                }
+              ]
+            },
             "description": "Detailed list of the sub-items (Content rows) inside a subscribed module. `product` = module code (gita1 | gita2 | upasana | nithya). Returns metadata only — no media URL. Call `get_media` when the user taps an item to fetch the playable URL. Returns 403 if the module is NOT subscribed."
           },
           "response": [
             {
               "name": "200 — sub items",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=sub_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "sub_items" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "product",
+                      "value": "gita1"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=sub_items",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "sub_items"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Sub items loaded\",\n  \"product\": { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\", \"price\": 251 },\n  \"items\": [\n    { \"id\": 1, \"title\": \"Mangalacharan\", \"type\": \"audio\", \"duration\": 312, \"sortOrder\": 1, \"plays\": 1841, \"hasAudio\": true,  \"hasLyrics\": true },\n    { \"id\": 2, \"title\": \"Aarti — Sukhkarta Dukhharta\", \"type\": \"audio\", \"duration\": 248, \"sortOrder\": 2, \"plays\": 2615, \"hasAudio\": true,  \"hasLyrics\": true },\n    { \"id\": 3, \"title\": \"Gitanjali Part 1 — Lyrics\", \"type\": \"text\",  \"duration\": 0,   \"sortOrder\": 3, \"plays\": 980,  \"hasAudio\": false, \"hasLyrics\": true }\n  ]\n}"
             },
             {
               "name": "403 — module not subscribed",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "product", "value": "gita2" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=sub_items", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "sub_items" } ] } },
-              "status": "Forbidden", "code": 403, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "product",
+                      "value": "gita2"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=sub_items",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "sub_items"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 403,\n  \"error\": \"true\",\n  \"message\": \"This module is not subscribed\"\n}"
             }
           ]
@@ -226,28 +1220,181 @@
           "name": "get_media — media file for a tapped item",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "1", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=get_media",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "get_media"
+                }
+              ]
+            },
             "description": "Called when the user taps an item in the sub-items list. `id` = content id. Returns absolute audioUrl + lyrics — but only if the caller has subscribed to the parent module (else 403)."
           },
           "response": [
             {
               "name": "200 — media",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=get_media",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "get_media"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Media loaded\",\n  \"id\": 1,\n  \"title\": \"Mangalacharan\",\n  \"type\": \"audio\",\n  \"duration\": 312,\n  \"audioUrl\": \"http://localhost:5000/uploads/audio/mangalacharan.mp3\",\n  \"lyrics\": \"Om Namah Shivaya...\"\n}"
             },
             {
               "name": "403 — module not subscribed",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "5" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] } },
-              "status": "Forbidden", "code": 403, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "id",
+                      "value": "5"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=get_media",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "get_media"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 403,\n  \"error\": \"true\",\n  \"message\": \"This module is not subscribed\"\n}"
             },
             {
               "name": "404 — content not found",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "99999" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=get_media", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "get_media" } ] } },
-              "status": "Not Found", "code": 404, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "id",
+                      "value": "99999"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=get_media",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "get_media"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 404,\n  \"error\": \"true\",\n  \"message\": \"Content not found\"\n}"
             }
           ]
@@ -256,22 +1403,134 @@
           "name": "mark_played — +1 play count for a song",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "1", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=mark_played", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "mark_played" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=mark_played",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "mark_played"
+                }
+              ]
+            },
             "description": "Call when a song actually starts playing (optional; feeds admin analytics). id = content id. Only counts if the user owns the song's module, else 403."
           },
           "response": [
             {
               "name": "200 — counted",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "1" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=mark_played", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "mark_played" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "id",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=mark_played",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "mark_played"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"OK\"\n}"
             },
             {
               "name": "403 — module not unlocked",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "5" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=mark_played", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "mark_played" } ] } },
-              "status": "Forbidden", "code": 403, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "id",
+                      "value": "5"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=mark_played",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "mark_played"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 403,\n  \"error\": \"true\",\n  \"message\": \"This module is not unlocked for you\"\n}"
             }
           ]
@@ -280,16 +1539,87 @@
           "name": "check_status — refresh entitlement flags",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "{{mobile}}", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=check_status", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "check_status" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "mobile",
+                  "value": "{{mobile}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=check_status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "check_status"
+                }
+              ]
+            },
             "description": "Re-fetch the user (fresh Part_1 / Part_2 / upasanaPaid / nityaniyamPaid). Call on app open/resume and pull-to-refresh so a website purchase unlocks WITHOUT reinstall."
           },
           "response": [
             {
               "name": "200 — user",
-              "originalRequest": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "1234567890" } ] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=check_status", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "check_status" } ] } },
-              "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "mobile",
+                      "value": "1234567890"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=check_status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "check_status"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Active User Save Successfully\",\n  \"data\": {\n    \"id\": 22,\n    \"name\": \"Test Devotee\",\n    \"mobile\": \"1234567890\",\n    \"isPaid\": 1,\n    \"Part_1\": 1,\n    \"Part_2\": 0,\n    \"upasanaPaid\": 0,\n    \"nityaniyamPaid\": 0,\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  }\n}"
             }
           ]
@@ -298,9 +1628,39 @@
           "name": "receipts — paid receipts for a user",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "22", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=receipts", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "receipts" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "22",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=receipts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "receipts"
+                }
+              ]
+            },
             "description": "Successful payments for a user (id = user id). Returns amount, status, dates, payment_type."
           },
           "response": []
@@ -314,9 +1674,44 @@
           "name": "check_active_session — is this device still logged in?",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "mobile", "value": "{{mobile}}", "type": "text" }, { "key": "DID", "value": "test-device-1", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=check_active_session", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "check_active_session" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "mobile",
+                  "value": "{{mobile}}",
+                  "type": "text"
+                },
+                {
+                  "key": "DID",
+                  "value": "test-device-1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=check_active_session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "check_active_session"
+                }
+              ]
+            },
             "description": "Success if THIS device (DID) is still the active session; 401 'Is Logged Out' if logged in elsewhere."
           },
           "response": []
@@ -325,9 +1720,44 @@
           "name": "active_session — logout from all devices",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
-            "body": { "mode": "urlencoded", "urlencoded": [ { "key": "id", "value": "22", "type": "text" }, { "key": "mobile", "value": "{{mobile}}", "type": "text" } ] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=active_session", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "active_session" } ] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "22",
+                  "type": "text"
+                },
+                {
+                  "key": "mobile",
+                  "value": "{{mobile}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=active_session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "active_session"
+                }
+              ]
+            },
             "description": "Log the user out from all devices."
           },
           "response": []
@@ -342,15 +1772,52 @@
           "request": {
             "method": "POST",
             "header": [],
-            "body": { "mode": "urlencoded", "urlencoded": [] },
-            "url": { "raw": "{{baseUrl}}/api/mobile", "host": ["{{baseUrl}}"], "path": ["api", "mobile"] },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ]
+            },
             "description": "No apicall param -> 400 Invalid API Call."
           },
           "response": [
             {
               "name": "400",
-              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile", "host": ["{{baseUrl}}"], "path": ["api", "mobile"] } },
-              "status": "Bad Request", "code": 400, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 400,\n  \"error\": \"true\",\n  \"message\": \"Invalid API Call\"\n}"
             }
           ]
@@ -360,15 +1827,64 @@
           "request": {
             "method": "POST",
             "header": [],
-            "body": { "mode": "urlencoded", "urlencoded": [] },
-            "url": { "raw": "{{baseUrl}}/api/mobile?apicall=home", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "home" } ] },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile?apicall=home",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile"
+              ],
+              "query": [
+                {
+                  "key": "apicall",
+                  "value": "home"
+                }
+              ]
+            },
             "description": "Any authenticated apicall without a valid Bearer token -> 401."
           },
           "response": [
             {
               "name": "401",
-              "originalRequest": { "method": "POST", "header": [], "body": { "mode": "urlencoded", "urlencoded": [] }, "url": { "raw": "{{baseUrl}}/api/mobile?apicall=home", "host": ["{{baseUrl}}"], "path": ["api", "mobile"], "query": [ { "key": "apicall", "value": "home" } ] } },
-              "status": "Unauthorized", "code": 401, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/mobile?apicall=home",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "mobile"
+                  ],
+                  "query": [
+                    {
+                      "key": "apicall",
+                      "value": "home"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"status\": 401,\n  \"error\": \"true\",\n  \"message\": \"Not authenticated. Please log in.\"\n}"
             }
           ]

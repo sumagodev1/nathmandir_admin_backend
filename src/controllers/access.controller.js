@@ -7,8 +7,12 @@ import { resolveProductId } from '../lib/products.js'
 // GET /api/access?query=&from=&to=&page=&limit=  — access matrix (users × products)
 export async function list(req, res) {
   const { query = '', from = '', to = '' } = req.query
+  // Products stay ascending — they are the matrix's columns, and the sidebar
+  // and every other screen list the Parts in that same order.
   const products = await prisma.product.findMany({ orderBy: { id: 'asc' } })
-  const users = await prisma.user.findMany({ include: { access: true }, orderBy: { id: 'asc' } })
+  // Users newest first, matching the Users screen. A devotee who just bought
+  // access sat on the last page here while appearing at the top there.
+  const users = await prisma.user.findMany({ include: { access: true }, orderBy: { id: 'desc' } })
 
   const q = String(query).trim().toLowerCase()
   const rows = users

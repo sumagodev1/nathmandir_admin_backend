@@ -167,6 +167,9 @@ and example responses for every operation.
 - Backend base URL (dev: `http://localhost:5000/api/mobile`; production URL TBD).
 - The module→flag table above.
 - The content endpoints in §4 (`home`, `get_content`, `mark_played`).
+- **Gallery (छायाचित्रे) — `docs/APP_GALLERY_API.md`.** The gallery photos are
+  currently hard-coded in the app; the `gallery` / `gallery_album` apicalls make
+  them live from the admin panel (no token needed). Hand that file over as-is.
 - Instruction: **remove all in‑app payment**, gate by flags, fetch songs via
   `get_content`, refresh via `check_status`.
 - Note for store review: it's a **reader app** — content is purchased on the

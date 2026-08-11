@@ -105,9 +105,15 @@ export async function update(req, res) {
   if (sortOrder !== undefined) data.sortOrder = Number(sortOrder)
   if (audioUrl !== undefined) {
     data.audioUrl = audioUrl || null
-    // Attaching/replacing an audio file makes this an audio item so the app
-    // (and the admin "Play" button) treat it correctly. Never auto-downgrade.
-    if (audioUrl) data.type = 'audio'
+    // The type simply follows the audio, in both directions. Attaching a file
+    // makes it an audio item; clearing the field makes it a text item.
+    //
+    // This used to only ever upgrade to 'audio', which left a cleared item
+    // marked audio with no file behind it — the Play button sat there dead and
+    // the "Text Items" KPI stayed at 0 no matter how many items you emptied.
+    // A PATCH that does not mention audioUrl at all still can't change the
+    // type, because the whole branch is guarded on `!== undefined`.
+    data.type = audioUrl ? 'audio' : 'text'
   }
 
   try {

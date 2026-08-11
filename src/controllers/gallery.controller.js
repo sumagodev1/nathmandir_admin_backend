@@ -24,7 +24,9 @@ export async function list(req, res) {
   const albums = await prisma.album.findMany({
     where,
     include: { _count: { select: { photos: true } } },
-    orderBy: { id: 'asc' },
+    // Newest first, which also matches the public gallery (public.controller.js
+    // already serves albums id desc) — the two used to disagree.
+    orderBy: { id: 'desc' },
   })
   const pg = paginate(albums.map(shapeAlbum), req.query)
   res.json({ albums: pg.data, total: pg.total, page: pg.page, pages: pg.pages, limit: pg.limit })

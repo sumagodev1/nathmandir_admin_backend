@@ -1,7 +1,6 @@
 // ── Express app ───────────────────────────────────────────────
 // Builds the app and mounts all API routes. server.js starts it.
 import express from 'express'
-import { appendFileSync } from 'node:fs'
 import cors from 'cors'
 import compression from 'compression'
 import { prisma } from './lib/prisma.js'
@@ -35,28 +34,14 @@ export const app = express()
 // https://api.nathmandir.sumago.ai/uploads/... instead of http://...
 app.set('trust proxy', true)
 
-app.use(cors())         // allow the React admin panel to call this API
-
-// ── TEMP DEBUG (remove once the panel save issue is closed) ──────────────
-// Records whether a request arrives, whether we answer it, and whether the
-// browser hung up before reading the answer. Set DEBUG_REQ_LOG to a file path.
-if (process.env.DEBUG_REQ_LOG) {
-  const put = (s) => { try { appendFileSync(process.env.DEBUG_REQ_LOG, s + '\n') } catch {} }
-  app.use((req, res, next) => {
-    const started = Date.now()
-    const tag = `${req.method} ${req.originalUrl}`
-    put(`${new Date().toISOString()}  -->  ${tag}  origin=${req.headers.origin || '-'}`)
-    res.on('finish', () =>
-      put(`${new Date().toISOString()}  <--  ${tag}  ${res.statusCode}  (${Date.now() - started}ms)`))
-    res.on('close', () => {
-      if (!res.writableFinished) {
-        put(`${new Date().toISOString()}  XXX  ${tag}  CLIENT HUNG UP before the response was sent (${Date.now() - started}ms)`)
-      }
-    })
-    next()
-  })
-}
-// ── end TEMP DEBUG ───────────────────────────────────────────────────────
+// Allow the React admin panel to call this API. The method list is spelled out
+// rather than left to the library default because every panel save is a PATCH,
+// PUT or DELETE, and a preflight missing any of them fails the request outright
+// with "Method PATCH is not allowed by Access-Control-Allow-Methods".
+app.use(cors({
+  methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}))
 
 // gzip every response above 1 KB. The admin list endpoints return sizeable
 // JSON (users ≈170 KB, payments ≈275 KB, access ≈187 KB) and this cuts them by
@@ -94,8 +79,8 @@ app.use('/api', (req, res, next) => {
 // Health check — open http://localhost:5000/
 app.get('/', async (req, res) => {
   try {
-    await prisma.$queryRaw`SELECT 1`
-    res.json({ status: 'ok', message: '✅ Backend running + connected to shreenath_admin' })
+    const [{ db }] = await prisma.$queryRaw`SELECT DATABASE() AS db`
+    res.json({ status: 'ok', message: `✅ Backend running + connected to ${db}` })
   } catch (err) {
     res.status(500).json({ status: 'error', message: '❌ Database unreachable', detail: err.message })
   }

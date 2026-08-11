@@ -226,15 +226,18 @@ paths:
           • verifyOTP  { otp, mobile, DID }      → { token, data: user }
           • check_status { mobile }  [Bearer]    → { data: user } (refresh entitlements)
           • register   { name, email, mobile }   → creates a user
+          • gallery    { category?, page?, limit? }  → published albums + flat photo list (no token)
+          • gallery_album { id }                 → one published album (no token)
 
         Test account: mobile 1234567890 always gets OTP 1947.
+        Gallery details for the app developer: docs/APP_GALLERY_API.md
       parameters:
         - in: query
           name: apicall
           required: true
           schema:
             type: string
-            enum: [loginuser, verifyOTP, check_status, register]
+            enum: [loginuser, verifyOTP, check_status, register, gallery, gallery_album]
           example: loginuser
       requestBody:
         content:
@@ -247,6 +250,8 @@ paths:
                 DID: { type: string, example: "test-device-01" }
                 name: { type: string, example: "New Devotee" }
                 email: { type: string, example: "new@example.com" }
+                category: { type: string, example: "all", description: "gallery: all | maharaj | events" }
+                id: { type: string, example: "3", description: "gallery_album: album id" }
       responses:
         '200':
           description: Operation result (shape depends on apicall)

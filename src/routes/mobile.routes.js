@@ -5,7 +5,7 @@
 // AUTH: most operations require the mobile JWT as a Bearer token
 //   (Authorization: Bearer <token>). The token is issued by verifyOTP
 //   and stored on the user row. These are PUBLIC (no token needed):
-//     loginuser, verifyOTP, register, admin_login
+//     loginuser, verifyOTP, register, admin_login, gallery, gallery_album
 //   Everything else returns 401 without a valid token.
 //
 // Operations (apicall):
@@ -28,6 +28,8 @@
 //   subscribed_items                                     [auth]   → main items the user has subscribed to
 //   sub_items           { product }                      [auth]   → detailed sub-items of a subscribed module
 //   get_media           { id }                           [auth]   → media URL + lyrics for a tapped item
+//   gallery             { category?, page?, limit? }     [public] → published albums + flat photo list
+//   gallery_album       { id }                           [public] → one published album with its photos
 //
 // NOTE: this uses its own mobile JWT — separate from the admin panel auth.
 import { Router } from 'express'

@@ -54,13 +54,28 @@ export const grantExpiry = (durationKey, fromDate = new Date()) => {
   return dt
 }
 
+// A user_access row only counts while it has not expired — a lapsed 7/15-day
+// grant is no longer access the devotee can use.
+//
+// Both the users list and the dashboard have to apply this, and they used to
+// decide separately: the list filtered expired rows out while the dashboard
+// counted every row, so once a timed grant lapsed a KPI card read higher than
+// the list it drills into. Share the rule so they can't disagree again.
+export const isActiveGrant = (a, now = new Date()) => !a.expiresOn || a.expiresOn > now
+
+// The same rule as a Prisma `where` fragment, for queries that count access
+// rows in the database instead of in JS.
+export const activeGrantWhere = (now = new Date()) => ({
+  OR: [{ expiresOn: null }, { expiresOn: { gt: now } }],
+})
+
 // Shape a user (with `access` + `sales` included) into the row the UI expects.
 export const shapeUserRow = (u) => {
   // Ownership comes solely from user_access rows. Expired rows are excluded so
   // the "subscribed" badge and access list reflect what the user can actually use.
   const now = new Date()
   const access = u.access
-    .filter((a) => !a.expiresOn || a.expiresOn > now)
+    .filter((a) => isActiveGrant(a, now))
     .map((a) => a.productId)
   const totalPaid = u.sales.reduce((sum, s) => sum + s.amount, 0)
   const saleDates = u.sales.map((s) => ymd(s.createdAt)).sort()

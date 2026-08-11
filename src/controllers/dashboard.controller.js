@@ -2,6 +2,7 @@
 // Handler for /api/dashboard/stats — every KPI the dashboard shows.
 import { prisma } from '../lib/prisma.js'
 import { productMaps } from '../lib/products.js'
+import { isActiveGrant, activeGrantWhere } from '../lib/helpers.js'
 
 // GET /api/dashboard/stats
 export async function stats(req, res) {
@@ -10,8 +11,14 @@ export async function stats(req, res) {
   // in terms of the public codes, so translate once up front.
   const { codeById } = await productMaps()
 
+  // Every count below is about access a user can still use, so expired grants
+  // drop out here once and the rest of the handler works from that. One clock
+  // reading for the whole request keeps the KPIs consistent with each other.
+  const now = new Date()
+  const grantsOf = (u) => u.access.filter((a) => isActiveGrant(a, now))
+
   const totalUsers = users.length
-  const subscribedUsers = users.filter((u) => u.access.length > 0).length
+  const subscribedUsers = users.filter((u) => grantsOf(u).length > 0).length
   const unsubscribedUsers = totalUsers - subscribedUsers
   const activeUsers = users.filter((u) => u.status === 'active').length
 
@@ -23,7 +30,7 @@ export async function stats(req, res) {
   // Gitanjali part breakdown.
   let onlyPart1 = 0, onlyPart2 = 0, both = 0
   for (const u of users) {
-    const codes = u.access.map((a) => codeById.get(a.productId))
+    const codes = grantsOf(u).map((a) => codeById.get(a.productId))
     const p1 = codes.includes('gita1')
     const p2 = codes.includes('gita2')
     if (p1 && p2) both++
@@ -35,7 +42,13 @@ export async function stats(req, res) {
     prisma.sale.aggregate({ _sum: { amount: true } }),
     prisma.content.aggregate({ _sum: { plays: true } }),
     prisma.product.findMany({ select: { id: true, code: true, name: true, shortName: true, price: true } }),
-    prisma.userAccess.groupBy({ by: ['productId'], _count: { productId: true } }),
+    // "Subscribers" per module, expired grants excluded — same rule as the
+    // Subscribed Users KPI above, so the two never tell different stories.
+    prisma.userAccess.groupBy({
+      by: ['productId'],
+      where: activeGrantWhere(now),
+      _count: { productId: true },
+    }),
     prisma.sale.groupBy({
       by: ['productId'],
       where: { status: 'success' },

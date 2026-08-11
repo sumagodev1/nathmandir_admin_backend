@@ -74,6 +74,10 @@ CREATE TABLE IF NOT EXISTS login_user (
 -- Separate from app payments/subscriptions: a donation is a one-off
 -- gift of any amount, with no module unlock. Stores the donor details,
 -- chosen category, amount and the Razorpay references.
+-- Also holds donations received offline. Not every devotee gives through the
+-- app or website: some hand over cash at the temple, some transfer straight to
+-- the bank account shown in the app. Those never touch Razorpay, so an admin
+-- records them by hand and `mode` says which kind it is.
 CREATE TABLE IF NOT EXISTS donation (
   id                  INT AUTO_INCREMENT PRIMARY KEY,
   name                VARCHAR(255)  DEFAULT NULL,
@@ -84,6 +88,10 @@ CREATE TABLE IF NOT EXISTS donation (
   razorpay_order_id   VARCHAR(255)  DEFAULT NULL,
   razorpay_payment_id VARCHAR(255)  DEFAULT NULL,
   status              VARCHAR(10)   DEFAULT '0',  -- '1' = successful, 'failed' = signature mismatch
+  mode                VARCHAR(20)   NOT NULL DEFAULT 'online', -- online | cash | bank
+  txn_ref             VARCHAR(255)  DEFAULT NULL, -- bank reference / UTR, for mode = 'bank'
+  note                VARCHAR(500)  DEFAULT NULL, -- free text, e.g. "given at temple on Ekadashi"
+  recorded_by         VARCHAR(255)  DEFAULT NULL, -- admin who entered an offline donation
   created_at          DATETIME      DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME      DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

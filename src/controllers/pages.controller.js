@@ -14,7 +14,10 @@ const shape = (p) => ({
 
 // GET /api/pages?page=&limit=   — list
 export async function list(req, res) {
-  const pages = await prisma.page.findMany({ orderBy: { id: 'asc' } })
+  // Newest first for the admin list only. The public site keeps its own
+  // ascending order (public.controller.js) because that drives the running
+  // order visitors see, which must not change when a page is added.
+  const pages = await prisma.page.findMany({ orderBy: { id: 'desc' } })
   const pg = paginate(pages.map(shape), req.query)
   // Note: the resource key is `pages`, so the page-count is exposed as `pageCount`.
   res.json({ pages: pg.data, total: pg.total, page: pg.page, pageCount: pg.pages, limit: pg.limit })

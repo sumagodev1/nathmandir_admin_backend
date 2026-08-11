@@ -8,5 +8,6 @@ const router = Router()
 router.use(requireAuth)
 
 router.get('/', donations.list)
+router.post('/', donations.create) // manual entry for cash / bank donations
 
 export default router

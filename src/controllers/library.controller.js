@@ -26,7 +26,9 @@ export async function list(req, res) {
   const books = await prisma.book.findMany({
     where,
     include: { _count: { select: { chapters: true } } },
-    orderBy: { id: 'asc' },
+    // Newest first: the admin opens this screen to check what was just added,
+    // and ascending order buried a new book on the last page.
+    orderBy: { id: 'desc' },
   })
   const pg = paginate(books.map(shapeBook), req.query)
   res.json({ books: pg.data, total: pg.total, page: pg.page, pages: pg.pages, limit: pg.limit })
