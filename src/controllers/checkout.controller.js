@@ -47,6 +47,26 @@ async function fetchAllProductIds() {
   return new Set(products.map((p) => p.code))
 }
 
+// Modules this number already has — bought or granted, and not expired.
+// user_access is the single source of truth for ownership.
+// Used twice: verify-otp returns it so the website can grey out books the
+// devotee already owns, and create-order re-checks it so a second payment for
+// the same book is refused even if the browser skipped that hint (two tabs,
+// back button, slow network).
+// An unknown number returns [] — nothing is leaked, and the caller has proven
+// the number with an OTP before this is ever sent back.
+async function ownedModules(mobile) {
+  const user = await prisma.user.findFirst({
+    where: { phone: mobile },
+    include: { access: { include: { product: true } } },
+  })
+  if (!user) return []
+  const now = new Date()
+  return user.access
+    .filter((a) => a.product && (!a.expiresOn || a.expiresOn > now))
+    .map((a) => ({ id: a.product.id, code: a.product.code, name: a.product.name }))
+}
+
 // Find a user by phone, or create a lightweight account (auto-register).
 // Always keyed on the canonical 10-digit number so a devotee is one account
 // no matter how the number was typed (09420…, +91 9420…, 9420…).
@@ -173,7 +193,16 @@ export async function verifyOtp(req, res) {
     where: { phone: mobile },
     data: { verifiedAt: new Date(), attempts: 0 },
   })
-  return sendOk(res, 'Mobile verified', { verified: true })
+
+  // Send back what this number already owns so the website can grey those books
+  // out and re-total the cart HERE, instead of letting the devotee press
+  // "Verify & Pay ₹1305" and only then be refused by create-order.
+  const owned = await ownedModules(mobile)
+  return sendOk(res, 'Mobile verified', {
+    verified: true,
+    owned: owned.map((p) => ({ code: p.code, name: p.name })),
+    ownedCodes: owned.map((p) => p.code),
+  })
 }
 
 // Normalise the requested module code(s) from the body. Accepts either
@@ -223,25 +252,20 @@ export async function createOrder(req, res) {
   }
 
   // If the number already owns any of the selected modules, stop early so the
-  // devotee isn't charged twice — tell them which ones to deselect. Ownership =
-  // a paid flag on the row OR an access grant, checked on the canonical number.
-  const existing = await prisma.user.findFirst({
-    where: { phone: mobile },
-    include: { access: true },
-  })
-  if (existing) {
-    const now = new Date()
-    const activeIds = new Set(
-      existing.access
-        .filter((a) => !a.expiresOn || a.expiresOn > now)
-        .map((a) => a.productId)
-    )
-    const owned = items
-      .filter((it) => activeIds.has(it.product.id))
-      .map((it) => it.product.name)
-    if (owned.length) {
-      return sendFail(res, `This number already owns: ${owned.join(', ')}. Please deselect it.`, STATUS.CONFLICT)
-    }
+  // devotee isn't charged twice. Two different situations, two messages:
+  //   • owns SOME  → they can still pay for the rest, so name the ones to drop.
+  //   • owns ALL   → "deselect" would leave an empty cart; there is nothing to
+  //     buy, so point them at the app instead of a dead end.
+  const ownedIds = new Set((await ownedModules(mobile)).map((p) => p.id))
+  const ownedNames = items
+    .filter((it) => ownedIds.has(it.product.id))
+    .map((it) => it.product.name)
+  if (ownedNames.length) {
+    const message =
+      ownedNames.length === items.length
+        ? `This number already owns ${items.length === 1 ? 'this' : 'all these'}: ${ownedNames.join(', ')}. There is nothing left to buy — open the Nath Mandir app and log in with ${mobile}.`
+        : `This number already owns: ${ownedNames.join(', ')}. Please deselect it.`
+    return sendFail(res, message, STATUS.CONFLICT, { owned: ownedNames, ownsAll: ownedNames.length === items.length })
   }
 
   const totalRupees = items.reduce((sum, it) => sum + it.product.price, 0)

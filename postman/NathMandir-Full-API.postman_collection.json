@@ -76,14 +76,14 @@
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": { "mode": "raw", "raw": "{\n  \"mobile\": \"{{mobile}}\",\n  \"otp\": \"{{otp}}\"\n}" },
             "url": { "raw": "{{baseUrl}}/api/checkout/verify-otp", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "verify-otp"] },
-            "description": "Confirms the OTP. Single-use (cleared on success). After this the website proceeds to create-order + pay."
+            "description": "Confirms the OTP. Single-use (cleared on success). Also returns `owned` / `ownedCodes` — the modules this number ALREADY has. The website must grey those out and re-total the cart here; if every selected module is owned, show \"open the app\" instead of the pay button. After this the website proceeds to create-order + pay."
           },
           "response": [
             {
               "name": "200 — verified",
               "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"1234567890\",\"otp\":\"1947\"}" }, "url": { "raw": "{{baseUrl}}/api/checkout/verify-otp", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "verify-otp"] } },
               "status": "OK", "code": 200, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
-              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Mobile verified\",\n  \"verified\": true\n}"
+              "body": "{\n  \"status\": 200,\n  \"error\": \"false\",\n  \"message\": \"Mobile verified\",\n  \"verified\": true,\n  \"owned\": [ { \"code\": \"gita1\", \"name\": \"Gitanjali Part 1\" } ],\n  \"ownedCodes\": [\"gita1\"]\n}"
             },
             {
               "name": "401 — incorrect / expired",
@@ -113,7 +113,13 @@
               "name": "409 — already owns one of them",
               "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"1234567890\",\"name\":\"Test\",\"modules\":[\"gita1\",\"gita2\"]}" }, "url": { "raw": "{{baseUrl}}/api/checkout/create-order", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "create-order"] } },
               "status": "Conflict", "code": 409, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
-              "body": "{\n  \"status\": 409,\n  \"error\": \"true\",\n  \"message\": \"This number already owns: Gitanjali Part 1. Please deselect it.\"\n}"
+              "body": "{\n  \"status\": 409,\n  \"error\": \"true\",\n  \"message\": \"This number already owns: Gitanjali Part 1. Please deselect it.\",\n  \"owned\": [\"Gitanjali Part 1\"],\n  \"ownsAll\": false\n}"
+            },
+            {
+              "name": "409 — already owns ALL of them",
+              "originalRequest": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\"mobile\":\"9960455147\",\"name\":\"Shankar\",\"modules\":[\"gita1\",\"gita2\"]}" }, "url": { "raw": "{{baseUrl}}/api/checkout/create-order", "host": ["{{baseUrl}}"], "path": ["api", "checkout", "create-order"] } },
+              "status": "Conflict", "code": 409, "_postman_previewlanguage": "json", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"status\": 409,\n  \"error\": \"true\",\n  \"message\": \"This number already owns all these: Gitanjali Part 1, Gitanjali Part 2. There is nothing left to buy — open the Nath Mandir app and log in with 9960455147.\",\n  \"owned\": [\"Gitanjali Part 1\", \"Gitanjali Part 2\"],\n  \"ownsAll\": true\n}"
             },
             {
               "name": "400 — no module selected",
