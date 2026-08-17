@@ -34,6 +34,16 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Content = $Result.DefaultSelection<Prisma.$ContentPayload>
 /**
+ * Model ContentNode
+ * 
+ */
+export type ContentNode = $Result.DefaultSelection<Prisma.$ContentNodePayload>
+/**
+ * Model ContentSchedule
+ * 
+ */
+export type ContentSchedule = $Result.DefaultSelection<Prisma.$ContentSchedulePayload>
+/**
  * Model UserAccess
  * 
  */
@@ -109,6 +119,27 @@ export const ContentType: {
 export type ContentType = (typeof ContentType)[keyof typeof ContentType]
 
 
+export const ContentSession: {
+  morning: 'morning',
+  afternoon: 'afternoon'
+};
+
+export type ContentSession = (typeof ContentSession)[keyof typeof ContentSession]
+
+
+export const Weekday: {
+  mon: 'mon',
+  tue: 'tue',
+  wed: 'wed',
+  thu: 'thu',
+  fri: 'fri',
+  sat: 'sat',
+  sun: 'sun'
+};
+
+export type Weekday = (typeof Weekday)[keyof typeof Weekday]
+
+
 export const AccessSource: {
   purchased: 'purchased',
   granted: 'granted'
@@ -143,6 +174,14 @@ export const UserStatus: typeof $Enums.UserStatus
 export type ContentType = $Enums.ContentType
 
 export const ContentType: typeof $Enums.ContentType
+
+export type ContentSession = $Enums.ContentSession
+
+export const ContentSession: typeof $Enums.ContentSession
+
+export type Weekday = $Enums.Weekday
+
+export const Weekday: typeof $Enums.Weekday
 
 export type AccessSource = $Enums.AccessSource
 
@@ -318,6 +357,26 @@ export class PrismaClient<
     * ```
     */
   get content(): Prisma.ContentDelegate<ExtArgs>;
+
+  /**
+   * `prisma.contentNode`: Exposes CRUD operations for the **ContentNode** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContentNodes
+    * const contentNodes = await prisma.contentNode.findMany()
+    * ```
+    */
+  get contentNode(): Prisma.ContentNodeDelegate<ExtArgs>;
+
+  /**
+   * `prisma.contentSchedule`: Exposes CRUD operations for the **ContentSchedule** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContentSchedules
+    * const contentSchedules = await prisma.contentSchedule.findMany()
+    * ```
+    */
+  get contentSchedule(): Prisma.ContentScheduleDelegate<ExtArgs>;
 
   /**
    * `prisma.userAccess`: Exposes CRUD operations for the **UserAccess** model.
@@ -873,6 +932,8 @@ export namespace Prisma {
     Product: 'Product',
     User: 'User',
     Content: 'Content',
+    ContentNode: 'ContentNode',
+    ContentSchedule: 'ContentSchedule',
     UserAccess: 'UserAccess',
     Sale: 'Sale',
     Notification: 'Notification',
@@ -899,7 +960,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "admin" | "product" | "user" | "content" | "userAccess" | "sale" | "notification" | "book" | "chapter" | "album" | "photo" | "page" | "setting" | "siteSection" | "otpChallenge"
+      modelProps: "admin" | "product" | "user" | "content" | "contentNode" | "contentSchedule" | "userAccess" | "sale" | "notification" | "book" | "chapter" | "album" | "photo" | "page" | "setting" | "siteSection" | "otpChallenge"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1164,6 +1225,138 @@ export namespace Prisma {
           count: {
             args: Prisma.ContentCountArgs<ExtArgs>
             result: $Utils.Optional<ContentCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContentNode: {
+        payload: Prisma.$ContentNodePayload<ExtArgs>
+        fields: Prisma.ContentNodeFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContentNodeFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentNodePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContentNodeFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentNodePayload>
+          }
+          findFirst: {
+            args: Prisma.ContentNodeFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentNodePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContentNodeFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentNodePayload>
+          }
+          findMany: {
+            args: Prisma.ContentNodeFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentNodePayload>[]
+          }
+          create: {
+            args: Prisma.ContentNodeCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentNodePayload>
+          }
+          createMany: {
+            args: Prisma.ContentNodeCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContentNodeDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentNodePayload>
+          }
+          update: {
+            args: Prisma.ContentNodeUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentNodePayload>
+          }
+          deleteMany: {
+            args: Prisma.ContentNodeDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContentNodeUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContentNodeUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentNodePayload>
+          }
+          aggregate: {
+            args: Prisma.ContentNodeAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContentNode>
+          }
+          groupBy: {
+            args: Prisma.ContentNodeGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContentNodeGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ContentNodeCountArgs<ExtArgs>
+            result: $Utils.Optional<ContentNodeCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContentSchedule: {
+        payload: Prisma.$ContentSchedulePayload<ExtArgs>
+        fields: Prisma.ContentScheduleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContentScheduleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentSchedulePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContentScheduleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentSchedulePayload>
+          }
+          findFirst: {
+            args: Prisma.ContentScheduleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentSchedulePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContentScheduleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentSchedulePayload>
+          }
+          findMany: {
+            args: Prisma.ContentScheduleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentSchedulePayload>[]
+          }
+          create: {
+            args: Prisma.ContentScheduleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentSchedulePayload>
+          }
+          createMany: {
+            args: Prisma.ContentScheduleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContentScheduleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentSchedulePayload>
+          }
+          update: {
+            args: Prisma.ContentScheduleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentSchedulePayload>
+          }
+          deleteMany: {
+            args: Prisma.ContentScheduleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContentScheduleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContentScheduleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentSchedulePayload>
+          }
+          aggregate: {
+            args: Prisma.ContentScheduleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContentSchedule>
+          }
+          groupBy: {
+            args: Prisma.ContentScheduleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContentScheduleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ContentScheduleCountArgs<ExtArgs>
+            result: $Utils.Optional<ContentScheduleCountAggregateOutputType> | number
           }
         }
       }
@@ -2057,12 +2250,14 @@ export namespace Prisma {
     content: number
     access: number
     sales: number
+    nodes: number
   }
 
   export type ProductCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     content?: boolean | ProductCountOutputTypeCountContentArgs
     access?: boolean | ProductCountOutputTypeCountAccessArgs
     sales?: boolean | ProductCountOutputTypeCountSalesArgs
+    nodes?: boolean | ProductCountOutputTypeCountNodesArgs
   }
 
   // Custom InputTypes
@@ -2095,6 +2290,13 @@ export namespace Prisma {
    */
   export type ProductCountOutputTypeCountSalesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SaleWhereInput
+  }
+
+  /**
+   * ProductCountOutputType without action
+   */
+  export type ProductCountOutputTypeCountNodesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentNodeWhereInput
   }
 
 
@@ -2135,6 +2337,77 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSalesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SaleWhereInput
+  }
+
+
+  /**
+   * Count Type ContentCountOutputType
+   */
+
+  export type ContentCountOutputType = {
+    schedule: number
+  }
+
+  export type ContentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    schedule?: boolean | ContentCountOutputTypeCountScheduleArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ContentCountOutputType without action
+   */
+  export type ContentCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentCountOutputType
+     */
+    select?: ContentCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ContentCountOutputType without action
+   */
+  export type ContentCountOutputTypeCountScheduleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentScheduleWhereInput
+  }
+
+
+  /**
+   * Count Type ContentNodeCountOutputType
+   */
+
+  export type ContentNodeCountOutputType = {
+    children: number
+    content: number
+  }
+
+  export type ContentNodeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    children?: boolean | ContentNodeCountOutputTypeCountChildrenArgs
+    content?: boolean | ContentNodeCountOutputTypeCountContentArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ContentNodeCountOutputType without action
+   */
+  export type ContentNodeCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNodeCountOutputType
+     */
+    select?: ContentNodeCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ContentNodeCountOutputType without action
+   */
+  export type ContentNodeCountOutputTypeCountChildrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentNodeWhereInput
+  }
+
+  /**
+   * ContentNodeCountOutputType without action
+   */
+  export type ContentNodeCountOutputTypeCountContentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentWhereInput
   }
 
 
@@ -3294,6 +3567,7 @@ export namespace Prisma {
     content?: boolean | Product$contentArgs<ExtArgs>
     access?: boolean | Product$accessArgs<ExtArgs>
     sales?: boolean | Product$salesArgs<ExtArgs>
+    nodes?: boolean | Product$nodesArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
 
@@ -3311,6 +3585,7 @@ export namespace Prisma {
     content?: boolean | Product$contentArgs<ExtArgs>
     access?: boolean | Product$accessArgs<ExtArgs>
     sales?: boolean | Product$salesArgs<ExtArgs>
+    nodes?: boolean | Product$nodesArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -3320,6 +3595,7 @@ export namespace Prisma {
       content: Prisma.$ContentPayload<ExtArgs>[]
       access: Prisma.$UserAccessPayload<ExtArgs>[]
       sales: Prisma.$SalePayload<ExtArgs>[]
+      nodes: Prisma.$ContentNodePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -3671,6 +3947,7 @@ export namespace Prisma {
     content<T extends Product$contentArgs<ExtArgs> = {}>(args?: Subset<T, Product$contentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentPayload<ExtArgs>, T, "findMany"> | Null>
     access<T extends Product$accessArgs<ExtArgs> = {}>(args?: Subset<T, Product$accessArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserAccessPayload<ExtArgs>, T, "findMany"> | Null>
     sales<T extends Product$salesArgs<ExtArgs> = {}>(args?: Subset<T, Product$salesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SalePayload<ExtArgs>, T, "findMany"> | Null>
+    nodes<T extends Product$nodesArgs<ExtArgs> = {}>(args?: Subset<T, Product$nodesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4062,6 +4339,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SaleScalarFieldEnum | SaleScalarFieldEnum[]
+  }
+
+  /**
+   * Product.nodes
+   */
+  export type Product$nodesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    where?: ContentNodeWhereInput
+    orderBy?: ContentNodeOrderByWithRelationInput | ContentNodeOrderByWithRelationInput[]
+    cursor?: ContentNodeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ContentNodeScalarFieldEnum | ContentNodeScalarFieldEnum[]
   }
 
   /**
@@ -5272,6 +5569,7 @@ export namespace Prisma {
     plays: number | null
     listeners: number | null
     sortOrder: number | null
+    nodeId: number | null
   }
 
   export type ContentSumAggregateOutputType = {
@@ -5281,6 +5579,7 @@ export namespace Prisma {
     plays: number | null
     listeners: number | null
     sortOrder: number | null
+    nodeId: number | null
   }
 
   export type ContentMinAggregateOutputType = {
@@ -5295,6 +5594,7 @@ export namespace Prisma {
     listeners: number | null
     published: boolean | null
     sortOrder: number | null
+    nodeId: number | null
   }
 
   export type ContentMaxAggregateOutputType = {
@@ -5309,6 +5609,7 @@ export namespace Prisma {
     listeners: number | null
     published: boolean | null
     sortOrder: number | null
+    nodeId: number | null
   }
 
   export type ContentCountAggregateOutputType = {
@@ -5323,6 +5624,7 @@ export namespace Prisma {
     listeners: number
     published: number
     sortOrder: number
+    nodeId: number
     _all: number
   }
 
@@ -5334,6 +5636,7 @@ export namespace Prisma {
     plays?: true
     listeners?: true
     sortOrder?: true
+    nodeId?: true
   }
 
   export type ContentSumAggregateInputType = {
@@ -5343,6 +5646,7 @@ export namespace Prisma {
     plays?: true
     listeners?: true
     sortOrder?: true
+    nodeId?: true
   }
 
   export type ContentMinAggregateInputType = {
@@ -5357,6 +5661,7 @@ export namespace Prisma {
     listeners?: true
     published?: true
     sortOrder?: true
+    nodeId?: true
   }
 
   export type ContentMaxAggregateInputType = {
@@ -5371,6 +5676,7 @@ export namespace Prisma {
     listeners?: true
     published?: true
     sortOrder?: true
+    nodeId?: true
   }
 
   export type ContentCountAggregateInputType = {
@@ -5385,6 +5691,7 @@ export namespace Prisma {
     listeners?: true
     published?: true
     sortOrder?: true
+    nodeId?: true
     _all?: true
   }
 
@@ -5486,6 +5793,7 @@ export namespace Prisma {
     listeners: number
     published: boolean
     sortOrder: number
+    nodeId: number | null
     _count: ContentCountAggregateOutputType | null
     _avg: ContentAvgAggregateOutputType | null
     _sum: ContentSumAggregateOutputType | null
@@ -5519,7 +5827,11 @@ export namespace Prisma {
     listeners?: boolean
     published?: boolean
     sortOrder?: boolean
+    nodeId?: boolean
     product?: boolean | ProductDefaultArgs<ExtArgs>
+    schedule?: boolean | Content$scheduleArgs<ExtArgs>
+    node?: boolean | Content$nodeArgs<ExtArgs>
+    _count?: boolean | ContentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["content"]>
 
 
@@ -5535,16 +5847,22 @@ export namespace Prisma {
     listeners?: boolean
     published?: boolean
     sortOrder?: boolean
+    nodeId?: boolean
   }
 
   export type ContentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     product?: boolean | ProductDefaultArgs<ExtArgs>
+    schedule?: boolean | Content$scheduleArgs<ExtArgs>
+    node?: boolean | Content$nodeArgs<ExtArgs>
+    _count?: boolean | ContentCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $ContentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Content"
     objects: {
       product: Prisma.$ProductPayload<ExtArgs>
+      schedule: Prisma.$ContentSchedulePayload<ExtArgs>[]
+      node: Prisma.$ContentNodePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -5558,6 +5876,7 @@ export namespace Prisma {
       listeners: number
       published: boolean
       sortOrder: number
+      nodeId: number | null
     }, ExtArgs["result"]["content"]>
     composites: {}
   }
@@ -5899,6 +6218,8 @@ export namespace Prisma {
   export interface Prisma__ContentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     product<T extends ProductDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProductDefaultArgs<ExtArgs>>): Prisma__ProductClient<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    schedule<T extends Content$scheduleArgs<ExtArgs> = {}>(args?: Subset<T, Content$scheduleArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "findMany"> | Null>
+    node<T extends Content$nodeArgs<ExtArgs> = {}>(args?: Subset<T, Content$nodeArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5939,6 +6260,7 @@ export namespace Prisma {
     readonly listeners: FieldRef<"Content", 'Int'>
     readonly published: FieldRef<"Content", 'Boolean'>
     readonly sortOrder: FieldRef<"Content", 'Int'>
+    readonly nodeId: FieldRef<"Content", 'Int'>
   }
     
 
@@ -6238,6 +6560,41 @@ export namespace Prisma {
   }
 
   /**
+   * Content.schedule
+   */
+  export type Content$scheduleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    where?: ContentScheduleWhereInput
+    orderBy?: ContentScheduleOrderByWithRelationInput | ContentScheduleOrderByWithRelationInput[]
+    cursor?: ContentScheduleWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ContentScheduleScalarFieldEnum | ContentScheduleScalarFieldEnum[]
+  }
+
+  /**
+   * Content.node
+   */
+  export type Content$nodeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    where?: ContentNodeWhereInput
+  }
+
+  /**
    * Content without action
    */
   export type ContentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6249,6 +6606,1928 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ContentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ContentNode
+   */
+
+  export type AggregateContentNode = {
+    _count: ContentNodeCountAggregateOutputType | null
+    _avg: ContentNodeAvgAggregateOutputType | null
+    _sum: ContentNodeSumAggregateOutputType | null
+    _min: ContentNodeMinAggregateOutputType | null
+    _max: ContentNodeMaxAggregateOutputType | null
+  }
+
+  export type ContentNodeAvgAggregateOutputType = {
+    id: number | null
+    productId: number | null
+    parentId: number | null
+    sortOrder: number | null
+  }
+
+  export type ContentNodeSumAggregateOutputType = {
+    id: number | null
+    productId: number | null
+    parentId: number | null
+    sortOrder: number | null
+  }
+
+  export type ContentNodeMinAggregateOutputType = {
+    id: number | null
+    productId: number | null
+    parentId: number | null
+    name: string | null
+    kind: string | null
+    sortOrder: number | null
+    createdAt: Date | null
+  }
+
+  export type ContentNodeMaxAggregateOutputType = {
+    id: number | null
+    productId: number | null
+    parentId: number | null
+    name: string | null
+    kind: string | null
+    sortOrder: number | null
+    createdAt: Date | null
+  }
+
+  export type ContentNodeCountAggregateOutputType = {
+    id: number
+    productId: number
+    parentId: number
+    name: number
+    kind: number
+    sortOrder: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ContentNodeAvgAggregateInputType = {
+    id?: true
+    productId?: true
+    parentId?: true
+    sortOrder?: true
+  }
+
+  export type ContentNodeSumAggregateInputType = {
+    id?: true
+    productId?: true
+    parentId?: true
+    sortOrder?: true
+  }
+
+  export type ContentNodeMinAggregateInputType = {
+    id?: true
+    productId?: true
+    parentId?: true
+    name?: true
+    kind?: true
+    sortOrder?: true
+    createdAt?: true
+  }
+
+  export type ContentNodeMaxAggregateInputType = {
+    id?: true
+    productId?: true
+    parentId?: true
+    name?: true
+    kind?: true
+    sortOrder?: true
+    createdAt?: true
+  }
+
+  export type ContentNodeCountAggregateInputType = {
+    id?: true
+    productId?: true
+    parentId?: true
+    name?: true
+    kind?: true
+    sortOrder?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ContentNodeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContentNode to aggregate.
+     */
+    where?: ContentNodeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentNodes to fetch.
+     */
+    orderBy?: ContentNodeOrderByWithRelationInput | ContentNodeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContentNodeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentNodes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentNodes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContentNodes
+    **/
+    _count?: true | ContentNodeCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ContentNodeAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContentNodeSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContentNodeMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContentNodeMaxAggregateInputType
+  }
+
+  export type GetContentNodeAggregateType<T extends ContentNodeAggregateArgs> = {
+        [P in keyof T & keyof AggregateContentNode]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContentNode[P]>
+      : GetScalarType<T[P], AggregateContentNode[P]>
+  }
+
+
+
+
+  export type ContentNodeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentNodeWhereInput
+    orderBy?: ContentNodeOrderByWithAggregationInput | ContentNodeOrderByWithAggregationInput[]
+    by: ContentNodeScalarFieldEnum[] | ContentNodeScalarFieldEnum
+    having?: ContentNodeScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContentNodeCountAggregateInputType | true
+    _avg?: ContentNodeAvgAggregateInputType
+    _sum?: ContentNodeSumAggregateInputType
+    _min?: ContentNodeMinAggregateInputType
+    _max?: ContentNodeMaxAggregateInputType
+  }
+
+  export type ContentNodeGroupByOutputType = {
+    id: number
+    productId: number
+    parentId: number | null
+    name: string
+    kind: string | null
+    sortOrder: number
+    createdAt: Date
+    _count: ContentNodeCountAggregateOutputType | null
+    _avg: ContentNodeAvgAggregateOutputType | null
+    _sum: ContentNodeSumAggregateOutputType | null
+    _min: ContentNodeMinAggregateOutputType | null
+    _max: ContentNodeMaxAggregateOutputType | null
+  }
+
+  type GetContentNodeGroupByPayload<T extends ContentNodeGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContentNodeGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContentNodeGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContentNodeGroupByOutputType[P]>
+            : GetScalarType<T[P], ContentNodeGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContentNodeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    productId?: boolean
+    parentId?: boolean
+    name?: boolean
+    kind?: boolean
+    sortOrder?: boolean
+    createdAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+    parent?: boolean | ContentNode$parentArgs<ExtArgs>
+    children?: boolean | ContentNode$childrenArgs<ExtArgs>
+    content?: boolean | ContentNode$contentArgs<ExtArgs>
+    _count?: boolean | ContentNodeCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["contentNode"]>
+
+
+  export type ContentNodeSelectScalar = {
+    id?: boolean
+    productId?: boolean
+    parentId?: boolean
+    name?: boolean
+    kind?: boolean
+    sortOrder?: boolean
+    createdAt?: boolean
+  }
+
+  export type ContentNodeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+    parent?: boolean | ContentNode$parentArgs<ExtArgs>
+    children?: boolean | ContentNode$childrenArgs<ExtArgs>
+    content?: boolean | ContentNode$contentArgs<ExtArgs>
+    _count?: boolean | ContentNodeCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $ContentNodePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContentNode"
+    objects: {
+      product: Prisma.$ProductPayload<ExtArgs>
+      parent: Prisma.$ContentNodePayload<ExtArgs> | null
+      children: Prisma.$ContentNodePayload<ExtArgs>[]
+      content: Prisma.$ContentPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      productId: number
+      parentId: number | null
+      name: string
+      kind: string | null
+      sortOrder: number
+      createdAt: Date
+    }, ExtArgs["result"]["contentNode"]>
+    composites: {}
+  }
+
+  type ContentNodeGetPayload<S extends boolean | null | undefined | ContentNodeDefaultArgs> = $Result.GetResult<Prisma.$ContentNodePayload, S>
+
+  type ContentNodeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ContentNodeFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ContentNodeCountAggregateInputType | true
+    }
+
+  export interface ContentNodeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContentNode'], meta: { name: 'ContentNode' } }
+    /**
+     * Find zero or one ContentNode that matches the filter.
+     * @param {ContentNodeFindUniqueArgs} args - Arguments to find a ContentNode
+     * @example
+     * // Get one ContentNode
+     * const contentNode = await prisma.contentNode.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContentNodeFindUniqueArgs>(args: SelectSubset<T, ContentNodeFindUniqueArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ContentNode that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ContentNodeFindUniqueOrThrowArgs} args - Arguments to find a ContentNode
+     * @example
+     * // Get one ContentNode
+     * const contentNode = await prisma.contentNode.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContentNodeFindUniqueOrThrowArgs>(args: SelectSubset<T, ContentNodeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ContentNode that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentNodeFindFirstArgs} args - Arguments to find a ContentNode
+     * @example
+     * // Get one ContentNode
+     * const contentNode = await prisma.contentNode.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContentNodeFindFirstArgs>(args?: SelectSubset<T, ContentNodeFindFirstArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ContentNode that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentNodeFindFirstOrThrowArgs} args - Arguments to find a ContentNode
+     * @example
+     * // Get one ContentNode
+     * const contentNode = await prisma.contentNode.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContentNodeFindFirstOrThrowArgs>(args?: SelectSubset<T, ContentNodeFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ContentNodes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentNodeFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContentNodes
+     * const contentNodes = await prisma.contentNode.findMany()
+     * 
+     * // Get first 10 ContentNodes
+     * const contentNodes = await prisma.contentNode.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contentNodeWithIdOnly = await prisma.contentNode.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContentNodeFindManyArgs>(args?: SelectSubset<T, ContentNodeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ContentNode.
+     * @param {ContentNodeCreateArgs} args - Arguments to create a ContentNode.
+     * @example
+     * // Create one ContentNode
+     * const ContentNode = await prisma.contentNode.create({
+     *   data: {
+     *     // ... data to create a ContentNode
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContentNodeCreateArgs>(args: SelectSubset<T, ContentNodeCreateArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ContentNodes.
+     * @param {ContentNodeCreateManyArgs} args - Arguments to create many ContentNodes.
+     * @example
+     * // Create many ContentNodes
+     * const contentNode = await prisma.contentNode.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContentNodeCreateManyArgs>(args?: SelectSubset<T, ContentNodeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ContentNode.
+     * @param {ContentNodeDeleteArgs} args - Arguments to delete one ContentNode.
+     * @example
+     * // Delete one ContentNode
+     * const ContentNode = await prisma.contentNode.delete({
+     *   where: {
+     *     // ... filter to delete one ContentNode
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContentNodeDeleteArgs>(args: SelectSubset<T, ContentNodeDeleteArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ContentNode.
+     * @param {ContentNodeUpdateArgs} args - Arguments to update one ContentNode.
+     * @example
+     * // Update one ContentNode
+     * const contentNode = await prisma.contentNode.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContentNodeUpdateArgs>(args: SelectSubset<T, ContentNodeUpdateArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ContentNodes.
+     * @param {ContentNodeDeleteManyArgs} args - Arguments to filter ContentNodes to delete.
+     * @example
+     * // Delete a few ContentNodes
+     * const { count } = await prisma.contentNode.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContentNodeDeleteManyArgs>(args?: SelectSubset<T, ContentNodeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContentNodes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentNodeUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContentNodes
+     * const contentNode = await prisma.contentNode.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContentNodeUpdateManyArgs>(args: SelectSubset<T, ContentNodeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ContentNode.
+     * @param {ContentNodeUpsertArgs} args - Arguments to update or create a ContentNode.
+     * @example
+     * // Update or create a ContentNode
+     * const contentNode = await prisma.contentNode.upsert({
+     *   create: {
+     *     // ... data to create a ContentNode
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContentNode we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContentNodeUpsertArgs>(args: SelectSubset<T, ContentNodeUpsertArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ContentNodes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentNodeCountArgs} args - Arguments to filter ContentNodes to count.
+     * @example
+     * // Count the number of ContentNodes
+     * const count = await prisma.contentNode.count({
+     *   where: {
+     *     // ... the filter for the ContentNodes we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContentNodeCountArgs>(
+      args?: Subset<T, ContentNodeCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContentNodeCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContentNode.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentNodeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContentNodeAggregateArgs>(args: Subset<T, ContentNodeAggregateArgs>): Prisma.PrismaPromise<GetContentNodeAggregateType<T>>
+
+    /**
+     * Group by ContentNode.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentNodeGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContentNodeGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContentNodeGroupByArgs['orderBy'] }
+        : { orderBy?: ContentNodeGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContentNodeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContentNodeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContentNode model
+   */
+  readonly fields: ContentNodeFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContentNode.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContentNodeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    product<T extends ProductDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProductDefaultArgs<ExtArgs>>): Prisma__ProductClient<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    parent<T extends ContentNode$parentArgs<ExtArgs> = {}>(args?: Subset<T, ContentNode$parentArgs<ExtArgs>>): Prisma__ContentNodeClient<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    children<T extends ContentNode$childrenArgs<ExtArgs> = {}>(args?: Subset<T, ContentNode$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentNodePayload<ExtArgs>, T, "findMany"> | Null>
+    content<T extends ContentNode$contentArgs<ExtArgs> = {}>(args?: Subset<T, ContentNode$contentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContentNode model
+   */ 
+  interface ContentNodeFieldRefs {
+    readonly id: FieldRef<"ContentNode", 'Int'>
+    readonly productId: FieldRef<"ContentNode", 'Int'>
+    readonly parentId: FieldRef<"ContentNode", 'Int'>
+    readonly name: FieldRef<"ContentNode", 'String'>
+    readonly kind: FieldRef<"ContentNode", 'String'>
+    readonly sortOrder: FieldRef<"ContentNode", 'Int'>
+    readonly createdAt: FieldRef<"ContentNode", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContentNode findUnique
+   */
+  export type ContentNodeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentNode to fetch.
+     */
+    where: ContentNodeWhereUniqueInput
+  }
+
+  /**
+   * ContentNode findUniqueOrThrow
+   */
+  export type ContentNodeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentNode to fetch.
+     */
+    where: ContentNodeWhereUniqueInput
+  }
+
+  /**
+   * ContentNode findFirst
+   */
+  export type ContentNodeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentNode to fetch.
+     */
+    where?: ContentNodeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentNodes to fetch.
+     */
+    orderBy?: ContentNodeOrderByWithRelationInput | ContentNodeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContentNodes.
+     */
+    cursor?: ContentNodeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentNodes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentNodes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContentNodes.
+     */
+    distinct?: ContentNodeScalarFieldEnum | ContentNodeScalarFieldEnum[]
+  }
+
+  /**
+   * ContentNode findFirstOrThrow
+   */
+  export type ContentNodeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentNode to fetch.
+     */
+    where?: ContentNodeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentNodes to fetch.
+     */
+    orderBy?: ContentNodeOrderByWithRelationInput | ContentNodeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContentNodes.
+     */
+    cursor?: ContentNodeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentNodes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentNodes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContentNodes.
+     */
+    distinct?: ContentNodeScalarFieldEnum | ContentNodeScalarFieldEnum[]
+  }
+
+  /**
+   * ContentNode findMany
+   */
+  export type ContentNodeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentNodes to fetch.
+     */
+    where?: ContentNodeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentNodes to fetch.
+     */
+    orderBy?: ContentNodeOrderByWithRelationInput | ContentNodeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContentNodes.
+     */
+    cursor?: ContentNodeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentNodes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentNodes.
+     */
+    skip?: number
+    distinct?: ContentNodeScalarFieldEnum | ContentNodeScalarFieldEnum[]
+  }
+
+  /**
+   * ContentNode create
+   */
+  export type ContentNodeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ContentNode.
+     */
+    data: XOR<ContentNodeCreateInput, ContentNodeUncheckedCreateInput>
+  }
+
+  /**
+   * ContentNode createMany
+   */
+  export type ContentNodeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContentNodes.
+     */
+    data: ContentNodeCreateManyInput | ContentNodeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ContentNode update
+   */
+  export type ContentNodeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ContentNode.
+     */
+    data: XOR<ContentNodeUpdateInput, ContentNodeUncheckedUpdateInput>
+    /**
+     * Choose, which ContentNode to update.
+     */
+    where: ContentNodeWhereUniqueInput
+  }
+
+  /**
+   * ContentNode updateMany
+   */
+  export type ContentNodeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContentNodes.
+     */
+    data: XOR<ContentNodeUpdateManyMutationInput, ContentNodeUncheckedUpdateManyInput>
+    /**
+     * Filter which ContentNodes to update
+     */
+    where?: ContentNodeWhereInput
+  }
+
+  /**
+   * ContentNode upsert
+   */
+  export type ContentNodeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ContentNode to update in case it exists.
+     */
+    where: ContentNodeWhereUniqueInput
+    /**
+     * In case the ContentNode found by the `where` argument doesn't exist, create a new ContentNode with this data.
+     */
+    create: XOR<ContentNodeCreateInput, ContentNodeUncheckedCreateInput>
+    /**
+     * In case the ContentNode was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContentNodeUpdateInput, ContentNodeUncheckedUpdateInput>
+  }
+
+  /**
+   * ContentNode delete
+   */
+  export type ContentNodeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    /**
+     * Filter which ContentNode to delete.
+     */
+    where: ContentNodeWhereUniqueInput
+  }
+
+  /**
+   * ContentNode deleteMany
+   */
+  export type ContentNodeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContentNodes to delete
+     */
+    where?: ContentNodeWhereInput
+  }
+
+  /**
+   * ContentNode.parent
+   */
+  export type ContentNode$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    where?: ContentNodeWhereInput
+  }
+
+  /**
+   * ContentNode.children
+   */
+  export type ContentNode$childrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+    where?: ContentNodeWhereInput
+    orderBy?: ContentNodeOrderByWithRelationInput | ContentNodeOrderByWithRelationInput[]
+    cursor?: ContentNodeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ContentNodeScalarFieldEnum | ContentNodeScalarFieldEnum[]
+  }
+
+  /**
+   * ContentNode.content
+   */
+  export type ContentNode$contentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Content
+     */
+    select?: ContentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentInclude<ExtArgs> | null
+    where?: ContentWhereInput
+    orderBy?: ContentOrderByWithRelationInput | ContentOrderByWithRelationInput[]
+    cursor?: ContentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ContentScalarFieldEnum | ContentScalarFieldEnum[]
+  }
+
+  /**
+   * ContentNode without action
+   */
+  export type ContentNodeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentNode
+     */
+    select?: ContentNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentNodeInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ContentSchedule
+   */
+
+  export type AggregateContentSchedule = {
+    _count: ContentScheduleCountAggregateOutputType | null
+    _avg: ContentScheduleAvgAggregateOutputType | null
+    _sum: ContentScheduleSumAggregateOutputType | null
+    _min: ContentScheduleMinAggregateOutputType | null
+    _max: ContentScheduleMaxAggregateOutputType | null
+  }
+
+  export type ContentScheduleAvgAggregateOutputType = {
+    id: number | null
+    contentId: number | null
+  }
+
+  export type ContentScheduleSumAggregateOutputType = {
+    id: number | null
+    contentId: number | null
+  }
+
+  export type ContentScheduleMinAggregateOutputType = {
+    id: number | null
+    contentId: number | null
+    session: $Enums.ContentSession | null
+    day: $Enums.Weekday | null
+  }
+
+  export type ContentScheduleMaxAggregateOutputType = {
+    id: number | null
+    contentId: number | null
+    session: $Enums.ContentSession | null
+    day: $Enums.Weekday | null
+  }
+
+  export type ContentScheduleCountAggregateOutputType = {
+    id: number
+    contentId: number
+    session: number
+    day: number
+    _all: number
+  }
+
+
+  export type ContentScheduleAvgAggregateInputType = {
+    id?: true
+    contentId?: true
+  }
+
+  export type ContentScheduleSumAggregateInputType = {
+    id?: true
+    contentId?: true
+  }
+
+  export type ContentScheduleMinAggregateInputType = {
+    id?: true
+    contentId?: true
+    session?: true
+    day?: true
+  }
+
+  export type ContentScheduleMaxAggregateInputType = {
+    id?: true
+    contentId?: true
+    session?: true
+    day?: true
+  }
+
+  export type ContentScheduleCountAggregateInputType = {
+    id?: true
+    contentId?: true
+    session?: true
+    day?: true
+    _all?: true
+  }
+
+  export type ContentScheduleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContentSchedule to aggregate.
+     */
+    where?: ContentScheduleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentSchedules to fetch.
+     */
+    orderBy?: ContentScheduleOrderByWithRelationInput | ContentScheduleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContentScheduleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentSchedules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentSchedules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContentSchedules
+    **/
+    _count?: true | ContentScheduleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ContentScheduleAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContentScheduleSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContentScheduleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContentScheduleMaxAggregateInputType
+  }
+
+  export type GetContentScheduleAggregateType<T extends ContentScheduleAggregateArgs> = {
+        [P in keyof T & keyof AggregateContentSchedule]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContentSchedule[P]>
+      : GetScalarType<T[P], AggregateContentSchedule[P]>
+  }
+
+
+
+
+  export type ContentScheduleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentScheduleWhereInput
+    orderBy?: ContentScheduleOrderByWithAggregationInput | ContentScheduleOrderByWithAggregationInput[]
+    by: ContentScheduleScalarFieldEnum[] | ContentScheduleScalarFieldEnum
+    having?: ContentScheduleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContentScheduleCountAggregateInputType | true
+    _avg?: ContentScheduleAvgAggregateInputType
+    _sum?: ContentScheduleSumAggregateInputType
+    _min?: ContentScheduleMinAggregateInputType
+    _max?: ContentScheduleMaxAggregateInputType
+  }
+
+  export type ContentScheduleGroupByOutputType = {
+    id: number
+    contentId: number
+    session: $Enums.ContentSession
+    day: $Enums.Weekday
+    _count: ContentScheduleCountAggregateOutputType | null
+    _avg: ContentScheduleAvgAggregateOutputType | null
+    _sum: ContentScheduleSumAggregateOutputType | null
+    _min: ContentScheduleMinAggregateOutputType | null
+    _max: ContentScheduleMaxAggregateOutputType | null
+  }
+
+  type GetContentScheduleGroupByPayload<T extends ContentScheduleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContentScheduleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContentScheduleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContentScheduleGroupByOutputType[P]>
+            : GetScalarType<T[P], ContentScheduleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContentScheduleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    contentId?: boolean
+    session?: boolean
+    day?: boolean
+    content?: boolean | ContentDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["contentSchedule"]>
+
+
+  export type ContentScheduleSelectScalar = {
+    id?: boolean
+    contentId?: boolean
+    session?: boolean
+    day?: boolean
+  }
+
+  export type ContentScheduleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    content?: boolean | ContentDefaultArgs<ExtArgs>
+  }
+
+  export type $ContentSchedulePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContentSchedule"
+    objects: {
+      content: Prisma.$ContentPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      contentId: number
+      session: $Enums.ContentSession
+      day: $Enums.Weekday
+    }, ExtArgs["result"]["contentSchedule"]>
+    composites: {}
+  }
+
+  type ContentScheduleGetPayload<S extends boolean | null | undefined | ContentScheduleDefaultArgs> = $Result.GetResult<Prisma.$ContentSchedulePayload, S>
+
+  type ContentScheduleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ContentScheduleFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ContentScheduleCountAggregateInputType | true
+    }
+
+  export interface ContentScheduleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContentSchedule'], meta: { name: 'ContentSchedule' } }
+    /**
+     * Find zero or one ContentSchedule that matches the filter.
+     * @param {ContentScheduleFindUniqueArgs} args - Arguments to find a ContentSchedule
+     * @example
+     * // Get one ContentSchedule
+     * const contentSchedule = await prisma.contentSchedule.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContentScheduleFindUniqueArgs>(args: SelectSubset<T, ContentScheduleFindUniqueArgs<ExtArgs>>): Prisma__ContentScheduleClient<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ContentSchedule that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ContentScheduleFindUniqueOrThrowArgs} args - Arguments to find a ContentSchedule
+     * @example
+     * // Get one ContentSchedule
+     * const contentSchedule = await prisma.contentSchedule.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContentScheduleFindUniqueOrThrowArgs>(args: SelectSubset<T, ContentScheduleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContentScheduleClient<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ContentSchedule that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentScheduleFindFirstArgs} args - Arguments to find a ContentSchedule
+     * @example
+     * // Get one ContentSchedule
+     * const contentSchedule = await prisma.contentSchedule.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContentScheduleFindFirstArgs>(args?: SelectSubset<T, ContentScheduleFindFirstArgs<ExtArgs>>): Prisma__ContentScheduleClient<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ContentSchedule that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentScheduleFindFirstOrThrowArgs} args - Arguments to find a ContentSchedule
+     * @example
+     * // Get one ContentSchedule
+     * const contentSchedule = await prisma.contentSchedule.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContentScheduleFindFirstOrThrowArgs>(args?: SelectSubset<T, ContentScheduleFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContentScheduleClient<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ContentSchedules that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentScheduleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContentSchedules
+     * const contentSchedules = await prisma.contentSchedule.findMany()
+     * 
+     * // Get first 10 ContentSchedules
+     * const contentSchedules = await prisma.contentSchedule.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contentScheduleWithIdOnly = await prisma.contentSchedule.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContentScheduleFindManyArgs>(args?: SelectSubset<T, ContentScheduleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ContentSchedule.
+     * @param {ContentScheduleCreateArgs} args - Arguments to create a ContentSchedule.
+     * @example
+     * // Create one ContentSchedule
+     * const ContentSchedule = await prisma.contentSchedule.create({
+     *   data: {
+     *     // ... data to create a ContentSchedule
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContentScheduleCreateArgs>(args: SelectSubset<T, ContentScheduleCreateArgs<ExtArgs>>): Prisma__ContentScheduleClient<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ContentSchedules.
+     * @param {ContentScheduleCreateManyArgs} args - Arguments to create many ContentSchedules.
+     * @example
+     * // Create many ContentSchedules
+     * const contentSchedule = await prisma.contentSchedule.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContentScheduleCreateManyArgs>(args?: SelectSubset<T, ContentScheduleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ContentSchedule.
+     * @param {ContentScheduleDeleteArgs} args - Arguments to delete one ContentSchedule.
+     * @example
+     * // Delete one ContentSchedule
+     * const ContentSchedule = await prisma.contentSchedule.delete({
+     *   where: {
+     *     // ... filter to delete one ContentSchedule
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContentScheduleDeleteArgs>(args: SelectSubset<T, ContentScheduleDeleteArgs<ExtArgs>>): Prisma__ContentScheduleClient<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ContentSchedule.
+     * @param {ContentScheduleUpdateArgs} args - Arguments to update one ContentSchedule.
+     * @example
+     * // Update one ContentSchedule
+     * const contentSchedule = await prisma.contentSchedule.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContentScheduleUpdateArgs>(args: SelectSubset<T, ContentScheduleUpdateArgs<ExtArgs>>): Prisma__ContentScheduleClient<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ContentSchedules.
+     * @param {ContentScheduleDeleteManyArgs} args - Arguments to filter ContentSchedules to delete.
+     * @example
+     * // Delete a few ContentSchedules
+     * const { count } = await prisma.contentSchedule.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContentScheduleDeleteManyArgs>(args?: SelectSubset<T, ContentScheduleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContentSchedules.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentScheduleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContentSchedules
+     * const contentSchedule = await prisma.contentSchedule.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContentScheduleUpdateManyArgs>(args: SelectSubset<T, ContentScheduleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ContentSchedule.
+     * @param {ContentScheduleUpsertArgs} args - Arguments to update or create a ContentSchedule.
+     * @example
+     * // Update or create a ContentSchedule
+     * const contentSchedule = await prisma.contentSchedule.upsert({
+     *   create: {
+     *     // ... data to create a ContentSchedule
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContentSchedule we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContentScheduleUpsertArgs>(args: SelectSubset<T, ContentScheduleUpsertArgs<ExtArgs>>): Prisma__ContentScheduleClient<$Result.GetResult<Prisma.$ContentSchedulePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ContentSchedules.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentScheduleCountArgs} args - Arguments to filter ContentSchedules to count.
+     * @example
+     * // Count the number of ContentSchedules
+     * const count = await prisma.contentSchedule.count({
+     *   where: {
+     *     // ... the filter for the ContentSchedules we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContentScheduleCountArgs>(
+      args?: Subset<T, ContentScheduleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContentScheduleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContentSchedule.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentScheduleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContentScheduleAggregateArgs>(args: Subset<T, ContentScheduleAggregateArgs>): Prisma.PrismaPromise<GetContentScheduleAggregateType<T>>
+
+    /**
+     * Group by ContentSchedule.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentScheduleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContentScheduleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContentScheduleGroupByArgs['orderBy'] }
+        : { orderBy?: ContentScheduleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContentScheduleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContentScheduleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContentSchedule model
+   */
+  readonly fields: ContentScheduleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContentSchedule.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContentScheduleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    content<T extends ContentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContentDefaultArgs<ExtArgs>>): Prisma__ContentClient<$Result.GetResult<Prisma.$ContentPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContentSchedule model
+   */ 
+  interface ContentScheduleFieldRefs {
+    readonly id: FieldRef<"ContentSchedule", 'Int'>
+    readonly contentId: FieldRef<"ContentSchedule", 'Int'>
+    readonly session: FieldRef<"ContentSchedule", 'ContentSession'>
+    readonly day: FieldRef<"ContentSchedule", 'Weekday'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContentSchedule findUnique
+   */
+  export type ContentScheduleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentSchedule to fetch.
+     */
+    where: ContentScheduleWhereUniqueInput
+  }
+
+  /**
+   * ContentSchedule findUniqueOrThrow
+   */
+  export type ContentScheduleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentSchedule to fetch.
+     */
+    where: ContentScheduleWhereUniqueInput
+  }
+
+  /**
+   * ContentSchedule findFirst
+   */
+  export type ContentScheduleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentSchedule to fetch.
+     */
+    where?: ContentScheduleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentSchedules to fetch.
+     */
+    orderBy?: ContentScheduleOrderByWithRelationInput | ContentScheduleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContentSchedules.
+     */
+    cursor?: ContentScheduleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentSchedules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentSchedules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContentSchedules.
+     */
+    distinct?: ContentScheduleScalarFieldEnum | ContentScheduleScalarFieldEnum[]
+  }
+
+  /**
+   * ContentSchedule findFirstOrThrow
+   */
+  export type ContentScheduleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentSchedule to fetch.
+     */
+    where?: ContentScheduleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentSchedules to fetch.
+     */
+    orderBy?: ContentScheduleOrderByWithRelationInput | ContentScheduleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContentSchedules.
+     */
+    cursor?: ContentScheduleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentSchedules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentSchedules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContentSchedules.
+     */
+    distinct?: ContentScheduleScalarFieldEnum | ContentScheduleScalarFieldEnum[]
+  }
+
+  /**
+   * ContentSchedule findMany
+   */
+  export type ContentScheduleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentSchedules to fetch.
+     */
+    where?: ContentScheduleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentSchedules to fetch.
+     */
+    orderBy?: ContentScheduleOrderByWithRelationInput | ContentScheduleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContentSchedules.
+     */
+    cursor?: ContentScheduleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentSchedules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentSchedules.
+     */
+    skip?: number
+    distinct?: ContentScheduleScalarFieldEnum | ContentScheduleScalarFieldEnum[]
+  }
+
+  /**
+   * ContentSchedule create
+   */
+  export type ContentScheduleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ContentSchedule.
+     */
+    data: XOR<ContentScheduleCreateInput, ContentScheduleUncheckedCreateInput>
+  }
+
+  /**
+   * ContentSchedule createMany
+   */
+  export type ContentScheduleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContentSchedules.
+     */
+    data: ContentScheduleCreateManyInput | ContentScheduleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ContentSchedule update
+   */
+  export type ContentScheduleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ContentSchedule.
+     */
+    data: XOR<ContentScheduleUpdateInput, ContentScheduleUncheckedUpdateInput>
+    /**
+     * Choose, which ContentSchedule to update.
+     */
+    where: ContentScheduleWhereUniqueInput
+  }
+
+  /**
+   * ContentSchedule updateMany
+   */
+  export type ContentScheduleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContentSchedules.
+     */
+    data: XOR<ContentScheduleUpdateManyMutationInput, ContentScheduleUncheckedUpdateManyInput>
+    /**
+     * Filter which ContentSchedules to update
+     */
+    where?: ContentScheduleWhereInput
+  }
+
+  /**
+   * ContentSchedule upsert
+   */
+  export type ContentScheduleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ContentSchedule to update in case it exists.
+     */
+    where: ContentScheduleWhereUniqueInput
+    /**
+     * In case the ContentSchedule found by the `where` argument doesn't exist, create a new ContentSchedule with this data.
+     */
+    create: XOR<ContentScheduleCreateInput, ContentScheduleUncheckedCreateInput>
+    /**
+     * In case the ContentSchedule was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContentScheduleUpdateInput, ContentScheduleUncheckedUpdateInput>
+  }
+
+  /**
+   * ContentSchedule delete
+   */
+  export type ContentScheduleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
+    /**
+     * Filter which ContentSchedule to delete.
+     */
+    where: ContentScheduleWhereUniqueInput
+  }
+
+  /**
+   * ContentSchedule deleteMany
+   */
+  export type ContentScheduleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContentSchedules to delete
+     */
+    where?: ContentScheduleWhereInput
+  }
+
+  /**
+   * ContentSchedule without action
+   */
+  export type ContentScheduleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentSchedule
+     */
+    select?: ContentScheduleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentScheduleInclude<ExtArgs> | null
   }
 
 
@@ -16268,10 +18547,34 @@ export namespace Prisma {
     plays: 'plays',
     listeners: 'listeners',
     published: 'published',
-    sortOrder: 'sortOrder'
+    sortOrder: 'sortOrder',
+    nodeId: 'nodeId'
   };
 
   export type ContentScalarFieldEnum = (typeof ContentScalarFieldEnum)[keyof typeof ContentScalarFieldEnum]
+
+
+  export const ContentNodeScalarFieldEnum: {
+    id: 'id',
+    productId: 'productId',
+    parentId: 'parentId',
+    name: 'name',
+    kind: 'kind',
+    sortOrder: 'sortOrder',
+    createdAt: 'createdAt'
+  };
+
+  export type ContentNodeScalarFieldEnum = (typeof ContentNodeScalarFieldEnum)[keyof typeof ContentNodeScalarFieldEnum]
+
+
+  export const ContentScheduleScalarFieldEnum: {
+    id: 'id',
+    contentId: 'contentId',
+    session: 'session',
+    day: 'day'
+  };
+
+  export type ContentScheduleScalarFieldEnum = (typeof ContentScheduleScalarFieldEnum)[keyof typeof ContentScheduleScalarFieldEnum]
 
 
   export const UserAccessScalarFieldEnum: {
@@ -16468,6 +18771,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'ContentSession'
+   */
+  export type EnumContentSessionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentSession'>
+    
+
+
+  /**
+   * Reference to a field of type 'Weekday'
+   */
+  export type EnumWeekdayFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Weekday'>
+    
+
+
+  /**
    * Reference to a field of type 'AccessSource'
    */
   export type EnumAccessSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccessSource'>
@@ -16570,6 +18887,7 @@ export namespace Prisma {
     content?: ContentListRelationFilter
     access?: UserAccessListRelationFilter
     sales?: SaleListRelationFilter
+    nodes?: ContentNodeListRelationFilter
   }
 
   export type ProductOrderByWithRelationInput = {
@@ -16582,6 +18900,7 @@ export namespace Prisma {
     content?: ContentOrderByRelationAggregateInput
     access?: UserAccessOrderByRelationAggregateInput
     sales?: SaleOrderByRelationAggregateInput
+    nodes?: ContentNodeOrderByRelationAggregateInput
   }
 
   export type ProductWhereUniqueInput = Prisma.AtLeast<{
@@ -16597,6 +18916,7 @@ export namespace Prisma {
     content?: ContentListRelationFilter
     access?: UserAccessListRelationFilter
     sales?: SaleListRelationFilter
+    nodes?: ContentNodeListRelationFilter
   }, "id" | "code">
 
   export type ProductOrderByWithAggregationInput = {
@@ -16785,7 +19105,10 @@ export namespace Prisma {
     listeners?: IntFilter<"Content"> | number
     published?: BoolFilter<"Content"> | boolean
     sortOrder?: IntFilter<"Content"> | number
+    nodeId?: IntNullableFilter<"Content"> | number | null
     product?: XOR<ProductRelationFilter, ProductWhereInput>
+    schedule?: ContentScheduleListRelationFilter
+    node?: XOR<ContentNodeNullableRelationFilter, ContentNodeWhereInput> | null
   }
 
   export type ContentOrderByWithRelationInput = {
@@ -16800,7 +19123,10 @@ export namespace Prisma {
     listeners?: SortOrder
     published?: SortOrder
     sortOrder?: SortOrder
+    nodeId?: SortOrderInput | SortOrder
     product?: ProductOrderByWithRelationInput
+    schedule?: ContentScheduleOrderByRelationAggregateInput
+    node?: ContentNodeOrderByWithRelationInput
   }
 
   export type ContentWhereUniqueInput = Prisma.AtLeast<{
@@ -16818,7 +19144,10 @@ export namespace Prisma {
     listeners?: IntFilter<"Content"> | number
     published?: BoolFilter<"Content"> | boolean
     sortOrder?: IntFilter<"Content"> | number
+    nodeId?: IntNullableFilter<"Content"> | number | null
     product?: XOR<ProductRelationFilter, ProductWhereInput>
+    schedule?: ContentScheduleListRelationFilter
+    node?: XOR<ContentNodeNullableRelationFilter, ContentNodeWhereInput> | null
   }, "id">
 
   export type ContentOrderByWithAggregationInput = {
@@ -16833,6 +19162,7 @@ export namespace Prisma {
     listeners?: SortOrder
     published?: SortOrder
     sortOrder?: SortOrder
+    nodeId?: SortOrderInput | SortOrder
     _count?: ContentCountOrderByAggregateInput
     _avg?: ContentAvgOrderByAggregateInput
     _max?: ContentMaxOrderByAggregateInput
@@ -16855,6 +19185,136 @@ export namespace Prisma {
     listeners?: IntWithAggregatesFilter<"Content"> | number
     published?: BoolWithAggregatesFilter<"Content"> | boolean
     sortOrder?: IntWithAggregatesFilter<"Content"> | number
+    nodeId?: IntNullableWithAggregatesFilter<"Content"> | number | null
+  }
+
+  export type ContentNodeWhereInput = {
+    AND?: ContentNodeWhereInput | ContentNodeWhereInput[]
+    OR?: ContentNodeWhereInput[]
+    NOT?: ContentNodeWhereInput | ContentNodeWhereInput[]
+    id?: IntFilter<"ContentNode"> | number
+    productId?: IntFilter<"ContentNode"> | number
+    parentId?: IntNullableFilter<"ContentNode"> | number | null
+    name?: StringFilter<"ContentNode"> | string
+    kind?: StringNullableFilter<"ContentNode"> | string | null
+    sortOrder?: IntFilter<"ContentNode"> | number
+    createdAt?: DateTimeFilter<"ContentNode"> | Date | string
+    product?: XOR<ProductRelationFilter, ProductWhereInput>
+    parent?: XOR<ContentNodeNullableRelationFilter, ContentNodeWhereInput> | null
+    children?: ContentNodeListRelationFilter
+    content?: ContentListRelationFilter
+  }
+
+  export type ContentNodeOrderByWithRelationInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    parentId?: SortOrderInput | SortOrder
+    name?: SortOrder
+    kind?: SortOrderInput | SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+    product?: ProductOrderByWithRelationInput
+    parent?: ContentNodeOrderByWithRelationInput
+    children?: ContentNodeOrderByRelationAggregateInput
+    content?: ContentOrderByRelationAggregateInput
+  }
+
+  export type ContentNodeWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: ContentNodeWhereInput | ContentNodeWhereInput[]
+    OR?: ContentNodeWhereInput[]
+    NOT?: ContentNodeWhereInput | ContentNodeWhereInput[]
+    productId?: IntFilter<"ContentNode"> | number
+    parentId?: IntNullableFilter<"ContentNode"> | number | null
+    name?: StringFilter<"ContentNode"> | string
+    kind?: StringNullableFilter<"ContentNode"> | string | null
+    sortOrder?: IntFilter<"ContentNode"> | number
+    createdAt?: DateTimeFilter<"ContentNode"> | Date | string
+    product?: XOR<ProductRelationFilter, ProductWhereInput>
+    parent?: XOR<ContentNodeNullableRelationFilter, ContentNodeWhereInput> | null
+    children?: ContentNodeListRelationFilter
+    content?: ContentListRelationFilter
+  }, "id">
+
+  export type ContentNodeOrderByWithAggregationInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    parentId?: SortOrderInput | SortOrder
+    name?: SortOrder
+    kind?: SortOrderInput | SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+    _count?: ContentNodeCountOrderByAggregateInput
+    _avg?: ContentNodeAvgOrderByAggregateInput
+    _max?: ContentNodeMaxOrderByAggregateInput
+    _min?: ContentNodeMinOrderByAggregateInput
+    _sum?: ContentNodeSumOrderByAggregateInput
+  }
+
+  export type ContentNodeScalarWhereWithAggregatesInput = {
+    AND?: ContentNodeScalarWhereWithAggregatesInput | ContentNodeScalarWhereWithAggregatesInput[]
+    OR?: ContentNodeScalarWhereWithAggregatesInput[]
+    NOT?: ContentNodeScalarWhereWithAggregatesInput | ContentNodeScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"ContentNode"> | number
+    productId?: IntWithAggregatesFilter<"ContentNode"> | number
+    parentId?: IntNullableWithAggregatesFilter<"ContentNode"> | number | null
+    name?: StringWithAggregatesFilter<"ContentNode"> | string
+    kind?: StringNullableWithAggregatesFilter<"ContentNode"> | string | null
+    sortOrder?: IntWithAggregatesFilter<"ContentNode"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"ContentNode"> | Date | string
+  }
+
+  export type ContentScheduleWhereInput = {
+    AND?: ContentScheduleWhereInput | ContentScheduleWhereInput[]
+    OR?: ContentScheduleWhereInput[]
+    NOT?: ContentScheduleWhereInput | ContentScheduleWhereInput[]
+    id?: IntFilter<"ContentSchedule"> | number
+    contentId?: IntFilter<"ContentSchedule"> | number
+    session?: EnumContentSessionFilter<"ContentSchedule"> | $Enums.ContentSession
+    day?: EnumWeekdayFilter<"ContentSchedule"> | $Enums.Weekday
+    content?: XOR<ContentRelationFilter, ContentWhereInput>
+  }
+
+  export type ContentScheduleOrderByWithRelationInput = {
+    id?: SortOrder
+    contentId?: SortOrder
+    session?: SortOrder
+    day?: SortOrder
+    content?: ContentOrderByWithRelationInput
+  }
+
+  export type ContentScheduleWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    contentId_session_day?: ContentScheduleContentIdSessionDayCompoundUniqueInput
+    AND?: ContentScheduleWhereInput | ContentScheduleWhereInput[]
+    OR?: ContentScheduleWhereInput[]
+    NOT?: ContentScheduleWhereInput | ContentScheduleWhereInput[]
+    contentId?: IntFilter<"ContentSchedule"> | number
+    session?: EnumContentSessionFilter<"ContentSchedule"> | $Enums.ContentSession
+    day?: EnumWeekdayFilter<"ContentSchedule"> | $Enums.Weekday
+    content?: XOR<ContentRelationFilter, ContentWhereInput>
+  }, "id" | "contentId_session_day">
+
+  export type ContentScheduleOrderByWithAggregationInput = {
+    id?: SortOrder
+    contentId?: SortOrder
+    session?: SortOrder
+    day?: SortOrder
+    _count?: ContentScheduleCountOrderByAggregateInput
+    _avg?: ContentScheduleAvgOrderByAggregateInput
+    _max?: ContentScheduleMaxOrderByAggregateInput
+    _min?: ContentScheduleMinOrderByAggregateInput
+    _sum?: ContentScheduleSumOrderByAggregateInput
+  }
+
+  export type ContentScheduleScalarWhereWithAggregatesInput = {
+    AND?: ContentScheduleScalarWhereWithAggregatesInput | ContentScheduleScalarWhereWithAggregatesInput[]
+    OR?: ContentScheduleScalarWhereWithAggregatesInput[]
+    NOT?: ContentScheduleScalarWhereWithAggregatesInput | ContentScheduleScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"ContentSchedule"> | number
+    contentId?: IntWithAggregatesFilter<"ContentSchedule"> | number
+    session?: EnumContentSessionWithAggregatesFilter<"ContentSchedule"> | $Enums.ContentSession
+    day?: EnumWeekdayWithAggregatesFilter<"ContentSchedule"> | $Enums.Weekday
   }
 
   export type UserAccessWhereInput = {
@@ -17586,6 +20046,7 @@ export namespace Prisma {
     content?: ContentCreateNestedManyWithoutProductInput
     access?: UserAccessCreateNestedManyWithoutProductInput
     sales?: SaleCreateNestedManyWithoutProductInput
+    nodes?: ContentNodeCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateInput = {
@@ -17598,6 +20059,7 @@ export namespace Prisma {
     content?: ContentUncheckedCreateNestedManyWithoutProductInput
     access?: UserAccessUncheckedCreateNestedManyWithoutProductInput
     sales?: SaleUncheckedCreateNestedManyWithoutProductInput
+    nodes?: ContentNodeUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductUpdateInput = {
@@ -17609,6 +20071,7 @@ export namespace Prisma {
     content?: ContentUpdateManyWithoutProductNestedInput
     access?: UserAccessUpdateManyWithoutProductNestedInput
     sales?: SaleUpdateManyWithoutProductNestedInput
+    nodes?: ContentNodeUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateInput = {
@@ -17621,6 +20084,7 @@ export namespace Prisma {
     content?: ContentUncheckedUpdateManyWithoutProductNestedInput
     access?: UserAccessUncheckedUpdateManyWithoutProductNestedInput
     sales?: SaleUncheckedUpdateManyWithoutProductNestedInput
+    nodes?: ContentNodeUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ProductCreateManyInput = {
@@ -17840,6 +20304,8 @@ export namespace Prisma {
     published?: boolean
     sortOrder?: number
     product: ProductCreateNestedOneWithoutContentInput
+    schedule?: ContentScheduleCreateNestedManyWithoutContentInput
+    node?: ContentNodeCreateNestedOneWithoutContentInput
   }
 
   export type ContentUncheckedCreateInput = {
@@ -17854,6 +20320,8 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    nodeId?: number | null
+    schedule?: ContentScheduleUncheckedCreateNestedManyWithoutContentInput
   }
 
   export type ContentUpdateInput = {
@@ -17867,6 +20335,8 @@ export namespace Prisma {
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     product?: ProductUpdateOneRequiredWithoutContentNestedInput
+    schedule?: ContentScheduleUpdateManyWithoutContentNestedInput
+    node?: ContentNodeUpdateOneWithoutContentNestedInput
   }
 
   export type ContentUncheckedUpdateInput = {
@@ -17881,6 +20351,8 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    nodeId?: NullableIntFieldUpdateOperationsInput | number | null
+    schedule?: ContentScheduleUncheckedUpdateManyWithoutContentNestedInput
   }
 
   export type ContentCreateManyInput = {
@@ -17895,6 +20367,7 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    nodeId?: number | null
   }
 
   export type ContentUpdateManyMutationInput = {
@@ -17921,6 +20394,125 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    nodeId?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type ContentNodeCreateInput = {
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    product: ProductCreateNestedOneWithoutNodesInput
+    parent?: ContentNodeCreateNestedOneWithoutChildrenInput
+    children?: ContentNodeCreateNestedManyWithoutParentInput
+    content?: ContentCreateNestedManyWithoutNodeInput
+  }
+
+  export type ContentNodeUncheckedCreateInput = {
+    id?: number
+    productId: number
+    parentId?: number | null
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    children?: ContentNodeUncheckedCreateNestedManyWithoutParentInput
+    content?: ContentUncheckedCreateNestedManyWithoutNodeInput
+  }
+
+  export type ContentNodeUpdateInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutNodesNestedInput
+    parent?: ContentNodeUpdateOneWithoutChildrenNestedInput
+    children?: ContentNodeUpdateManyWithoutParentNestedInput
+    content?: ContentUpdateManyWithoutNodeNestedInput
+  }
+
+  export type ContentNodeUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    productId?: IntFieldUpdateOperationsInput | number
+    parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: ContentNodeUncheckedUpdateManyWithoutParentNestedInput
+    content?: ContentUncheckedUpdateManyWithoutNodeNestedInput
+  }
+
+  export type ContentNodeCreateManyInput = {
+    id?: number
+    productId: number
+    parentId?: number | null
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+  }
+
+  export type ContentNodeUpdateManyMutationInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentNodeUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    productId?: IntFieldUpdateOperationsInput | number
+    parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentScheduleCreateInput = {
+    session: $Enums.ContentSession
+    day: $Enums.Weekday
+    content: ContentCreateNestedOneWithoutScheduleInput
+  }
+
+  export type ContentScheduleUncheckedCreateInput = {
+    id?: number
+    contentId: number
+    session: $Enums.ContentSession
+    day: $Enums.Weekday
+  }
+
+  export type ContentScheduleUpdateInput = {
+    session?: EnumContentSessionFieldUpdateOperationsInput | $Enums.ContentSession
+    day?: EnumWeekdayFieldUpdateOperationsInput | $Enums.Weekday
+    content?: ContentUpdateOneRequiredWithoutScheduleNestedInput
+  }
+
+  export type ContentScheduleUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    contentId?: IntFieldUpdateOperationsInput | number
+    session?: EnumContentSessionFieldUpdateOperationsInput | $Enums.ContentSession
+    day?: EnumWeekdayFieldUpdateOperationsInput | $Enums.Weekday
+  }
+
+  export type ContentScheduleCreateManyInput = {
+    id?: number
+    contentId: number
+    session: $Enums.ContentSession
+    day: $Enums.Weekday
+  }
+
+  export type ContentScheduleUpdateManyMutationInput = {
+    session?: EnumContentSessionFieldUpdateOperationsInput | $Enums.ContentSession
+    day?: EnumWeekdayFieldUpdateOperationsInput | $Enums.Weekday
+  }
+
+  export type ContentScheduleUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    contentId?: IntFieldUpdateOperationsInput | number
+    session?: EnumContentSessionFieldUpdateOperationsInput | $Enums.ContentSession
+    day?: EnumWeekdayFieldUpdateOperationsInput | $Enums.Weekday
   }
 
   export type UserAccessCreateInput = {
@@ -18718,6 +21310,12 @@ export namespace Prisma {
     none?: SaleWhereInput
   }
 
+  export type ContentNodeListRelationFilter = {
+    every?: ContentNodeWhereInput
+    some?: ContentNodeWhereInput
+    none?: ContentNodeWhereInput
+  }
+
   export type ContentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -18727,6 +21325,10 @@ export namespace Prisma {
   }
 
   export type SaleOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ContentNodeOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -18957,9 +21559,35 @@ export namespace Prisma {
     not?: NestedEnumContentTypeFilter<$PrismaModel> | $Enums.ContentType
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type ProductRelationFilter = {
     is?: ProductWhereInput
     isNot?: ProductWhereInput
+  }
+
+  export type ContentScheduleListRelationFilter = {
+    every?: ContentScheduleWhereInput
+    some?: ContentScheduleWhereInput
+    none?: ContentScheduleWhereInput
+  }
+
+  export type ContentNodeNullableRelationFilter = {
+    is?: ContentNodeWhereInput | null
+    isNot?: ContentNodeWhereInput | null
+  }
+
+  export type ContentScheduleOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type ContentCountOrderByAggregateInput = {
@@ -18974,6 +21602,7 @@ export namespace Prisma {
     listeners?: SortOrder
     published?: SortOrder
     sortOrder?: SortOrder
+    nodeId?: SortOrder
   }
 
   export type ContentAvgOrderByAggregateInput = {
@@ -18983,6 +21612,7 @@ export namespace Prisma {
     plays?: SortOrder
     listeners?: SortOrder
     sortOrder?: SortOrder
+    nodeId?: SortOrder
   }
 
   export type ContentMaxOrderByAggregateInput = {
@@ -18997,6 +21627,7 @@ export namespace Prisma {
     listeners?: SortOrder
     published?: SortOrder
     sortOrder?: SortOrder
+    nodeId?: SortOrder
   }
 
   export type ContentMinOrderByAggregateInput = {
@@ -19011,6 +21642,7 @@ export namespace Prisma {
     listeners?: SortOrder
     published?: SortOrder
     sortOrder?: SortOrder
+    nodeId?: SortOrder
   }
 
   export type ContentSumOrderByAggregateInput = {
@@ -19020,6 +21652,7 @@ export namespace Prisma {
     plays?: SortOrder
     listeners?: SortOrder
     sortOrder?: SortOrder
+    nodeId?: SortOrder
   }
 
   export type EnumContentTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -19030,6 +21663,142 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumContentTypeFilter<$PrismaModel>
     _max?: NestedEnumContentTypeFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type ContentNodeCountOrderByAggregateInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    parentId?: SortOrder
+    name?: SortOrder
+    kind?: SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ContentNodeAvgOrderByAggregateInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    parentId?: SortOrder
+    sortOrder?: SortOrder
+  }
+
+  export type ContentNodeMaxOrderByAggregateInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    parentId?: SortOrder
+    name?: SortOrder
+    kind?: SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ContentNodeMinOrderByAggregateInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    parentId?: SortOrder
+    name?: SortOrder
+    kind?: SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ContentNodeSumOrderByAggregateInput = {
+    id?: SortOrder
+    productId?: SortOrder
+    parentId?: SortOrder
+    sortOrder?: SortOrder
+  }
+
+  export type EnumContentSessionFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentSession | EnumContentSessionFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentSession[]
+    notIn?: $Enums.ContentSession[]
+    not?: NestedEnumContentSessionFilter<$PrismaModel> | $Enums.ContentSession
+  }
+
+  export type EnumWeekdayFilter<$PrismaModel = never> = {
+    equals?: $Enums.Weekday | EnumWeekdayFieldRefInput<$PrismaModel>
+    in?: $Enums.Weekday[]
+    notIn?: $Enums.Weekday[]
+    not?: NestedEnumWeekdayFilter<$PrismaModel> | $Enums.Weekday
+  }
+
+  export type ContentRelationFilter = {
+    is?: ContentWhereInput
+    isNot?: ContentWhereInput
+  }
+
+  export type ContentScheduleContentIdSessionDayCompoundUniqueInput = {
+    contentId: number
+    session: $Enums.ContentSession
+    day: $Enums.Weekday
+  }
+
+  export type ContentScheduleCountOrderByAggregateInput = {
+    id?: SortOrder
+    contentId?: SortOrder
+    session?: SortOrder
+    day?: SortOrder
+  }
+
+  export type ContentScheduleAvgOrderByAggregateInput = {
+    id?: SortOrder
+    contentId?: SortOrder
+  }
+
+  export type ContentScheduleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    contentId?: SortOrder
+    session?: SortOrder
+    day?: SortOrder
+  }
+
+  export type ContentScheduleMinOrderByAggregateInput = {
+    id?: SortOrder
+    contentId?: SortOrder
+    session?: SortOrder
+    day?: SortOrder
+  }
+
+  export type ContentScheduleSumOrderByAggregateInput = {
+    id?: SortOrder
+    contentId?: SortOrder
+  }
+
+  export type EnumContentSessionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentSession | EnumContentSessionFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentSession[]
+    notIn?: $Enums.ContentSession[]
+    not?: NestedEnumContentSessionWithAggregatesFilter<$PrismaModel> | $Enums.ContentSession
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContentSessionFilter<$PrismaModel>
+    _max?: NestedEnumContentSessionFilter<$PrismaModel>
+  }
+
+  export type EnumWeekdayWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Weekday | EnumWeekdayFieldRefInput<$PrismaModel>
+    in?: $Enums.Weekday[]
+    notIn?: $Enums.Weekday[]
+    not?: NestedEnumWeekdayWithAggregatesFilter<$PrismaModel> | $Enums.Weekday
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumWeekdayFilter<$PrismaModel>
+    _max?: NestedEnumWeekdayFilter<$PrismaModel>
   }
 
   export type EnumAccessSourceFilter<$PrismaModel = never> = {
@@ -19547,6 +22316,13 @@ export namespace Prisma {
     connect?: SaleWhereUniqueInput | SaleWhereUniqueInput[]
   }
 
+  export type ContentNodeCreateNestedManyWithoutProductInput = {
+    create?: XOR<ContentNodeCreateWithoutProductInput, ContentNodeUncheckedCreateWithoutProductInput> | ContentNodeCreateWithoutProductInput[] | ContentNodeUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutProductInput | ContentNodeCreateOrConnectWithoutProductInput[]
+    createMany?: ContentNodeCreateManyProductInputEnvelope
+    connect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+  }
+
   export type ContentUncheckedCreateNestedManyWithoutProductInput = {
     create?: XOR<ContentCreateWithoutProductInput, ContentUncheckedCreateWithoutProductInput> | ContentCreateWithoutProductInput[] | ContentUncheckedCreateWithoutProductInput[]
     connectOrCreate?: ContentCreateOrConnectWithoutProductInput | ContentCreateOrConnectWithoutProductInput[]
@@ -19566,6 +22342,13 @@ export namespace Prisma {
     connectOrCreate?: SaleCreateOrConnectWithoutProductInput | SaleCreateOrConnectWithoutProductInput[]
     createMany?: SaleCreateManyProductInputEnvelope
     connect?: SaleWhereUniqueInput | SaleWhereUniqueInput[]
+  }
+
+  export type ContentNodeUncheckedCreateNestedManyWithoutProductInput = {
+    create?: XOR<ContentNodeCreateWithoutProductInput, ContentNodeUncheckedCreateWithoutProductInput> | ContentNodeCreateWithoutProductInput[] | ContentNodeUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutProductInput | ContentNodeCreateOrConnectWithoutProductInput[]
+    createMany?: ContentNodeCreateManyProductInputEnvelope
+    connect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -19614,6 +22397,20 @@ export namespace Prisma {
     deleteMany?: SaleScalarWhereInput | SaleScalarWhereInput[]
   }
 
+  export type ContentNodeUpdateManyWithoutProductNestedInput = {
+    create?: XOR<ContentNodeCreateWithoutProductInput, ContentNodeUncheckedCreateWithoutProductInput> | ContentNodeCreateWithoutProductInput[] | ContentNodeUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutProductInput | ContentNodeCreateOrConnectWithoutProductInput[]
+    upsert?: ContentNodeUpsertWithWhereUniqueWithoutProductInput | ContentNodeUpsertWithWhereUniqueWithoutProductInput[]
+    createMany?: ContentNodeCreateManyProductInputEnvelope
+    set?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    disconnect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    delete?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    connect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    update?: ContentNodeUpdateWithWhereUniqueWithoutProductInput | ContentNodeUpdateWithWhereUniqueWithoutProductInput[]
+    updateMany?: ContentNodeUpdateManyWithWhereWithoutProductInput | ContentNodeUpdateManyWithWhereWithoutProductInput[]
+    deleteMany?: ContentNodeScalarWhereInput | ContentNodeScalarWhereInput[]
+  }
+
   export type ContentUncheckedUpdateManyWithoutProductNestedInput = {
     create?: XOR<ContentCreateWithoutProductInput, ContentUncheckedCreateWithoutProductInput> | ContentCreateWithoutProductInput[] | ContentUncheckedCreateWithoutProductInput[]
     connectOrCreate?: ContentCreateOrConnectWithoutProductInput | ContentCreateOrConnectWithoutProductInput[]
@@ -19654,6 +22451,20 @@ export namespace Prisma {
     update?: SaleUpdateWithWhereUniqueWithoutProductInput | SaleUpdateWithWhereUniqueWithoutProductInput[]
     updateMany?: SaleUpdateManyWithWhereWithoutProductInput | SaleUpdateManyWithWhereWithoutProductInput[]
     deleteMany?: SaleScalarWhereInput | SaleScalarWhereInput[]
+  }
+
+  export type ContentNodeUncheckedUpdateManyWithoutProductNestedInput = {
+    create?: XOR<ContentNodeCreateWithoutProductInput, ContentNodeUncheckedCreateWithoutProductInput> | ContentNodeCreateWithoutProductInput[] | ContentNodeUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutProductInput | ContentNodeCreateOrConnectWithoutProductInput[]
+    upsert?: ContentNodeUpsertWithWhereUniqueWithoutProductInput | ContentNodeUpsertWithWhereUniqueWithoutProductInput[]
+    createMany?: ContentNodeCreateManyProductInputEnvelope
+    set?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    disconnect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    delete?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    connect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    update?: ContentNodeUpdateWithWhereUniqueWithoutProductInput | ContentNodeUpdateWithWhereUniqueWithoutProductInput[]
+    updateMany?: ContentNodeUpdateManyWithWhereWithoutProductInput | ContentNodeUpdateManyWithWhereWithoutProductInput[]
+    deleteMany?: ContentNodeScalarWhereInput | ContentNodeScalarWhereInput[]
   }
 
   export type UserAccessCreateNestedManyWithoutUserInput = {
@@ -19758,6 +22569,26 @@ export namespace Prisma {
     connect?: ProductWhereUniqueInput
   }
 
+  export type ContentScheduleCreateNestedManyWithoutContentInput = {
+    create?: XOR<ContentScheduleCreateWithoutContentInput, ContentScheduleUncheckedCreateWithoutContentInput> | ContentScheduleCreateWithoutContentInput[] | ContentScheduleUncheckedCreateWithoutContentInput[]
+    connectOrCreate?: ContentScheduleCreateOrConnectWithoutContentInput | ContentScheduleCreateOrConnectWithoutContentInput[]
+    createMany?: ContentScheduleCreateManyContentInputEnvelope
+    connect?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+  }
+
+  export type ContentNodeCreateNestedOneWithoutContentInput = {
+    create?: XOR<ContentNodeCreateWithoutContentInput, ContentNodeUncheckedCreateWithoutContentInput>
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutContentInput
+    connect?: ContentNodeWhereUniqueInput
+  }
+
+  export type ContentScheduleUncheckedCreateNestedManyWithoutContentInput = {
+    create?: XOR<ContentScheduleCreateWithoutContentInput, ContentScheduleUncheckedCreateWithoutContentInput> | ContentScheduleCreateWithoutContentInput[] | ContentScheduleUncheckedCreateWithoutContentInput[]
+    connectOrCreate?: ContentScheduleCreateOrConnectWithoutContentInput | ContentScheduleCreateOrConnectWithoutContentInput[]
+    createMany?: ContentScheduleCreateManyContentInputEnvelope
+    connect?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+  }
+
   export type EnumContentTypeFieldUpdateOperationsInput = {
     set?: $Enums.ContentType
   }
@@ -19768,6 +22599,188 @@ export namespace Prisma {
     upsert?: ProductUpsertWithoutContentInput
     connect?: ProductWhereUniqueInput
     update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutContentInput, ProductUpdateWithoutContentInput>, ProductUncheckedUpdateWithoutContentInput>
+  }
+
+  export type ContentScheduleUpdateManyWithoutContentNestedInput = {
+    create?: XOR<ContentScheduleCreateWithoutContentInput, ContentScheduleUncheckedCreateWithoutContentInput> | ContentScheduleCreateWithoutContentInput[] | ContentScheduleUncheckedCreateWithoutContentInput[]
+    connectOrCreate?: ContentScheduleCreateOrConnectWithoutContentInput | ContentScheduleCreateOrConnectWithoutContentInput[]
+    upsert?: ContentScheduleUpsertWithWhereUniqueWithoutContentInput | ContentScheduleUpsertWithWhereUniqueWithoutContentInput[]
+    createMany?: ContentScheduleCreateManyContentInputEnvelope
+    set?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+    disconnect?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+    delete?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+    connect?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+    update?: ContentScheduleUpdateWithWhereUniqueWithoutContentInput | ContentScheduleUpdateWithWhereUniqueWithoutContentInput[]
+    updateMany?: ContentScheduleUpdateManyWithWhereWithoutContentInput | ContentScheduleUpdateManyWithWhereWithoutContentInput[]
+    deleteMany?: ContentScheduleScalarWhereInput | ContentScheduleScalarWhereInput[]
+  }
+
+  export type ContentNodeUpdateOneWithoutContentNestedInput = {
+    create?: XOR<ContentNodeCreateWithoutContentInput, ContentNodeUncheckedCreateWithoutContentInput>
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutContentInput
+    upsert?: ContentNodeUpsertWithoutContentInput
+    disconnect?: ContentNodeWhereInput | boolean
+    delete?: ContentNodeWhereInput | boolean
+    connect?: ContentNodeWhereUniqueInput
+    update?: XOR<XOR<ContentNodeUpdateToOneWithWhereWithoutContentInput, ContentNodeUpdateWithoutContentInput>, ContentNodeUncheckedUpdateWithoutContentInput>
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type ContentScheduleUncheckedUpdateManyWithoutContentNestedInput = {
+    create?: XOR<ContentScheduleCreateWithoutContentInput, ContentScheduleUncheckedCreateWithoutContentInput> | ContentScheduleCreateWithoutContentInput[] | ContentScheduleUncheckedCreateWithoutContentInput[]
+    connectOrCreate?: ContentScheduleCreateOrConnectWithoutContentInput | ContentScheduleCreateOrConnectWithoutContentInput[]
+    upsert?: ContentScheduleUpsertWithWhereUniqueWithoutContentInput | ContentScheduleUpsertWithWhereUniqueWithoutContentInput[]
+    createMany?: ContentScheduleCreateManyContentInputEnvelope
+    set?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+    disconnect?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+    delete?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+    connect?: ContentScheduleWhereUniqueInput | ContentScheduleWhereUniqueInput[]
+    update?: ContentScheduleUpdateWithWhereUniqueWithoutContentInput | ContentScheduleUpdateWithWhereUniqueWithoutContentInput[]
+    updateMany?: ContentScheduleUpdateManyWithWhereWithoutContentInput | ContentScheduleUpdateManyWithWhereWithoutContentInput[]
+    deleteMany?: ContentScheduleScalarWhereInput | ContentScheduleScalarWhereInput[]
+  }
+
+  export type ProductCreateNestedOneWithoutNodesInput = {
+    create?: XOR<ProductCreateWithoutNodesInput, ProductUncheckedCreateWithoutNodesInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutNodesInput
+    connect?: ProductWhereUniqueInput
+  }
+
+  export type ContentNodeCreateNestedOneWithoutChildrenInput = {
+    create?: XOR<ContentNodeCreateWithoutChildrenInput, ContentNodeUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutChildrenInput
+    connect?: ContentNodeWhereUniqueInput
+  }
+
+  export type ContentNodeCreateNestedManyWithoutParentInput = {
+    create?: XOR<ContentNodeCreateWithoutParentInput, ContentNodeUncheckedCreateWithoutParentInput> | ContentNodeCreateWithoutParentInput[] | ContentNodeUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutParentInput | ContentNodeCreateOrConnectWithoutParentInput[]
+    createMany?: ContentNodeCreateManyParentInputEnvelope
+    connect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+  }
+
+  export type ContentCreateNestedManyWithoutNodeInput = {
+    create?: XOR<ContentCreateWithoutNodeInput, ContentUncheckedCreateWithoutNodeInput> | ContentCreateWithoutNodeInput[] | ContentUncheckedCreateWithoutNodeInput[]
+    connectOrCreate?: ContentCreateOrConnectWithoutNodeInput | ContentCreateOrConnectWithoutNodeInput[]
+    createMany?: ContentCreateManyNodeInputEnvelope
+    connect?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+  }
+
+  export type ContentNodeUncheckedCreateNestedManyWithoutParentInput = {
+    create?: XOR<ContentNodeCreateWithoutParentInput, ContentNodeUncheckedCreateWithoutParentInput> | ContentNodeCreateWithoutParentInput[] | ContentNodeUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutParentInput | ContentNodeCreateOrConnectWithoutParentInput[]
+    createMany?: ContentNodeCreateManyParentInputEnvelope
+    connect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+  }
+
+  export type ContentUncheckedCreateNestedManyWithoutNodeInput = {
+    create?: XOR<ContentCreateWithoutNodeInput, ContentUncheckedCreateWithoutNodeInput> | ContentCreateWithoutNodeInput[] | ContentUncheckedCreateWithoutNodeInput[]
+    connectOrCreate?: ContentCreateOrConnectWithoutNodeInput | ContentCreateOrConnectWithoutNodeInput[]
+    createMany?: ContentCreateManyNodeInputEnvelope
+    connect?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+  }
+
+  export type ProductUpdateOneRequiredWithoutNodesNestedInput = {
+    create?: XOR<ProductCreateWithoutNodesInput, ProductUncheckedCreateWithoutNodesInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutNodesInput
+    upsert?: ProductUpsertWithoutNodesInput
+    connect?: ProductWhereUniqueInput
+    update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutNodesInput, ProductUpdateWithoutNodesInput>, ProductUncheckedUpdateWithoutNodesInput>
+  }
+
+  export type ContentNodeUpdateOneWithoutChildrenNestedInput = {
+    create?: XOR<ContentNodeCreateWithoutChildrenInput, ContentNodeUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutChildrenInput
+    upsert?: ContentNodeUpsertWithoutChildrenInput
+    disconnect?: ContentNodeWhereInput | boolean
+    delete?: ContentNodeWhereInput | boolean
+    connect?: ContentNodeWhereUniqueInput
+    update?: XOR<XOR<ContentNodeUpdateToOneWithWhereWithoutChildrenInput, ContentNodeUpdateWithoutChildrenInput>, ContentNodeUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type ContentNodeUpdateManyWithoutParentNestedInput = {
+    create?: XOR<ContentNodeCreateWithoutParentInput, ContentNodeUncheckedCreateWithoutParentInput> | ContentNodeCreateWithoutParentInput[] | ContentNodeUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutParentInput | ContentNodeCreateOrConnectWithoutParentInput[]
+    upsert?: ContentNodeUpsertWithWhereUniqueWithoutParentInput | ContentNodeUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: ContentNodeCreateManyParentInputEnvelope
+    set?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    disconnect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    delete?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    connect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    update?: ContentNodeUpdateWithWhereUniqueWithoutParentInput | ContentNodeUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: ContentNodeUpdateManyWithWhereWithoutParentInput | ContentNodeUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: ContentNodeScalarWhereInput | ContentNodeScalarWhereInput[]
+  }
+
+  export type ContentUpdateManyWithoutNodeNestedInput = {
+    create?: XOR<ContentCreateWithoutNodeInput, ContentUncheckedCreateWithoutNodeInput> | ContentCreateWithoutNodeInput[] | ContentUncheckedCreateWithoutNodeInput[]
+    connectOrCreate?: ContentCreateOrConnectWithoutNodeInput | ContentCreateOrConnectWithoutNodeInput[]
+    upsert?: ContentUpsertWithWhereUniqueWithoutNodeInput | ContentUpsertWithWhereUniqueWithoutNodeInput[]
+    createMany?: ContentCreateManyNodeInputEnvelope
+    set?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+    disconnect?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+    delete?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+    connect?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+    update?: ContentUpdateWithWhereUniqueWithoutNodeInput | ContentUpdateWithWhereUniqueWithoutNodeInput[]
+    updateMany?: ContentUpdateManyWithWhereWithoutNodeInput | ContentUpdateManyWithWhereWithoutNodeInput[]
+    deleteMany?: ContentScalarWhereInput | ContentScalarWhereInput[]
+  }
+
+  export type ContentNodeUncheckedUpdateManyWithoutParentNestedInput = {
+    create?: XOR<ContentNodeCreateWithoutParentInput, ContentNodeUncheckedCreateWithoutParentInput> | ContentNodeCreateWithoutParentInput[] | ContentNodeUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: ContentNodeCreateOrConnectWithoutParentInput | ContentNodeCreateOrConnectWithoutParentInput[]
+    upsert?: ContentNodeUpsertWithWhereUniqueWithoutParentInput | ContentNodeUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: ContentNodeCreateManyParentInputEnvelope
+    set?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    disconnect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    delete?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    connect?: ContentNodeWhereUniqueInput | ContentNodeWhereUniqueInput[]
+    update?: ContentNodeUpdateWithWhereUniqueWithoutParentInput | ContentNodeUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: ContentNodeUpdateManyWithWhereWithoutParentInput | ContentNodeUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: ContentNodeScalarWhereInput | ContentNodeScalarWhereInput[]
+  }
+
+  export type ContentUncheckedUpdateManyWithoutNodeNestedInput = {
+    create?: XOR<ContentCreateWithoutNodeInput, ContentUncheckedCreateWithoutNodeInput> | ContentCreateWithoutNodeInput[] | ContentUncheckedCreateWithoutNodeInput[]
+    connectOrCreate?: ContentCreateOrConnectWithoutNodeInput | ContentCreateOrConnectWithoutNodeInput[]
+    upsert?: ContentUpsertWithWhereUniqueWithoutNodeInput | ContentUpsertWithWhereUniqueWithoutNodeInput[]
+    createMany?: ContentCreateManyNodeInputEnvelope
+    set?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+    disconnect?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+    delete?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+    connect?: ContentWhereUniqueInput | ContentWhereUniqueInput[]
+    update?: ContentUpdateWithWhereUniqueWithoutNodeInput | ContentUpdateWithWhereUniqueWithoutNodeInput[]
+    updateMany?: ContentUpdateManyWithWhereWithoutNodeInput | ContentUpdateManyWithWhereWithoutNodeInput[]
+    deleteMany?: ContentScalarWhereInput | ContentScalarWhereInput[]
+  }
+
+  export type ContentCreateNestedOneWithoutScheduleInput = {
+    create?: XOR<ContentCreateWithoutScheduleInput, ContentUncheckedCreateWithoutScheduleInput>
+    connectOrCreate?: ContentCreateOrConnectWithoutScheduleInput
+    connect?: ContentWhereUniqueInput
+  }
+
+  export type EnumContentSessionFieldUpdateOperationsInput = {
+    set?: $Enums.ContentSession
+  }
+
+  export type EnumWeekdayFieldUpdateOperationsInput = {
+    set?: $Enums.Weekday
+  }
+
+  export type ContentUpdateOneRequiredWithoutScheduleNestedInput = {
+    create?: XOR<ContentCreateWithoutScheduleInput, ContentUncheckedCreateWithoutScheduleInput>
+    connectOrCreate?: ContentCreateOrConnectWithoutScheduleInput
+    upsert?: ContentUpsertWithoutScheduleInput
+    connect?: ContentWhereUniqueInput
+    update?: XOR<XOR<ContentUpdateToOneWithWhereWithoutScheduleInput, ContentUpdateWithoutScheduleInput>, ContentUncheckedUpdateWithoutScheduleInput>
   }
 
   export type UserCreateNestedOneWithoutAccessInput = {
@@ -20158,6 +23171,67 @@ export namespace Prisma {
     _max?: NestedEnumContentTypeFilter<$PrismaModel>
   }
 
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedEnumContentSessionFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentSession | EnumContentSessionFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentSession[]
+    notIn?: $Enums.ContentSession[]
+    not?: NestedEnumContentSessionFilter<$PrismaModel> | $Enums.ContentSession
+  }
+
+  export type NestedEnumWeekdayFilter<$PrismaModel = never> = {
+    equals?: $Enums.Weekday | EnumWeekdayFieldRefInput<$PrismaModel>
+    in?: $Enums.Weekday[]
+    notIn?: $Enums.Weekday[]
+    not?: NestedEnumWeekdayFilter<$PrismaModel> | $Enums.Weekday
+  }
+
+  export type NestedEnumContentSessionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentSession | EnumContentSessionFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentSession[]
+    notIn?: $Enums.ContentSession[]
+    not?: NestedEnumContentSessionWithAggregatesFilter<$PrismaModel> | $Enums.ContentSession
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContentSessionFilter<$PrismaModel>
+    _max?: NestedEnumContentSessionFilter<$PrismaModel>
+  }
+
+  export type NestedEnumWeekdayWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Weekday | EnumWeekdayFieldRefInput<$PrismaModel>
+    in?: $Enums.Weekday[]
+    notIn?: $Enums.Weekday[]
+    not?: NestedEnumWeekdayWithAggregatesFilter<$PrismaModel> | $Enums.Weekday
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumWeekdayFilter<$PrismaModel>
+    _max?: NestedEnumWeekdayFilter<$PrismaModel>
+  }
+
   export type NestedEnumAccessSourceFilter<$PrismaModel = never> = {
     equals?: $Enums.AccessSource | EnumAccessSourceFieldRefInput<$PrismaModel>
     in?: $Enums.AccessSource[]
@@ -20219,6 +23293,8 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    schedule?: ContentScheduleCreateNestedManyWithoutContentInput
+    node?: ContentNodeCreateNestedOneWithoutContentInput
   }
 
   export type ContentUncheckedCreateWithoutProductInput = {
@@ -20232,6 +23308,8 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    nodeId?: number | null
+    schedule?: ContentScheduleUncheckedCreateNestedManyWithoutContentInput
   }
 
   export type ContentCreateOrConnectWithoutProductInput = {
@@ -20302,6 +23380,37 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ContentNodeCreateWithoutProductInput = {
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    parent?: ContentNodeCreateNestedOneWithoutChildrenInput
+    children?: ContentNodeCreateNestedManyWithoutParentInput
+    content?: ContentCreateNestedManyWithoutNodeInput
+  }
+
+  export type ContentNodeUncheckedCreateWithoutProductInput = {
+    id?: number
+    parentId?: number | null
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    children?: ContentNodeUncheckedCreateNestedManyWithoutParentInput
+    content?: ContentUncheckedCreateNestedManyWithoutNodeInput
+  }
+
+  export type ContentNodeCreateOrConnectWithoutProductInput = {
+    where: ContentNodeWhereUniqueInput
+    create: XOR<ContentNodeCreateWithoutProductInput, ContentNodeUncheckedCreateWithoutProductInput>
+  }
+
+  export type ContentNodeCreateManyProductInputEnvelope = {
+    data: ContentNodeCreateManyProductInput | ContentNodeCreateManyProductInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ContentUpsertWithWhereUniqueWithoutProductInput = {
     where: ContentWhereUniqueInput
     update: XOR<ContentUpdateWithoutProductInput, ContentUncheckedUpdateWithoutProductInput>
@@ -20333,6 +23442,7 @@ export namespace Prisma {
     listeners?: IntFilter<"Content"> | number
     published?: BoolFilter<"Content"> | boolean
     sortOrder?: IntFilter<"Content"> | number
+    nodeId?: IntNullableFilter<"Content"> | number | null
   }
 
   export type UserAccessUpsertWithWhereUniqueWithoutProductInput = {
@@ -20393,6 +23503,35 @@ export namespace Prisma {
     ref?: StringNullableFilter<"Sale"> | string | null
     gateway?: StringFilter<"Sale"> | string
     createdAt?: DateTimeFilter<"Sale"> | Date | string
+  }
+
+  export type ContentNodeUpsertWithWhereUniqueWithoutProductInput = {
+    where: ContentNodeWhereUniqueInput
+    update: XOR<ContentNodeUpdateWithoutProductInput, ContentNodeUncheckedUpdateWithoutProductInput>
+    create: XOR<ContentNodeCreateWithoutProductInput, ContentNodeUncheckedCreateWithoutProductInput>
+  }
+
+  export type ContentNodeUpdateWithWhereUniqueWithoutProductInput = {
+    where: ContentNodeWhereUniqueInput
+    data: XOR<ContentNodeUpdateWithoutProductInput, ContentNodeUncheckedUpdateWithoutProductInput>
+  }
+
+  export type ContentNodeUpdateManyWithWhereWithoutProductInput = {
+    where: ContentNodeScalarWhereInput
+    data: XOR<ContentNodeUpdateManyMutationInput, ContentNodeUncheckedUpdateManyWithoutProductInput>
+  }
+
+  export type ContentNodeScalarWhereInput = {
+    AND?: ContentNodeScalarWhereInput | ContentNodeScalarWhereInput[]
+    OR?: ContentNodeScalarWhereInput[]
+    NOT?: ContentNodeScalarWhereInput | ContentNodeScalarWhereInput[]
+    id?: IntFilter<"ContentNode"> | number
+    productId?: IntFilter<"ContentNode"> | number
+    parentId?: IntNullableFilter<"ContentNode"> | number | null
+    name?: StringFilter<"ContentNode"> | string
+    kind?: StringNullableFilter<"ContentNode"> | string | null
+    sortOrder?: IntFilter<"ContentNode"> | number
+    createdAt?: DateTimeFilter<"ContentNode"> | Date | string
   }
 
   export type UserAccessCreateWithoutUserInput = {
@@ -20493,6 +23632,7 @@ export namespace Prisma {
     active?: boolean
     access?: UserAccessCreateNestedManyWithoutProductInput
     sales?: SaleCreateNestedManyWithoutProductInput
+    nodes?: ContentNodeCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutContentInput = {
@@ -20504,11 +23644,59 @@ export namespace Prisma {
     active?: boolean
     access?: UserAccessUncheckedCreateNestedManyWithoutProductInput
     sales?: SaleUncheckedCreateNestedManyWithoutProductInput
+    nodes?: ContentNodeUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutContentInput = {
     where: ProductWhereUniqueInput
     create: XOR<ProductCreateWithoutContentInput, ProductUncheckedCreateWithoutContentInput>
+  }
+
+  export type ContentScheduleCreateWithoutContentInput = {
+    session: $Enums.ContentSession
+    day: $Enums.Weekday
+  }
+
+  export type ContentScheduleUncheckedCreateWithoutContentInput = {
+    id?: number
+    session: $Enums.ContentSession
+    day: $Enums.Weekday
+  }
+
+  export type ContentScheduleCreateOrConnectWithoutContentInput = {
+    where: ContentScheduleWhereUniqueInput
+    create: XOR<ContentScheduleCreateWithoutContentInput, ContentScheduleUncheckedCreateWithoutContentInput>
+  }
+
+  export type ContentScheduleCreateManyContentInputEnvelope = {
+    data: ContentScheduleCreateManyContentInput | ContentScheduleCreateManyContentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ContentNodeCreateWithoutContentInput = {
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    product: ProductCreateNestedOneWithoutNodesInput
+    parent?: ContentNodeCreateNestedOneWithoutChildrenInput
+    children?: ContentNodeCreateNestedManyWithoutParentInput
+  }
+
+  export type ContentNodeUncheckedCreateWithoutContentInput = {
+    id?: number
+    productId: number
+    parentId?: number | null
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    children?: ContentNodeUncheckedCreateNestedManyWithoutParentInput
+  }
+
+  export type ContentNodeCreateOrConnectWithoutContentInput = {
+    where: ContentNodeWhereUniqueInput
+    create: XOR<ContentNodeCreateWithoutContentInput, ContentNodeUncheckedCreateWithoutContentInput>
   }
 
   export type ProductUpsertWithoutContentInput = {
@@ -20530,6 +23718,7 @@ export namespace Prisma {
     active?: BoolFieldUpdateOperationsInput | boolean
     access?: UserAccessUpdateManyWithoutProductNestedInput
     sales?: SaleUpdateManyWithoutProductNestedInput
+    nodes?: ContentNodeUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutContentInput = {
@@ -20541,6 +23730,361 @@ export namespace Prisma {
     active?: BoolFieldUpdateOperationsInput | boolean
     access?: UserAccessUncheckedUpdateManyWithoutProductNestedInput
     sales?: SaleUncheckedUpdateManyWithoutProductNestedInput
+    nodes?: ContentNodeUncheckedUpdateManyWithoutProductNestedInput
+  }
+
+  export type ContentScheduleUpsertWithWhereUniqueWithoutContentInput = {
+    where: ContentScheduleWhereUniqueInput
+    update: XOR<ContentScheduleUpdateWithoutContentInput, ContentScheduleUncheckedUpdateWithoutContentInput>
+    create: XOR<ContentScheduleCreateWithoutContentInput, ContentScheduleUncheckedCreateWithoutContentInput>
+  }
+
+  export type ContentScheduleUpdateWithWhereUniqueWithoutContentInput = {
+    where: ContentScheduleWhereUniqueInput
+    data: XOR<ContentScheduleUpdateWithoutContentInput, ContentScheduleUncheckedUpdateWithoutContentInput>
+  }
+
+  export type ContentScheduleUpdateManyWithWhereWithoutContentInput = {
+    where: ContentScheduleScalarWhereInput
+    data: XOR<ContentScheduleUpdateManyMutationInput, ContentScheduleUncheckedUpdateManyWithoutContentInput>
+  }
+
+  export type ContentScheduleScalarWhereInput = {
+    AND?: ContentScheduleScalarWhereInput | ContentScheduleScalarWhereInput[]
+    OR?: ContentScheduleScalarWhereInput[]
+    NOT?: ContentScheduleScalarWhereInput | ContentScheduleScalarWhereInput[]
+    id?: IntFilter<"ContentSchedule"> | number
+    contentId?: IntFilter<"ContentSchedule"> | number
+    session?: EnumContentSessionFilter<"ContentSchedule"> | $Enums.ContentSession
+    day?: EnumWeekdayFilter<"ContentSchedule"> | $Enums.Weekday
+  }
+
+  export type ContentNodeUpsertWithoutContentInput = {
+    update: XOR<ContentNodeUpdateWithoutContentInput, ContentNodeUncheckedUpdateWithoutContentInput>
+    create: XOR<ContentNodeCreateWithoutContentInput, ContentNodeUncheckedCreateWithoutContentInput>
+    where?: ContentNodeWhereInput
+  }
+
+  export type ContentNodeUpdateToOneWithWhereWithoutContentInput = {
+    where?: ContentNodeWhereInput
+    data: XOR<ContentNodeUpdateWithoutContentInput, ContentNodeUncheckedUpdateWithoutContentInput>
+  }
+
+  export type ContentNodeUpdateWithoutContentInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutNodesNestedInput
+    parent?: ContentNodeUpdateOneWithoutChildrenNestedInput
+    children?: ContentNodeUpdateManyWithoutParentNestedInput
+  }
+
+  export type ContentNodeUncheckedUpdateWithoutContentInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    productId?: IntFieldUpdateOperationsInput | number
+    parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: ContentNodeUncheckedUpdateManyWithoutParentNestedInput
+  }
+
+  export type ProductCreateWithoutNodesInput = {
+    code: string
+    name: string
+    shortName: string
+    price: number
+    active?: boolean
+    content?: ContentCreateNestedManyWithoutProductInput
+    access?: UserAccessCreateNestedManyWithoutProductInput
+    sales?: SaleCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductUncheckedCreateWithoutNodesInput = {
+    id?: number
+    code: string
+    name: string
+    shortName: string
+    price: number
+    active?: boolean
+    content?: ContentUncheckedCreateNestedManyWithoutProductInput
+    access?: UserAccessUncheckedCreateNestedManyWithoutProductInput
+    sales?: SaleUncheckedCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductCreateOrConnectWithoutNodesInput = {
+    where: ProductWhereUniqueInput
+    create: XOR<ProductCreateWithoutNodesInput, ProductUncheckedCreateWithoutNodesInput>
+  }
+
+  export type ContentNodeCreateWithoutChildrenInput = {
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    product: ProductCreateNestedOneWithoutNodesInput
+    parent?: ContentNodeCreateNestedOneWithoutChildrenInput
+    content?: ContentCreateNestedManyWithoutNodeInput
+  }
+
+  export type ContentNodeUncheckedCreateWithoutChildrenInput = {
+    id?: number
+    productId: number
+    parentId?: number | null
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    content?: ContentUncheckedCreateNestedManyWithoutNodeInput
+  }
+
+  export type ContentNodeCreateOrConnectWithoutChildrenInput = {
+    where: ContentNodeWhereUniqueInput
+    create: XOR<ContentNodeCreateWithoutChildrenInput, ContentNodeUncheckedCreateWithoutChildrenInput>
+  }
+
+  export type ContentNodeCreateWithoutParentInput = {
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    product: ProductCreateNestedOneWithoutNodesInput
+    children?: ContentNodeCreateNestedManyWithoutParentInput
+    content?: ContentCreateNestedManyWithoutNodeInput
+  }
+
+  export type ContentNodeUncheckedCreateWithoutParentInput = {
+    id?: number
+    productId: number
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+    children?: ContentNodeUncheckedCreateNestedManyWithoutParentInput
+    content?: ContentUncheckedCreateNestedManyWithoutNodeInput
+  }
+
+  export type ContentNodeCreateOrConnectWithoutParentInput = {
+    where: ContentNodeWhereUniqueInput
+    create: XOR<ContentNodeCreateWithoutParentInput, ContentNodeUncheckedCreateWithoutParentInput>
+  }
+
+  export type ContentNodeCreateManyParentInputEnvelope = {
+    data: ContentNodeCreateManyParentInput | ContentNodeCreateManyParentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ContentCreateWithoutNodeInput = {
+    type: $Enums.ContentType
+    title: string
+    duration?: number
+    audioUrl?: string | null
+    lyrics?: string | null
+    plays?: number
+    listeners?: number
+    published?: boolean
+    sortOrder?: number
+    product: ProductCreateNestedOneWithoutContentInput
+    schedule?: ContentScheduleCreateNestedManyWithoutContentInput
+  }
+
+  export type ContentUncheckedCreateWithoutNodeInput = {
+    id?: number
+    productId: number
+    type: $Enums.ContentType
+    title: string
+    duration?: number
+    audioUrl?: string | null
+    lyrics?: string | null
+    plays?: number
+    listeners?: number
+    published?: boolean
+    sortOrder?: number
+    schedule?: ContentScheduleUncheckedCreateNestedManyWithoutContentInput
+  }
+
+  export type ContentCreateOrConnectWithoutNodeInput = {
+    where: ContentWhereUniqueInput
+    create: XOR<ContentCreateWithoutNodeInput, ContentUncheckedCreateWithoutNodeInput>
+  }
+
+  export type ContentCreateManyNodeInputEnvelope = {
+    data: ContentCreateManyNodeInput | ContentCreateManyNodeInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProductUpsertWithoutNodesInput = {
+    update: XOR<ProductUpdateWithoutNodesInput, ProductUncheckedUpdateWithoutNodesInput>
+    create: XOR<ProductCreateWithoutNodesInput, ProductUncheckedCreateWithoutNodesInput>
+    where?: ProductWhereInput
+  }
+
+  export type ProductUpdateToOneWithWhereWithoutNodesInput = {
+    where?: ProductWhereInput
+    data: XOR<ProductUpdateWithoutNodesInput, ProductUncheckedUpdateWithoutNodesInput>
+  }
+
+  export type ProductUpdateWithoutNodesInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    shortName?: StringFieldUpdateOperationsInput | string
+    price?: IntFieldUpdateOperationsInput | number
+    active?: BoolFieldUpdateOperationsInput | boolean
+    content?: ContentUpdateManyWithoutProductNestedInput
+    access?: UserAccessUpdateManyWithoutProductNestedInput
+    sales?: SaleUpdateManyWithoutProductNestedInput
+  }
+
+  export type ProductUncheckedUpdateWithoutNodesInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    shortName?: StringFieldUpdateOperationsInput | string
+    price?: IntFieldUpdateOperationsInput | number
+    active?: BoolFieldUpdateOperationsInput | boolean
+    content?: ContentUncheckedUpdateManyWithoutProductNestedInput
+    access?: UserAccessUncheckedUpdateManyWithoutProductNestedInput
+    sales?: SaleUncheckedUpdateManyWithoutProductNestedInput
+  }
+
+  export type ContentNodeUpsertWithoutChildrenInput = {
+    update: XOR<ContentNodeUpdateWithoutChildrenInput, ContentNodeUncheckedUpdateWithoutChildrenInput>
+    create: XOR<ContentNodeCreateWithoutChildrenInput, ContentNodeUncheckedCreateWithoutChildrenInput>
+    where?: ContentNodeWhereInput
+  }
+
+  export type ContentNodeUpdateToOneWithWhereWithoutChildrenInput = {
+    where?: ContentNodeWhereInput
+    data: XOR<ContentNodeUpdateWithoutChildrenInput, ContentNodeUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type ContentNodeUpdateWithoutChildrenInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutNodesNestedInput
+    parent?: ContentNodeUpdateOneWithoutChildrenNestedInput
+    content?: ContentUpdateManyWithoutNodeNestedInput
+  }
+
+  export type ContentNodeUncheckedUpdateWithoutChildrenInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    productId?: IntFieldUpdateOperationsInput | number
+    parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    content?: ContentUncheckedUpdateManyWithoutNodeNestedInput
+  }
+
+  export type ContentNodeUpsertWithWhereUniqueWithoutParentInput = {
+    where: ContentNodeWhereUniqueInput
+    update: XOR<ContentNodeUpdateWithoutParentInput, ContentNodeUncheckedUpdateWithoutParentInput>
+    create: XOR<ContentNodeCreateWithoutParentInput, ContentNodeUncheckedCreateWithoutParentInput>
+  }
+
+  export type ContentNodeUpdateWithWhereUniqueWithoutParentInput = {
+    where: ContentNodeWhereUniqueInput
+    data: XOR<ContentNodeUpdateWithoutParentInput, ContentNodeUncheckedUpdateWithoutParentInput>
+  }
+
+  export type ContentNodeUpdateManyWithWhereWithoutParentInput = {
+    where: ContentNodeScalarWhereInput
+    data: XOR<ContentNodeUpdateManyMutationInput, ContentNodeUncheckedUpdateManyWithoutParentInput>
+  }
+
+  export type ContentUpsertWithWhereUniqueWithoutNodeInput = {
+    where: ContentWhereUniqueInput
+    update: XOR<ContentUpdateWithoutNodeInput, ContentUncheckedUpdateWithoutNodeInput>
+    create: XOR<ContentCreateWithoutNodeInput, ContentUncheckedCreateWithoutNodeInput>
+  }
+
+  export type ContentUpdateWithWhereUniqueWithoutNodeInput = {
+    where: ContentWhereUniqueInput
+    data: XOR<ContentUpdateWithoutNodeInput, ContentUncheckedUpdateWithoutNodeInput>
+  }
+
+  export type ContentUpdateManyWithWhereWithoutNodeInput = {
+    where: ContentScalarWhereInput
+    data: XOR<ContentUpdateManyMutationInput, ContentUncheckedUpdateManyWithoutNodeInput>
+  }
+
+  export type ContentCreateWithoutScheduleInput = {
+    type: $Enums.ContentType
+    title: string
+    duration?: number
+    audioUrl?: string | null
+    lyrics?: string | null
+    plays?: number
+    listeners?: number
+    published?: boolean
+    sortOrder?: number
+    product: ProductCreateNestedOneWithoutContentInput
+    node?: ContentNodeCreateNestedOneWithoutContentInput
+  }
+
+  export type ContentUncheckedCreateWithoutScheduleInput = {
+    id?: number
+    productId: number
+    type: $Enums.ContentType
+    title: string
+    duration?: number
+    audioUrl?: string | null
+    lyrics?: string | null
+    plays?: number
+    listeners?: number
+    published?: boolean
+    sortOrder?: number
+    nodeId?: number | null
+  }
+
+  export type ContentCreateOrConnectWithoutScheduleInput = {
+    where: ContentWhereUniqueInput
+    create: XOR<ContentCreateWithoutScheduleInput, ContentUncheckedCreateWithoutScheduleInput>
+  }
+
+  export type ContentUpsertWithoutScheduleInput = {
+    update: XOR<ContentUpdateWithoutScheduleInput, ContentUncheckedUpdateWithoutScheduleInput>
+    create: XOR<ContentCreateWithoutScheduleInput, ContentUncheckedCreateWithoutScheduleInput>
+    where?: ContentWhereInput
+  }
+
+  export type ContentUpdateToOneWithWhereWithoutScheduleInput = {
+    where?: ContentWhereInput
+    data: XOR<ContentUpdateWithoutScheduleInput, ContentUncheckedUpdateWithoutScheduleInput>
+  }
+
+  export type ContentUpdateWithoutScheduleInput = {
+    type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    title?: StringFieldUpdateOperationsInput | string
+    duration?: IntFieldUpdateOperationsInput | number
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    lyrics?: NullableStringFieldUpdateOperationsInput | string | null
+    plays?: IntFieldUpdateOperationsInput | number
+    listeners?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    product?: ProductUpdateOneRequiredWithoutContentNestedInput
+    node?: ContentNodeUpdateOneWithoutContentNestedInput
+  }
+
+  export type ContentUncheckedUpdateWithoutScheduleInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    productId?: IntFieldUpdateOperationsInput | number
+    type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    title?: StringFieldUpdateOperationsInput | string
+    duration?: IntFieldUpdateOperationsInput | number
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    lyrics?: NullableStringFieldUpdateOperationsInput | string | null
+    plays?: IntFieldUpdateOperationsInput | number
+    listeners?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    nodeId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type UserCreateWithoutAccessInput = {
@@ -20607,6 +24151,7 @@ export namespace Prisma {
     active?: boolean
     content?: ContentCreateNestedManyWithoutProductInput
     sales?: SaleCreateNestedManyWithoutProductInput
+    nodes?: ContentNodeCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutAccessInput = {
@@ -20618,6 +24163,7 @@ export namespace Prisma {
     active?: boolean
     content?: ContentUncheckedCreateNestedManyWithoutProductInput
     sales?: SaleUncheckedCreateNestedManyWithoutProductInput
+    nodes?: ContentNodeUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutAccessInput = {
@@ -20706,6 +24252,7 @@ export namespace Prisma {
     active?: BoolFieldUpdateOperationsInput | boolean
     content?: ContentUpdateManyWithoutProductNestedInput
     sales?: SaleUpdateManyWithoutProductNestedInput
+    nodes?: ContentNodeUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutAccessInput = {
@@ -20717,6 +24264,7 @@ export namespace Prisma {
     active?: BoolFieldUpdateOperationsInput | boolean
     content?: ContentUncheckedUpdateManyWithoutProductNestedInput
     sales?: SaleUncheckedUpdateManyWithoutProductNestedInput
+    nodes?: ContentNodeUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type UserCreateWithoutSalesInput = {
@@ -20783,6 +24331,7 @@ export namespace Prisma {
     active?: boolean
     content?: ContentCreateNestedManyWithoutProductInput
     access?: UserAccessCreateNestedManyWithoutProductInput
+    nodes?: ContentNodeCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutSalesInput = {
@@ -20794,6 +24343,7 @@ export namespace Prisma {
     active?: boolean
     content?: ContentUncheckedCreateNestedManyWithoutProductInput
     access?: UserAccessUncheckedCreateNestedManyWithoutProductInput
+    nodes?: ContentNodeUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutSalesInput = {
@@ -20882,6 +24432,7 @@ export namespace Prisma {
     active?: BoolFieldUpdateOperationsInput | boolean
     content?: ContentUpdateManyWithoutProductNestedInput
     access?: UserAccessUpdateManyWithoutProductNestedInput
+    nodes?: ContentNodeUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutSalesInput = {
@@ -20893,6 +24444,7 @@ export namespace Prisma {
     active?: BoolFieldUpdateOperationsInput | boolean
     content?: ContentUncheckedUpdateManyWithoutProductNestedInput
     access?: UserAccessUncheckedUpdateManyWithoutProductNestedInput
+    nodes?: ContentNodeUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ChapterCreateWithoutBookInput = {
@@ -21114,6 +24666,7 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    nodeId?: number | null
   }
 
   export type UserAccessCreateManyProductInput = {
@@ -21136,6 +24689,15 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type ContentNodeCreateManyProductInput = {
+    id?: number
+    parentId?: number | null
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+  }
+
   export type ContentUpdateWithoutProductInput = {
     type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
     title?: StringFieldUpdateOperationsInput | string
@@ -21146,6 +24708,8 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    schedule?: ContentScheduleUpdateManyWithoutContentNestedInput
+    node?: ContentNodeUpdateOneWithoutContentNestedInput
   }
 
   export type ContentUncheckedUpdateWithoutProductInput = {
@@ -21159,6 +24723,8 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    nodeId?: NullableIntFieldUpdateOperationsInput | number | null
+    schedule?: ContentScheduleUncheckedUpdateManyWithoutContentNestedInput
   }
 
   export type ContentUncheckedUpdateManyWithoutProductInput = {
@@ -21172,6 +24738,7 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    nodeId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type UserAccessUpdateWithoutProductInput = {
@@ -21229,6 +24796,36 @@ export namespace Prisma {
     status?: EnumSaleStatusFieldUpdateOperationsInput | $Enums.SaleStatus
     ref?: NullableStringFieldUpdateOperationsInput | string | null
     gateway?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentNodeUpdateWithoutProductInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: ContentNodeUpdateOneWithoutChildrenNestedInput
+    children?: ContentNodeUpdateManyWithoutParentNestedInput
+    content?: ContentUpdateManyWithoutNodeNestedInput
+  }
+
+  export type ContentNodeUncheckedUpdateWithoutProductInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: ContentNodeUncheckedUpdateManyWithoutParentNestedInput
+    content?: ContentUncheckedUpdateManyWithoutNodeNestedInput
+  }
+
+  export type ContentNodeUncheckedUpdateManyWithoutProductInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    parentId?: NullableIntFieldUpdateOperationsInput | number | null
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -21310,6 +24907,125 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ContentScheduleCreateManyContentInput = {
+    id?: number
+    session: $Enums.ContentSession
+    day: $Enums.Weekday
+  }
+
+  export type ContentScheduleUpdateWithoutContentInput = {
+    session?: EnumContentSessionFieldUpdateOperationsInput | $Enums.ContentSession
+    day?: EnumWeekdayFieldUpdateOperationsInput | $Enums.Weekday
+  }
+
+  export type ContentScheduleUncheckedUpdateWithoutContentInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    session?: EnumContentSessionFieldUpdateOperationsInput | $Enums.ContentSession
+    day?: EnumWeekdayFieldUpdateOperationsInput | $Enums.Weekday
+  }
+
+  export type ContentScheduleUncheckedUpdateManyWithoutContentInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    session?: EnumContentSessionFieldUpdateOperationsInput | $Enums.ContentSession
+    day?: EnumWeekdayFieldUpdateOperationsInput | $Enums.Weekday
+  }
+
+  export type ContentNodeCreateManyParentInput = {
+    id?: number
+    productId: number
+    name: string
+    kind?: string | null
+    sortOrder?: number
+    createdAt?: Date | string
+  }
+
+  export type ContentCreateManyNodeInput = {
+    id?: number
+    productId: number
+    type: $Enums.ContentType
+    title: string
+    duration?: number
+    audioUrl?: string | null
+    lyrics?: string | null
+    plays?: number
+    listeners?: number
+    published?: boolean
+    sortOrder?: number
+  }
+
+  export type ContentNodeUpdateWithoutParentInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutNodesNestedInput
+    children?: ContentNodeUpdateManyWithoutParentNestedInput
+    content?: ContentUpdateManyWithoutNodeNestedInput
+  }
+
+  export type ContentNodeUncheckedUpdateWithoutParentInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    productId?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: ContentNodeUncheckedUpdateManyWithoutParentNestedInput
+    content?: ContentUncheckedUpdateManyWithoutNodeNestedInput
+  }
+
+  export type ContentNodeUncheckedUpdateManyWithoutParentInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    productId?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentUpdateWithoutNodeInput = {
+    type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    title?: StringFieldUpdateOperationsInput | string
+    duration?: IntFieldUpdateOperationsInput | number
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    lyrics?: NullableStringFieldUpdateOperationsInput | string | null
+    plays?: IntFieldUpdateOperationsInput | number
+    listeners?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    product?: ProductUpdateOneRequiredWithoutContentNestedInput
+    schedule?: ContentScheduleUpdateManyWithoutContentNestedInput
+  }
+
+  export type ContentUncheckedUpdateWithoutNodeInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    productId?: IntFieldUpdateOperationsInput | number
+    type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    title?: StringFieldUpdateOperationsInput | string
+    duration?: IntFieldUpdateOperationsInput | number
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    lyrics?: NullableStringFieldUpdateOperationsInput | string | null
+    plays?: IntFieldUpdateOperationsInput | number
+    listeners?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    schedule?: ContentScheduleUncheckedUpdateManyWithoutContentNestedInput
+  }
+
+  export type ContentUncheckedUpdateManyWithoutNodeInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    productId?: IntFieldUpdateOperationsInput | number
+    type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    title?: StringFieldUpdateOperationsInput | string
+    duration?: IntFieldUpdateOperationsInput | number
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    lyrics?: NullableStringFieldUpdateOperationsInput | string | null
+    plays?: IntFieldUpdateOperationsInput | number
+    listeners?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+  }
+
   export type ChapterCreateManyBookInput = {
     id?: number
     title: string
@@ -21378,6 +25094,14 @@ export namespace Prisma {
      */
     export type UserCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserCountOutputTypeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use ContentCountOutputTypeDefaultArgs instead
+     */
+    export type ContentCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ContentCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ContentNodeCountOutputTypeDefaultArgs instead
+     */
+    export type ContentNodeCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ContentNodeCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use BookCountOutputTypeDefaultArgs instead
      */
     export type BookCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = BookCountOutputTypeDefaultArgs<ExtArgs>
@@ -21401,6 +25125,14 @@ export namespace Prisma {
      * @deprecated Use ContentDefaultArgs instead
      */
     export type ContentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ContentDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ContentNodeDefaultArgs instead
+     */
+    export type ContentNodeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ContentNodeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ContentScheduleDefaultArgs instead
+     */
+    export type ContentScheduleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ContentScheduleDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserAccessDefaultArgs instead
      */

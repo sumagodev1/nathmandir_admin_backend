@@ -30,6 +30,11 @@ export async function create(req, res) {
       price: Number(price) || 0,
     },
   })
+
+  // The default sections are NOT created here. The Add Content form offers
+  // them for every Part whether they exist or not, and creates one the first
+  // time it is actually used — so a Part that only ever uses सकाळ never grows
+  // an empty संध्याकाळ beside it.
   res.status(201).json({ product })
 }
 

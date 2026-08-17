@@ -10,6 +10,7 @@ import usersRoutes from './routes/users.routes.js'
 import dashboardRoutes from './routes/dashboard.routes.js'
 import productsRoutes from './routes/products.routes.js'
 import contentRoutes from './routes/content.routes.js'
+import contentNodesRoutes from './routes/contentNodes.routes.js'
 import salesRoutes from './routes/sales.routes.js'
 import accessRoutes from './routes/access.routes.js'
 import libraryRoutes from './routes/library.routes.js'
@@ -92,6 +93,8 @@ app.use('/api/users', usersRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/products', productsRoutes)
 app.use('/api/content', contentRoutes)
+// Sections inside a Part (the generic content hierarchy)
+app.use('/api/content-nodes', contentNodesRoutes)
 app.use('/api/sales', salesRoutes)
 app.use('/api/access', accessRoutes)
 app.use('/api/books', libraryRoutes)

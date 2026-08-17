@@ -16,6 +16,8 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma.js'
 import { productMaps, resolveProductId } from '../lib/products.js'
+import { groupSchedule } from '../lib/contentSchedule.js'
+import { sectionMap, sectionPath } from '../lib/sectionTrail.js'
 import { jsonSafe, ymd, paginate } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
@@ -383,7 +385,11 @@ async function get_content(req, res) {
   const rows = await prisma.content.findMany({
     where: { productId: product.id, published: true },
     orderBy: { sortOrder: 'asc' },
+    include: { schedule: true },
   })
+
+  // Section names for this Part, so each item can say where it belongs.
+  const sections = await sectionMap([product.id])
 
   const content = rows.map((c) => ({
     id: c.id,
@@ -395,12 +401,65 @@ async function get_content(req, res) {
     locked: !owned,
     audioUrl: owned ? absUrl(req, c.audioUrl) : null,
     lyrics: c.lyrics || '',
+    // Where the item sits in the Part's menu. `sectionId` is null and
+    // `sectionPath` is empty for an item that sits directly in the Part —
+    // which is every item the deployed APK already knows about, so its list
+    // is unchanged and these fields are simply ignored by it.
+    sectionId: c.nodeId ?? null,
+    sectionPath: c.nodeId ? sectionPath(c.nodeId, sections) : [],
+    // When the item is meant to be played. Empty arrays = unscheduled; the
+    // app decides what to do with it. Nothing is filtered out server-side,
+    // so the deployed APK keeps getting exactly the list it gets today.
+    schedule: groupSchedule(c.schedule),
   }))
 
   return sendOk(res, 'Content loaded', {
     owned,
     product: { code, name: product.name, price: product.price },
     content,
+  })
+}
+
+// ── get_sections ─ [auth] → the menu tree for one module ──────
+//   ?apicall=get_sections&code=gita1
+//
+// Returns every section of the Part as a flat list, each with its `parentId`,
+// so the app can build the menu itself:
+//
+//   सकाळ (Morning)            parentId: null
+//   संध्याकाळ (Evening)        parentId: null
+//     वाराची पदे               parentId: <संध्याकाळ>
+//       सोमवार (Monday)        parentId: <वाराची पदे>
+//
+// Flat rather than nested because the depth is not fixed — a Part may have two
+// levels or five, and the names are whatever the admin typed. `itemCount` says
+// how many songs sit directly in that section, so the app can grey out an
+// empty one without asking again.
+async function get_sections(req, res) {
+  const code = field(req, 'code') || field(req, 'product')
+  if (!code) return sendFail(res, 'code is required', STATUS.BAD_REQUEST)
+
+  const productId = await resolveProductId(code)
+  if (productId === null) return sendFail(res, 'Module not found', STATUS.NOT_FOUND)
+
+  const nodes = await prisma.contentNode.findMany({
+    where: { productId },
+    orderBy: [{ parentId: 'asc' }, { sortOrder: 'asc' }, { id: 'asc' }],
+    include: { _count: { select: { children: true, content: true } } },
+  })
+
+  return sendOk(res, 'Sections loaded', {
+    sections: nodes.map((n) => ({
+      id: n.id,
+      parentId: n.parentId,
+      name: n.name,
+      // A free-text label the admin chose ("session", "sub part", "day").
+      // Shown as-is; the app should not branch on it.
+      kind: n.kind || null,
+      sortOrder: n.sortOrder,
+      childCount: n._count.children,
+      itemCount: n._count.content,
+    })),
   })
 }
 
@@ -467,6 +526,7 @@ async function sub_items(req, res) {
   const rows = await prisma.content.findMany({
     where: { productId: product.id, published: true },
     orderBy: { sortOrder: 'asc' },
+    include: { schedule: true },
   })
 
   const items = rows.map((c) => ({
@@ -478,6 +538,7 @@ async function sub_items(req, res) {
     plays: c.plays,
     hasAudio: !!c.audioUrl,
     hasLyrics: !!c.lyrics,
+    schedule: groupSchedule(c.schedule),
   }))
 
   return sendOk(res, 'Sub items loaded', {
@@ -655,6 +716,7 @@ export const handlers = {
   // New: content delivery for the app (all require a Bearer token).
   home,
   get_content,
+  get_sections,
   mark_played,
   // Subscription-scoped variants (used by the "My Subscriptions" flow).
   subscribed_items,

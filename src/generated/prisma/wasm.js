@@ -176,7 +176,25 @@ exports.Prisma.ContentScalarFieldEnum = {
   plays: 'plays',
   listeners: 'listeners',
   published: 'published',
-  sortOrder: 'sortOrder'
+  sortOrder: 'sortOrder',
+  nodeId: 'nodeId'
+};
+
+exports.Prisma.ContentNodeScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  parentId: 'parentId',
+  name: 'name',
+  kind: 'kind',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ContentScheduleScalarFieldEnum = {
+  id: 'id',
+  contentId: 'contentId',
+  session: 'session',
+  day: 'day'
 };
 
 exports.Prisma.UserAccessScalarFieldEnum = {
@@ -295,6 +313,21 @@ exports.ContentType = exports.$Enums.ContentType = {
   text: 'text'
 };
 
+exports.ContentSession = exports.$Enums.ContentSession = {
+  morning: 'morning',
+  afternoon: 'afternoon'
+};
+
+exports.Weekday = exports.$Enums.Weekday = {
+  mon: 'mon',
+  tue: 'tue',
+  wed: 'wed',
+  thu: 'thu',
+  fri: 'fri',
+  sat: 'sat',
+  sun: 'sun'
+};
+
 exports.AccessSource = exports.$Enums.AccessSource = {
   purchased: 'purchased',
   granted: 'granted'
@@ -317,6 +350,8 @@ exports.Prisma.ModelName = {
   Product: 'Product',
   User: 'User',
   Content: 'Content',
+  ContentNode: 'ContentNode',
+  ContentSchedule: 'ContentSchedule',
   UserAccess: 'UserAccess',
   Sale: 'Sale',
   Notification: 'Notification',

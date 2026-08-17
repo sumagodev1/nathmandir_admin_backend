@@ -43,6 +43,24 @@ enum SaleStatus {
   failed
 }
 
+// When a content item is meant to be played. An item with no schedule rows
+// at all is simply unscheduled ("None") — the absence of a row is the
+// "none" case, so there is no `none` member here.
+enum ContentSession {
+  morning
+  afternoon
+}
+
+enum Weekday {
+  mon
+  tue
+  wed
+  thu
+  fri
+  sat
+  sun
+}
+
 // ── Admin (panel login) ──────────────────────────────────────
 model Admin {
   id           Int      @id @default(autoincrement())
@@ -71,6 +89,7 @@ model Product {
   content Content[]
   access  UserAccess[]
   sales   Sale[]
+  nodes   ContentNode[]
 
   @@map("products")
 }
@@ -130,12 +149,78 @@ model Content {
   published Boolean     @default(true)
   sortOrder Int         @default(0) @map("sort_order")
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // Where the item sits in its Part's hierarchy. NULL means "directly in the
+  // Part", which is every item created before the hierarchy existed — those
+  // keep working untouched.
+  nodeId Int? @map("node_id")
+
+  product  Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  schedule ContentSchedule[]
+  // SetNull, not Restrict: deleting a Part must be able to cascade through
+  // its sections, and a vanished section should leave its items in the Part
+  // rather than destroy them. Deleting a non-empty section is refused by the
+  // controller, which is where that rule belongs.
+  node     ContentNode?      @relation(fields: [nodeId], references: [id], onDelete: SetNull)
 
   @@index([productId])
   @@index([productId, sortOrder]) // matches the list orderBy exactly
   @@index([published])
+  @@index([nodeId])
   @@map("content")
+}
+
+// ── Content hierarchy (a tree of nodes under a Part) ─────────
+// One row per node, wherever it sits:
+//
+//   Gitanjali Part 1 (Product)
+//    └── संध्याकाळी      (parent = null)
+//         └── वाराची पदे  (parent = संध्याकाळी)
+//              └── शुक्रवार (parent = वाराची पदे) → Content items
+//
+// Nothing in the model names a level. Depth, names and order are all data, so
+// one Part can be two levels deep and another five, with different names —
+// no code branches on "Morning", "Evening", "Sub Part" or a weekday.
+model ContentNode {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  parentId  Int?     @map("parent_id")
+  name      String   @db.VarChar(191)
+  // Free-text display hint only ("session", "sub part", "day"). Never
+  // branched on — it lets the UI label a level without knowing what it means.
+  kind      String?  @db.VarChar(64)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product  Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // Cascade so deleting a Part can remove its whole tree. It never fires from
+  // the API: removing a section directly is refused while it holds anything.
+  parent   ContentNode?  @relation("NodeChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children ContentNode[] @relation("NodeChildren")
+  content  Content[]
+
+  @@index([productId, parentId, sortOrder])
+  @@index([parentId])
+  @@map("content_node")
+}
+
+// ── When an item is played (Morning / Afternoon × Mon–Sun) ───
+// One row per (item, session, day). An item with no rows is unscheduled,
+// which is what the form calls "None". Storing it this way rather than as
+// two CSV columns keeps "is anything scheduled for Wednesday afternoon?"
+// a plain indexed query, and the unique key makes a duplicate tick
+// impossible at the database level rather than only in the UI.
+model ContentSchedule {
+  id        Int            @id @default(autoincrement())
+  contentId Int            @map("content_id")
+  session   ContentSession
+  day       Weekday
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, session, day])
+  @@index([contentId])
+  @@index([session, day]) // "what plays on Wednesday morning?"
+  @@map("content_schedule")
 }
 
 // ── User access (purchased vs granted, with expiry) ──────────
