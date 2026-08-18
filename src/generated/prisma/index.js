@@ -27,7 +27,6 @@ const {
 
 
 const Prisma = {}
-
 exports.Prisma = Prisma
 exports.$Enums = {}
 
