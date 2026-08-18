@@ -177,7 +177,8 @@ exports.Prisma.ContentScalarFieldEnum = {
   listeners: 'listeners',
   published: 'published',
   sortOrder: 'sortOrder',
-  nodeId: 'nodeId'
+  nodeId: 'nodeId',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.ContentNodeScalarFieldEnum = {

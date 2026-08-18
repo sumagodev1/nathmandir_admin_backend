@@ -22,6 +22,29 @@ export async function sectionMap(productIds = []) {
   return new Map(nodes.map((n) => [n.id, n]))
 }
 
+// A section id plus every section beneath it, as a Set.
+//
+// "Everything in सकाळ" means the songs in सकाळ AND the songs in the days and
+// groups inside it — that is what an app screen asks for when the user taps a
+// level. Asking for a leaf simply returns that leaf.
+export function subtreeIds(rootId, map) {
+  const ids = new Set([rootId])
+  // The map is already in memory, so this is a walk over it rather than more
+  // queries. Repeated until nothing new is added, which cannot loop forever
+  // because a node is only ever added once.
+  let grew = true
+  while (grew) {
+    grew = false
+    for (const [id, node] of map) {
+      if (!ids.has(id) && node.parentId !== null && ids.has(node.parentId)) {
+        ids.add(id)
+        grew = true
+      }
+    }
+  }
+  return ids
+}
+
 // Root → … → the item's own section. Each step carries its `kind` so a caller
 // can tell a day apart from the sections above it without another query.
 // Empty for an item that is not filed under any section.

@@ -17,7 +17,7 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma.js'
 import { productMaps, resolveProductId } from '../lib/products.js'
 import { groupSchedule } from '../lib/contentSchedule.js'
-import { sectionMap, sectionPath } from '../lib/sectionTrail.js'
+import { sectionMap, sectionPath, subtreeIds } from '../lib/sectionTrail.js'
 import { jsonSafe, ymd, paginate } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
@@ -342,7 +342,7 @@ async function home(req, res) {
   // Published-song count per module (for the badge under each module)
   const counts = await prisma.content.groupBy({
     by: ['productId'],
-    where: { published: true },
+    where: { published: true, deletedAt: null },
     _count: { _all: true },
   })
   const countMap = new Map(counts.map((c) => [c.productId, c._count._all]))
@@ -368,30 +368,11 @@ async function home(req, res) {
 // the Bearer token (not a param) so ownership can't be spoofed.
 // Lyrics are always returned (free for all users).
 // audioUrl is withheld until the module is owned — the app shows a locked state.
-async function get_content(req, res) {
-  const code = field(req, 'product')
-  if (!code) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
-
-  // Validate against DB — accepts any product, not just the 4 hardcoded ones
-  const product = await prisma.product.findUnique({ where: { code } })
-  if (!product) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
-
-  const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
-  if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
-
-  const ownedIds = await getOwnedProductIds(user.id)
-  const owned = ownedIds.has(product.id)
-
-  const rows = await prisma.content.findMany({
-    where: { productId: product.id, published: true },
-    orderBy: { sortOrder: 'asc' },
-    include: { schedule: true },
-  })
-
-  // Section names for this Part, so each item can say where it belongs.
-  const sections = await sectionMap([product.id])
-
-  const content = rows.map((c) => ({
+// One content row as the app receives it. Shared by get_content and the
+// per-session calls below so a song never looks different depending on which
+// screen asked for it.
+function shapeItem(req, c, owned, sections) {
+  return {
     id: c.id,
     title: c.title,
     type: c.type,
@@ -411,7 +392,51 @@ async function get_content(req, res) {
     // app decides what to do with it. Nothing is filtered out server-side,
     // so the deployed APK keeps getting exactly the list it gets today.
     schedule: groupSchedule(c.schedule),
-  }))
+  }
+}
+
+async function get_content(req, res) {
+  const code = field(req, 'product')
+  if (!code) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
+
+  // Validate against DB — accepts any product, not just the 4 hardcoded ones
+  const product = await prisma.product.findUnique({ where: { code } })
+  if (!product) return sendFail(res, 'Invalid module', STATUS.BAD_REQUEST)
+
+  const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
+  if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
+
+  const ownedIds = await getOwnedProductIds(user.id)
+  const owned = ownedIds.has(product.id)
+
+  const rows = await prisma.content.findMany({
+    where: { productId: product.id, published: true, deletedAt: null },
+    orderBy: { sortOrder: 'asc' },
+    include: { schedule: true },
+  })
+
+  // Section names for this Part, so each item can say where it belongs.
+  const sections = await sectionMap([product.id])
+
+  // ?section=<id> narrows the list to one part of the menu — the section the
+  // user tapped, plus everything inside it. ?section=none returns the items
+  // that sit directly in the module. Leaving it out returns everything, which
+  // is what the deployed APK does today.
+  const sectionRef = field(req, 'section')
+  let visible = rows
+  if (sectionRef !== undefined && sectionRef !== null && String(sectionRef).trim() !== '') {
+    if (String(sectionRef) === 'none') {
+      visible = rows.filter((c) => c.nodeId === null)
+    } else {
+      const rootId = Number(sectionRef)
+      if (Number.isNaN(rootId)) return sendFail(res, 'section must be a number or "none"', STATUS.BAD_REQUEST)
+      if (!sections.has(rootId)) return sendFail(res, 'Section not found in this module', STATUS.NOT_FOUND)
+      const wanted = subtreeIds(rootId, sections)
+      visible = rows.filter((c) => c.nodeId !== null && wanted.has(c.nodeId))
+    }
+  }
+
+  const content = visible.map((c) => shapeItem(req, c, owned, sections))
 
   return sendOk(res, 'Content loaded', {
     owned,
@@ -420,46 +445,132 @@ async function get_content(req, res) {
   })
 }
 
-// ── get_sections ─ [auth] → the menu tree for one module ──────
+// ── get_sections ─ [auth] → the whole menu, nested, with files ─
 //   ?apicall=get_sections&code=gita1
 //
-// Returns every section of the Part as a flat list, each with its `parentId`,
-// so the app can build the menu itself:
+// ONE call gives the app everything it needs to draw every screen of a module:
+// the sections nested inside each other, and the songs sitting in each one.
 //
-//   सकाळ (Morning)            parentId: null
-//   संध्याकाळ (Evening)        parentId: null
-//     वाराची पदे               parentId: <संध्याकाळ>
-//       सोमवार (Monday)        parentId: <वाराची पदे>
+//   सकाळ (Morning)
+//     └── varachi pade
+//           ├── सोमवार (Monday)   → file
+//           └── मंगळवार (Tuesday)  → file
+//   संध्याकाळ (Evening)
 //
-// Flat rather than nested because the depth is not fixed — a Part may have two
-// levels or five, and the names are whatever the admin typed. `itemCount` says
-// how many songs sit directly in that section, so the app can grey out an
-// empty one without asking again.
+// Nested rather than flat because the app draws it as a menu, and nesting is
+// the shape a menu already has. Depth is not fixed — a module may be two
+// levels deep or five — so the app should walk `children` rather than assume
+// a number of levels.
+//
+// Songs that sit directly in the module, in no section at all, are returned
+// separately under `unsectioned`. That is where every song added before the
+// menu existed lives, so leaving them out would hide most of the content.
 async function get_sections(req, res) {
   const code = field(req, 'code') || field(req, 'product')
   if (!code) return sendFail(res, 'code is required', STATUS.BAD_REQUEST)
 
-  const productId = await resolveProductId(code)
-  if (productId === null) return sendFail(res, 'Module not found', STATUS.NOT_FOUND)
+  const product = await prisma.product.findUnique({ where: { code } })
+  if (!product) return sendFail(res, 'Module not found', STATUS.NOT_FOUND)
 
-  const nodes = await prisma.contentNode.findMany({
-    where: { productId },
-    orderBy: [{ parentId: 'asc' }, { sortOrder: 'asc' }, { id: 'asc' }],
-    include: { _count: { select: { children: true, content: true } } },
+  const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
+  if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
+
+  // Same purchase rule as get_content: the URL is withheld until the module is
+  // owned, while titles and lyrics stay visible so the app can show a locked
+  // list rather than an empty one.
+  const ownedIds = await getOwnedProductIds(user.id)
+  const owned = ownedIds.has(product.id)
+
+  const [nodes, rows] = await Promise.all([
+    prisma.contentNode.findMany({
+      where: { productId: product.id },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+    }),
+    prisma.content.findMany({
+      where: { productId: product.id, published: true, deletedAt: null },
+      orderBy: { sortOrder: 'asc' },
+      include: { schedule: true },
+    }),
+  ])
+
+  // One song as it appears inside the menu.
+  const asFile = (c) => ({
+    id: c.id,
+    title: c.title,
+    // Null until the module is bought — the same rule the old API follows.
+    url: owned ? absUrl(req, c.audioUrl) : null,
+    otherData: {
+      type: c.type,
+      duration: c.duration,
+      sortOrder: c.sortOrder,
+      plays: c.plays,
+      locked: !owned,
+      lyrics: c.lyrics || '',
+      schedule: groupSchedule(c.schedule),
+    },
   })
 
+  // Songs grouped by the section they sit in, so the tree is built without
+  // scanning the whole list once per section.
+  const filesOf = new Map()
+  for (const c of rows) {
+    const key = c.nodeId ?? 'none'
+    if (!filesOf.has(key)) filesOf.set(key, [])
+    filesOf.get(key).push(asFile(c))
+  }
+
+  const childrenOf = new Map()
+  for (const n of nodes) {
+    const key = n.parentId ?? 'root'
+    if (!childrenOf.has(key)) childrenOf.set(key, [])
+    childrenOf.get(key).push(n)
+  }
+
+  // What sits inside a node is named after WHAT those things are rather than
+  // the generic "children": a session holds `subParts`, a sub part holds
+  // `days`. The name comes from the children's own `kind`, so it describes the
+  // data instead of assuming a fixed depth.
+  const CHILD_KEYS = { session: 'sessions', 'sub part': 'subParts', day: 'days' }
+
+  // Nothing inside, several kinds mixed together, or a `kind` the admin typed
+  // by hand: there is no one truthful name for the list, so the generic one is
+  // used. The app must therefore read `sections` as well as the specific keys.
+  const FALLBACK_CHILD_KEY = 'sections'
+  const childKey = (nodes) => {
+    if (!nodes.length) return FALLBACK_CHILD_KEY
+    const kinds = new Set(nodes.map((n) => n.kind || ''))
+    if (kinds.size !== 1) return FALLBACK_CHILD_KEY
+    return CHILD_KEYS[[...kinds][0]] || FALLBACK_CHILD_KEY
+  }
+
+  const build = (parentKey) =>
+    (childrenOf.get(parentKey) || []).map((n) => {
+      const files = filesOf.get(n.id) || []
+      const inside = childrenOf.get(n.id) || []
+      return {
+        id: n.id,
+        name: n.name,
+        // A free-text label the admin chose ("session", "sub part", "day").
+        // Shown as-is; the app should not branch on it.
+        kind: n.kind || null,
+        [childKey(inside)]: build(n.id),
+        // `file` is the convenient one — a day holds exactly one song, so this
+        // is what a day screen needs. `files` carries them all for a section
+        // that holds several, and is null-free.
+        file: files[0] || null,
+        files,
+      }
+    })
+
+  // The top level is named the same way, so the response reads
+  // `sessions` → `subParts` → `days` all the way down.
+  const roots = childrenOf.get('root') || []
+
   return sendOk(res, 'Sections loaded', {
-    sections: nodes.map((n) => ({
-      id: n.id,
-      parentId: n.parentId,
-      name: n.name,
-      // A free-text label the admin chose ("session", "sub part", "day").
-      // Shown as-is; the app should not branch on it.
-      kind: n.kind || null,
-      sortOrder: n.sortOrder,
-      childCount: n._count.children,
-      itemCount: n._count.content,
-    })),
+    owned,
+    product: { code, name: product.name, price: product.price },
+    [childKey(roots)]: build('root'),
+    unsectioned: filesOf.get('none') || [],
   })
 }
 
@@ -483,7 +594,7 @@ async function subscribed_items(req, res) {
 
   const counts = await prisma.content.groupBy({
     by: ['productId'],
-    where: { productId: { in: productIds }, published: true },
+    where: { productId: { in: productIds }, published: true, deletedAt: null },
     _count: { _all: true },
   })
   const countMap = new Map(counts.map((c) => [c.productId, c._count._all]))
@@ -524,7 +635,7 @@ async function sub_items(req, res) {
   }
 
   const rows = await prisma.content.findMany({
-    where: { productId: product.id, published: true },
+    where: { productId: product.id, published: true, deletedAt: null },
     orderBy: { sortOrder: 'asc' },
     include: { schedule: true },
   })
@@ -557,7 +668,10 @@ async function get_media(req, res) {
   if (!id) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   const item = await prisma.content.findUnique({ where: { id: Number(id) } })
-  if (!item || !item.published) return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
+  // deletedAt: a binned item is gone as far as the app is concerned.
+  if (!item || !item.published || item.deletedAt) {
+    return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
+  }
 
   const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
   if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
@@ -586,7 +700,7 @@ async function mark_played(req, res) {
 
   try {
     const item = await prisma.content.findUnique({ where: { id: Number(id) } })
-    if (!item) return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
+    if (!item || item.deletedAt) return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
 
     const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
     if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
@@ -667,7 +781,7 @@ async function gallery(req, res) {
   // filtered one, so the tab bar does not shrink after a filter is applied.
   const catRows = await prisma.album.groupBy({
     by: ['category'],
-    where: { published: true },
+    where: { published: true, deletedAt: null },
     _count: { _all: true },
   })
   const categories = catRows

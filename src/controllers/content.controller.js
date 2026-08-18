@@ -37,6 +37,8 @@ const shape = (c, map = new Map()) => ({
   // The whole trail, so a day reads "संध्याकाळ › वाराची पदे › सोमवार" rather
   // than just "सोमवार", which on its own says nothing about where it sits.
   nodePath: c.nodeId ? sectionPath(c.nodeId, map) : [],
+  // ISO string when the item is in the bin, null when it is live.
+  deletedAt: c.deletedAt ? c.deletedAt.toISOString() : null,
 })
 
 // Every read of a content row needs the product (for the Part name), the
@@ -47,10 +49,14 @@ const WITH_RELATIONS = { product: true, schedule: true, node: true }
 // GET /api/content?product=all|<code>&query=
 //   optional: &node=<id>   items in that section
 //             &node=none   items sitting directly in the Part
-//   Omitting it returns everything, exactly as before.
+//             &deleted=1   the bin instead of the live list
+//   Omitting them returns every live item, exactly as before.
 export async function list(req, res) {
-  const { product = 'all', query = '', node } = req.query
-  const where = {}
+  const { product = 'all', query = '', node, deleted } = req.query
+  // Deleted items are excluded unless they are what was asked for. This is the
+  // only place the default is set, so a caller cannot forget it.
+  const binned = deleted === '1' || deleted === 'true'
+  const where = { deletedAt: binned ? { not: null } : null }
   if (product && product !== 'all') {
     // ?product= accepts either the numeric id or the public code.
     const pid = await resolveProductId(product)
@@ -114,7 +120,9 @@ const UNTITLED = 'Untitled'
 async function duplicateInNode({ nodeId, title, ignoreId }) {
   if (!nodeId || !title || title === UNTITLED) return null
   const clash = await prisma.content.findFirst({
-    where: { nodeId, title, ...(ignoreId ? { NOT: { id: ignoreId } } : {}) },
+    // Binned rows do not clash: deleting an item must not make its title
+    // unusable for the replacement being added in its place.
+    where: { nodeId, title, deletedAt: null, ...(ignoreId ? { NOT: { id: ignoreId } } : {}) },
     select: { id: true, node: { select: { name: true } } },
   })
   return clash ? `“${title}” is already in “${clash.node?.name}”.` : null
@@ -216,6 +224,8 @@ export async function create(req, res) {
   const dupe = await duplicateInNode({ nodeId: nid, title: cleanTitle })
   if (dupe) return res.status(409).json({ error: dupe })
 
+  // Counts binned rows too, on purpose: they keep their sortOrder so that
+  // restoring one cannot collide with an item added after it was deleted.
   const count = await prisma.content.count({ where: { productId: pid } })
   const created = await prisma.content.create({
     data: {
@@ -309,13 +319,40 @@ export async function update(req, res) {
   }
 }
 
-// DELETE /api/content/:id
+// DELETE /api/content/:id        → to the bin (recoverable)
+// DELETE /api/content/:id?hard=1  → gone for good
+//
+// Soft by default: a recording that took an afternoon to record and transcribe
+// must not vanish on a mis-click. The row keeps its section, schedule and play
+// count, so restore puts it back exactly where it was.
 export async function remove(req, res) {
   const id = Number(req.params.id)
   if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid content id.' })
+
+  const hard = req.query.hard === '1' || req.query.hard === 'true'
   try {
-    await prisma.content.delete({ where: { id } })
-    res.json({ ok: true })
+    if (hard) {
+      await prisma.content.delete({ where: { id } })
+      return res.json({ ok: true, hard: true })
+    }
+    const item = await prisma.content.update({ where: { id }, data: { deletedAt: new Date() } })
+    res.json({ ok: true, hard: false, deletedAt: item.deletedAt.toISOString() })
+  } catch {
+    res.status(404).json({ error: 'Content item not found.' })
+  }
+}
+
+// POST /api/content/:id/restore — back out of the bin.
+export async function restore(req, res) {
+  const id = Number(req.params.id)
+  if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid content id.' })
+  try {
+    const item = await prisma.content.update({
+      where: { id },
+      data: { deletedAt: null },
+      include: WITH_RELATIONS,
+    })
+    res.json({ content: shape(item, await sectionMap([item.productId])) })
   } catch {
     res.status(404).json({ error: 'Content item not found.' })
   }
@@ -373,7 +410,9 @@ export async function importDataset(req, res) {
 
   // 2. Existing titles for this Part — one query, not one per item.
   const existing = await prisma.content.findMany({
-    where: { productId: product.id },
+    // Live rows only. A title that was deleted is imported again rather than
+    // reported as "already there", which is the point of re-running an import.
+    where: { productId: product.id, deletedAt: null },
     select: { title: true, sortOrder: true },
   })
   const taken = new Set(existing.map((c) => c.title))

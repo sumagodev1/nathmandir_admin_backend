@@ -26,7 +26,11 @@ const shape = (n) => ({
   itemCount: n._count?.content ?? undefined,
 })
 
-const WITH_COUNTS = { _count: { select: { children: true, content: true } } }
+// Binned items are not counted: a section holding only deleted rows reads as
+// empty, and the delete guard below lets it go without a cascade prompt.
+const WITH_COUNTS = {
+  _count: { select: { children: true, content: { where: { deletedAt: null } } } },
+}
 
 // Root → … → node. Walked parent by parent because the depth is not fixed;
 // MAX_DEPTH stops a cycle from looping forever if one is ever introduced by

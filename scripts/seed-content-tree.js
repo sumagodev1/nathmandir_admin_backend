@@ -18,20 +18,24 @@ import { prisma } from '../src/lib/prisma.js'
 
 const APPLY = process.argv.includes('--apply')
 
-// The weekday list lives here, as data, exactly like every other level. The
-// application does not know these are days.
-const WEEKDAYS = ['सोमवार', 'मंगळवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार', 'रविवार']
-const days = () => WEEKDAYS.map((name) => ({ name, kind: 'day' }))
-
+// Session names must match lib/defaultSections.js exactly. They were once
+// written here as bare 'सकाळी' / 'संध्याकाळी'; since a section is matched by
+// name, the old spellings would have built a second tree beside the real one
+// rather than filling gaps in it.
+//
+// Weekdays are deliberately absent. A day is created when a day's content is
+// actually filed into it — see scripts/import-varachi-pade.js — so a Part
+// holds the days it needs instead of seven empty ones.
+//
 // productCode → the tree to build under it.
 const TREES = {
   gita1: [
-    { name: 'सकाळी', kind: 'session' },
+    { name: 'सकाळ (Morning)', kind: 'session' },
     {
-      name: 'संध्याकाळी',
+      name: 'संध्याकाळ (Evening)',
       kind: 'session',
       children: [
-        { name: 'वाराची पदे', kind: 'sub part', children: days() },
+        { name: 'वाराची पदे', kind: 'sub part' },
         { name: 'स्तोत्र', kind: 'sub part' },
       ],
     },

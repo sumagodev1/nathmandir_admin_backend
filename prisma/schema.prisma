@@ -154,6 +154,12 @@ model Content {
   // keep working untouched.
   nodeId Int? @map("node_id")
 
+  // Soft delete. NULL = live; a timestamp = in the bin, hidden everywhere but
+  // still on disk so a mis-click is recoverable. Nothing cascades from this —
+  // the row keeps its section, its schedule and its play count, so restoring
+  // puts the item back exactly where it was.
+  deletedAt DateTime? @map("deleted_at")
+
   product  Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
   schedule ContentSchedule[]
   // SetNull, not Restrict: deleting a Part must be able to cascade through
@@ -166,6 +172,7 @@ model Content {
   @@index([productId, sortOrder]) // matches the list orderBy exactly
   @@index([published])
   @@index([nodeId])
+  @@index([deletedAt]) // every list filters on it
   @@map("content")
 }
 

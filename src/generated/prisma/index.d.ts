@@ -5595,6 +5595,7 @@ export namespace Prisma {
     published: boolean | null
     sortOrder: number | null
     nodeId: number | null
+    deletedAt: Date | null
   }
 
   export type ContentMaxAggregateOutputType = {
@@ -5610,6 +5611,7 @@ export namespace Prisma {
     published: boolean | null
     sortOrder: number | null
     nodeId: number | null
+    deletedAt: Date | null
   }
 
   export type ContentCountAggregateOutputType = {
@@ -5625,6 +5627,7 @@ export namespace Prisma {
     published: number
     sortOrder: number
     nodeId: number
+    deletedAt: number
     _all: number
   }
 
@@ -5662,6 +5665,7 @@ export namespace Prisma {
     published?: true
     sortOrder?: true
     nodeId?: true
+    deletedAt?: true
   }
 
   export type ContentMaxAggregateInputType = {
@@ -5677,6 +5681,7 @@ export namespace Prisma {
     published?: true
     sortOrder?: true
     nodeId?: true
+    deletedAt?: true
   }
 
   export type ContentCountAggregateInputType = {
@@ -5692,6 +5697,7 @@ export namespace Prisma {
     published?: true
     sortOrder?: true
     nodeId?: true
+    deletedAt?: true
     _all?: true
   }
 
@@ -5794,6 +5800,7 @@ export namespace Prisma {
     published: boolean
     sortOrder: number
     nodeId: number | null
+    deletedAt: Date | null
     _count: ContentCountAggregateOutputType | null
     _avg: ContentAvgAggregateOutputType | null
     _sum: ContentSumAggregateOutputType | null
@@ -5828,6 +5835,7 @@ export namespace Prisma {
     published?: boolean
     sortOrder?: boolean
     nodeId?: boolean
+    deletedAt?: boolean
     product?: boolean | ProductDefaultArgs<ExtArgs>
     schedule?: boolean | Content$scheduleArgs<ExtArgs>
     node?: boolean | Content$nodeArgs<ExtArgs>
@@ -5848,6 +5856,7 @@ export namespace Prisma {
     published?: boolean
     sortOrder?: boolean
     nodeId?: boolean
+    deletedAt?: boolean
   }
 
   export type ContentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5877,6 +5886,7 @@ export namespace Prisma {
       published: boolean
       sortOrder: number
       nodeId: number | null
+      deletedAt: Date | null
     }, ExtArgs["result"]["content"]>
     composites: {}
   }
@@ -6261,6 +6271,7 @@ export namespace Prisma {
     readonly published: FieldRef<"Content", 'Boolean'>
     readonly sortOrder: FieldRef<"Content", 'Int'>
     readonly nodeId: FieldRef<"Content", 'Int'>
+    readonly deletedAt: FieldRef<"Content", 'DateTime'>
   }
     
 
@@ -18548,7 +18559,8 @@ export namespace Prisma {
     listeners: 'listeners',
     published: 'published',
     sortOrder: 'sortOrder',
-    nodeId: 'nodeId'
+    nodeId: 'nodeId',
+    deletedAt: 'deletedAt'
   };
 
   export type ContentScalarFieldEnum = (typeof ContentScalarFieldEnum)[keyof typeof ContentScalarFieldEnum]
@@ -19106,6 +19118,7 @@ export namespace Prisma {
     published?: BoolFilter<"Content"> | boolean
     sortOrder?: IntFilter<"Content"> | number
     nodeId?: IntNullableFilter<"Content"> | number | null
+    deletedAt?: DateTimeNullableFilter<"Content"> | Date | string | null
     product?: XOR<ProductRelationFilter, ProductWhereInput>
     schedule?: ContentScheduleListRelationFilter
     node?: XOR<ContentNodeNullableRelationFilter, ContentNodeWhereInput> | null
@@ -19124,6 +19137,7 @@ export namespace Prisma {
     published?: SortOrder
     sortOrder?: SortOrder
     nodeId?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
     product?: ProductOrderByWithRelationInput
     schedule?: ContentScheduleOrderByRelationAggregateInput
     node?: ContentNodeOrderByWithRelationInput
@@ -19145,6 +19159,7 @@ export namespace Prisma {
     published?: BoolFilter<"Content"> | boolean
     sortOrder?: IntFilter<"Content"> | number
     nodeId?: IntNullableFilter<"Content"> | number | null
+    deletedAt?: DateTimeNullableFilter<"Content"> | Date | string | null
     product?: XOR<ProductRelationFilter, ProductWhereInput>
     schedule?: ContentScheduleListRelationFilter
     node?: XOR<ContentNodeNullableRelationFilter, ContentNodeWhereInput> | null
@@ -19163,6 +19178,7 @@ export namespace Prisma {
     published?: SortOrder
     sortOrder?: SortOrder
     nodeId?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
     _count?: ContentCountOrderByAggregateInput
     _avg?: ContentAvgOrderByAggregateInput
     _max?: ContentMaxOrderByAggregateInput
@@ -19186,6 +19202,7 @@ export namespace Prisma {
     published?: BoolWithAggregatesFilter<"Content"> | boolean
     sortOrder?: IntWithAggregatesFilter<"Content"> | number
     nodeId?: IntNullableWithAggregatesFilter<"Content"> | number | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"Content"> | Date | string | null
   }
 
   export type ContentNodeWhereInput = {
@@ -20303,6 +20320,7 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    deletedAt?: Date | string | null
     product: ProductCreateNestedOneWithoutContentInput
     schedule?: ContentScheduleCreateNestedManyWithoutContentInput
     node?: ContentNodeCreateNestedOneWithoutContentInput
@@ -20321,6 +20339,7 @@ export namespace Prisma {
     published?: boolean
     sortOrder?: number
     nodeId?: number | null
+    deletedAt?: Date | string | null
     schedule?: ContentScheduleUncheckedCreateNestedManyWithoutContentInput
   }
 
@@ -20334,6 +20353,7 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     product?: ProductUpdateOneRequiredWithoutContentNestedInput
     schedule?: ContentScheduleUpdateManyWithoutContentNestedInput
     node?: ContentNodeUpdateOneWithoutContentNestedInput
@@ -20352,6 +20372,7 @@ export namespace Prisma {
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     nodeId?: NullableIntFieldUpdateOperationsInput | number | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     schedule?: ContentScheduleUncheckedUpdateManyWithoutContentNestedInput
   }
 
@@ -20368,6 +20389,7 @@ export namespace Prisma {
     published?: boolean
     sortOrder?: number
     nodeId?: number | null
+    deletedAt?: Date | string | null
   }
 
   export type ContentUpdateManyMutationInput = {
@@ -20380,6 +20402,7 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ContentUncheckedUpdateManyInput = {
@@ -20395,6 +20418,7 @@ export namespace Prisma {
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     nodeId?: NullableIntFieldUpdateOperationsInput | number | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ContentNodeCreateInput = {
@@ -21603,6 +21627,7 @@ export namespace Prisma {
     published?: SortOrder
     sortOrder?: SortOrder
     nodeId?: SortOrder
+    deletedAt?: SortOrder
   }
 
   export type ContentAvgOrderByAggregateInput = {
@@ -21628,6 +21653,7 @@ export namespace Prisma {
     published?: SortOrder
     sortOrder?: SortOrder
     nodeId?: SortOrder
+    deletedAt?: SortOrder
   }
 
   export type ContentMinOrderByAggregateInput = {
@@ -21643,6 +21669,7 @@ export namespace Prisma {
     published?: SortOrder
     sortOrder?: SortOrder
     nodeId?: SortOrder
+    deletedAt?: SortOrder
   }
 
   export type ContentSumOrderByAggregateInput = {
@@ -23293,6 +23320,7 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    deletedAt?: Date | string | null
     schedule?: ContentScheduleCreateNestedManyWithoutContentInput
     node?: ContentNodeCreateNestedOneWithoutContentInput
   }
@@ -23309,6 +23337,7 @@ export namespace Prisma {
     published?: boolean
     sortOrder?: number
     nodeId?: number | null
+    deletedAt?: Date | string | null
     schedule?: ContentScheduleUncheckedCreateNestedManyWithoutContentInput
   }
 
@@ -23443,6 +23472,7 @@ export namespace Prisma {
     published?: BoolFilter<"Content"> | boolean
     sortOrder?: IntFilter<"Content"> | number
     nodeId?: IntNullableFilter<"Content"> | number | null
+    deletedAt?: DateTimeNullableFilter<"Content"> | Date | string | null
   }
 
   export type UserAccessUpsertWithWhereUniqueWithoutProductInput = {
@@ -23886,6 +23916,7 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    deletedAt?: Date | string | null
     product: ProductCreateNestedOneWithoutContentInput
     schedule?: ContentScheduleCreateNestedManyWithoutContentInput
   }
@@ -23902,6 +23933,7 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    deletedAt?: Date | string | null
     schedule?: ContentScheduleUncheckedCreateNestedManyWithoutContentInput
   }
 
@@ -24023,6 +24055,7 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    deletedAt?: Date | string | null
     product: ProductCreateNestedOneWithoutContentInput
     node?: ContentNodeCreateNestedOneWithoutContentInput
   }
@@ -24040,6 +24073,7 @@ export namespace Prisma {
     published?: boolean
     sortOrder?: number
     nodeId?: number | null
+    deletedAt?: Date | string | null
   }
 
   export type ContentCreateOrConnectWithoutScheduleInput = {
@@ -24068,6 +24102,7 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     product?: ProductUpdateOneRequiredWithoutContentNestedInput
     node?: ContentNodeUpdateOneWithoutContentNestedInput
   }
@@ -24085,6 +24120,7 @@ export namespace Prisma {
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     nodeId?: NullableIntFieldUpdateOperationsInput | number | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserCreateWithoutAccessInput = {
@@ -24667,6 +24703,7 @@ export namespace Prisma {
     published?: boolean
     sortOrder?: number
     nodeId?: number | null
+    deletedAt?: Date | string | null
   }
 
   export type UserAccessCreateManyProductInput = {
@@ -24708,6 +24745,7 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     schedule?: ContentScheduleUpdateManyWithoutContentNestedInput
     node?: ContentNodeUpdateOneWithoutContentNestedInput
   }
@@ -24724,6 +24762,7 @@ export namespace Prisma {
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     nodeId?: NullableIntFieldUpdateOperationsInput | number | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     schedule?: ContentScheduleUncheckedUpdateManyWithoutContentNestedInput
   }
 
@@ -24739,6 +24778,7 @@ export namespace Prisma {
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     nodeId?: NullableIntFieldUpdateOperationsInput | number | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserAccessUpdateWithoutProductInput = {
@@ -24951,6 +24991,7 @@ export namespace Prisma {
     listeners?: number
     published?: boolean
     sortOrder?: number
+    deletedAt?: Date | string | null
   }
 
   export type ContentNodeUpdateWithoutParentInput = {
@@ -24993,6 +25034,7 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     product?: ProductUpdateOneRequiredWithoutContentNestedInput
     schedule?: ContentScheduleUpdateManyWithoutContentNestedInput
   }
@@ -25009,6 +25051,7 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     schedule?: ContentScheduleUncheckedUpdateManyWithoutContentNestedInput
   }
 
@@ -25024,6 +25067,7 @@ export namespace Prisma {
     listeners?: IntFieldUpdateOperationsInput | number
     published?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ChapterCreateManyBookInput = {
