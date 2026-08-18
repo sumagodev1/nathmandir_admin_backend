@@ -30,6 +30,16 @@ import sectionsRoutes from './routes/sections.routes.js'
 
 export const app = express()
 
+// Request log. Express prints nothing by itself, so `pm2 logs` showed only the
+// startup banner even while requests were arriving — there was no way to tell a
+// request that never reached the process from one that reached it and failed.
+// Registered as the very first middleware so nothing can be missed: a request
+// rejected by CORS or by a route guard is still logged here.
+app.use((req, _res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`)
+  next()
+})
+
 // Behind nginx (TLS terminated at the proxy), honour X-Forwarded-Proto/Host so
 // req.protocol is "https" and generated file URLs come back as
 // https://api.nathmandir.sumago.ai/uploads/... instead of http://...
