@@ -407,7 +407,9 @@ export async function webhook(req, res) {
           orderId
         )
       )
-      if (!rows.length || rows[0].status !== '1') {
+      // `status` is an INT column, so MySQL hands back 1, not '1' — comparing
+      // against the string made this check always true and re-ran the grant.
+      if (!rows.length || String(rows[0].status) !== '1') {
         const user = await findOrCreateUser({ mobile: normalizeMobile(notes.mobile), name: notes.name, email: notes.email })
         await prisma.user.update({ where: { id: user.id }, data: { isPaid: 1 } })
         await recordAccessAndSales({ userId: user.id, codes, paymentId, orderId })
