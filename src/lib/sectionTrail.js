@@ -12,14 +12,41 @@ import { prisma } from './prisma.js'
 // hanging a request, not a limit on how deep a Part may go.
 const MAX_DEPTH = 12
 
-// id → { name, kind, parentId } for every section of the given Parts.
+// id → { name, kind, parentId, published } for every section of the given Parts.
 export async function sectionMap(productIds = []) {
   if (!productIds.length) return new Map()
   const nodes = await prisma.contentNode.findMany({
     where: { productId: { in: productIds } },
-    select: { id: true, name: true, kind: true, parentId: true },
+    select: { id: true, name: true, kind: true, parentId: true, published: true },
   })
   return new Map(nodes.map((n) => [n.id, n]))
+}
+
+// Every section the app must not show: the ones switched off, plus everything
+// underneath them however deep.
+//
+// Hiding a session has to hide the days and songs inside it too, or the app
+// would still list a song from a section the admin has just taken down. Only
+// the section's own flag is ever written, so switching it back on restores
+// exactly what was showing before — nothing below it was altered.
+export function hiddenSectionIds(map) {
+  const hidden = new Set()
+  for (const [id, node] of map) {
+    if (node.published === false) hidden.add(id)
+  }
+  // Carry the hiding downwards until nothing new is caught. This terminates
+  // because an id is only ever added once.
+  let grew = true
+  while (grew) {
+    grew = false
+    for (const [id, node] of map) {
+      if (!hidden.has(id) && node.parentId !== null && hidden.has(node.parentId)) {
+        hidden.add(id)
+        grew = true
+      }
+    }
+  }
+  return hidden
 }
 
 // A section id plus every section beneath it, as a Set.

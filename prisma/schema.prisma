@@ -196,6 +196,10 @@ model ContentNode {
   // branched on — it lets the UI label a level without knowing what it means.
   kind      String?  @db.VarChar(64)
   sortOrder Int      @default(0) @map("sort_order")
+  // Hiding a section hides everything filed inside it, at any depth, without
+  // touching each item's own `published`. Switching the section back on
+  // therefore restores exactly what was showing before.
+  published Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
 
   product  Product       @relation(fields: [productId], references: [id], onDelete: Cascade)

@@ -6653,6 +6653,7 @@ export namespace Prisma {
     name: string | null
     kind: string | null
     sortOrder: number | null
+    published: boolean | null
     createdAt: Date | null
   }
 
@@ -6663,6 +6664,7 @@ export namespace Prisma {
     name: string | null
     kind: string | null
     sortOrder: number | null
+    published: boolean | null
     createdAt: Date | null
   }
 
@@ -6673,6 +6675,7 @@ export namespace Prisma {
     name: number
     kind: number
     sortOrder: number
+    published: number
     createdAt: number
     _all: number
   }
@@ -6699,6 +6702,7 @@ export namespace Prisma {
     name?: true
     kind?: true
     sortOrder?: true
+    published?: true
     createdAt?: true
   }
 
@@ -6709,6 +6713,7 @@ export namespace Prisma {
     name?: true
     kind?: true
     sortOrder?: true
+    published?: true
     createdAt?: true
   }
 
@@ -6719,6 +6724,7 @@ export namespace Prisma {
     name?: true
     kind?: true
     sortOrder?: true
+    published?: true
     createdAt?: true
     _all?: true
   }
@@ -6816,6 +6822,7 @@ export namespace Prisma {
     name: string
     kind: string | null
     sortOrder: number
+    published: boolean
     createdAt: Date
     _count: ContentNodeCountAggregateOutputType | null
     _avg: ContentNodeAvgAggregateOutputType | null
@@ -6845,6 +6852,7 @@ export namespace Prisma {
     name?: boolean
     kind?: boolean
     sortOrder?: boolean
+    published?: boolean
     createdAt?: boolean
     product?: boolean | ProductDefaultArgs<ExtArgs>
     parent?: boolean | ContentNode$parentArgs<ExtArgs>
@@ -6861,6 +6869,7 @@ export namespace Prisma {
     name?: boolean
     kind?: boolean
     sortOrder?: boolean
+    published?: boolean
     createdAt?: boolean
   }
 
@@ -6887,6 +6896,7 @@ export namespace Prisma {
       name: string
       kind: string | null
       sortOrder: number
+      published: boolean
       createdAt: Date
     }, ExtArgs["result"]["contentNode"]>
     composites: {}
@@ -7267,6 +7277,7 @@ export namespace Prisma {
     readonly name: FieldRef<"ContentNode", 'String'>
     readonly kind: FieldRef<"ContentNode", 'String'>
     readonly sortOrder: FieldRef<"ContentNode", 'Int'>
+    readonly published: FieldRef<"ContentNode", 'Boolean'>
     readonly createdAt: FieldRef<"ContentNode", 'DateTime'>
   }
     
@@ -18573,6 +18584,7 @@ export namespace Prisma {
     name: 'name',
     kind: 'kind',
     sortOrder: 'sortOrder',
+    published: 'published',
     createdAt: 'createdAt'
   };
 
@@ -19215,6 +19227,7 @@ export namespace Prisma {
     name?: StringFilter<"ContentNode"> | string
     kind?: StringNullableFilter<"ContentNode"> | string | null
     sortOrder?: IntFilter<"ContentNode"> | number
+    published?: BoolFilter<"ContentNode"> | boolean
     createdAt?: DateTimeFilter<"ContentNode"> | Date | string
     product?: XOR<ProductRelationFilter, ProductWhereInput>
     parent?: XOR<ContentNodeNullableRelationFilter, ContentNodeWhereInput> | null
@@ -19229,6 +19242,7 @@ export namespace Prisma {
     name?: SortOrder
     kind?: SortOrderInput | SortOrder
     sortOrder?: SortOrder
+    published?: SortOrder
     createdAt?: SortOrder
     product?: ProductOrderByWithRelationInput
     parent?: ContentNodeOrderByWithRelationInput
@@ -19246,6 +19260,7 @@ export namespace Prisma {
     name?: StringFilter<"ContentNode"> | string
     kind?: StringNullableFilter<"ContentNode"> | string | null
     sortOrder?: IntFilter<"ContentNode"> | number
+    published?: BoolFilter<"ContentNode"> | boolean
     createdAt?: DateTimeFilter<"ContentNode"> | Date | string
     product?: XOR<ProductRelationFilter, ProductWhereInput>
     parent?: XOR<ContentNodeNullableRelationFilter, ContentNodeWhereInput> | null
@@ -19260,6 +19275,7 @@ export namespace Prisma {
     name?: SortOrder
     kind?: SortOrderInput | SortOrder
     sortOrder?: SortOrder
+    published?: SortOrder
     createdAt?: SortOrder
     _count?: ContentNodeCountOrderByAggregateInput
     _avg?: ContentNodeAvgOrderByAggregateInput
@@ -19278,6 +19294,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"ContentNode"> | string
     kind?: StringNullableWithAggregatesFilter<"ContentNode"> | string | null
     sortOrder?: IntWithAggregatesFilter<"ContentNode"> | number
+    published?: BoolWithAggregatesFilter<"ContentNode"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"ContentNode"> | Date | string
   }
 
@@ -20425,6 +20442,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     product: ProductCreateNestedOneWithoutNodesInput
     parent?: ContentNodeCreateNestedOneWithoutChildrenInput
@@ -20439,6 +20457,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     children?: ContentNodeUncheckedCreateNestedManyWithoutParentInput
     content?: ContentUncheckedCreateNestedManyWithoutNodeInput
@@ -20448,6 +20467,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutNodesNestedInput
     parent?: ContentNodeUpdateOneWithoutChildrenNestedInput
@@ -20462,6 +20482,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: ContentNodeUncheckedUpdateManyWithoutParentNestedInput
     content?: ContentUncheckedUpdateManyWithoutNodeNestedInput
@@ -20474,6 +20495,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
   }
 
@@ -20481,6 +20503,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20491,6 +20514,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -21715,6 +21739,7 @@ export namespace Prisma {
     name?: SortOrder
     kind?: SortOrder
     sortOrder?: SortOrder
+    published?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -21732,6 +21757,7 @@ export namespace Prisma {
     name?: SortOrder
     kind?: SortOrder
     sortOrder?: SortOrder
+    published?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -21742,6 +21768,7 @@ export namespace Prisma {
     name?: SortOrder
     kind?: SortOrder
     sortOrder?: SortOrder
+    published?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -23413,6 +23440,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     parent?: ContentNodeCreateNestedOneWithoutChildrenInput
     children?: ContentNodeCreateNestedManyWithoutParentInput
@@ -23425,6 +23453,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     children?: ContentNodeUncheckedCreateNestedManyWithoutParentInput
     content?: ContentUncheckedCreateNestedManyWithoutNodeInput
@@ -23561,6 +23590,7 @@ export namespace Prisma {
     name?: StringFilter<"ContentNode"> | string
     kind?: StringNullableFilter<"ContentNode"> | string | null
     sortOrder?: IntFilter<"ContentNode"> | number
+    published?: BoolFilter<"ContentNode"> | boolean
     createdAt?: DateTimeFilter<"ContentNode"> | Date | string
   }
 
@@ -23707,6 +23737,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     product: ProductCreateNestedOneWithoutNodesInput
     parent?: ContentNodeCreateNestedOneWithoutChildrenInput
@@ -23720,6 +23751,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     children?: ContentNodeUncheckedCreateNestedManyWithoutParentInput
   }
@@ -23804,6 +23836,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutNodesNestedInput
     parent?: ContentNodeUpdateOneWithoutChildrenNestedInput
@@ -23817,6 +23850,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: ContentNodeUncheckedUpdateManyWithoutParentNestedInput
   }
@@ -23853,6 +23887,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     product: ProductCreateNestedOneWithoutNodesInput
     parent?: ContentNodeCreateNestedOneWithoutChildrenInput
@@ -23866,6 +23901,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     content?: ContentUncheckedCreateNestedManyWithoutNodeInput
   }
@@ -23879,6 +23915,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     product: ProductCreateNestedOneWithoutNodesInput
     children?: ContentNodeCreateNestedManyWithoutParentInput
@@ -23891,6 +23928,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
     children?: ContentNodeUncheckedCreateNestedManyWithoutParentInput
     content?: ContentUncheckedCreateNestedManyWithoutNodeInput
@@ -23996,6 +24034,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutNodesNestedInput
     parent?: ContentNodeUpdateOneWithoutChildrenNestedInput
@@ -24009,6 +24048,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     content?: ContentUncheckedUpdateManyWithoutNodeNestedInput
   }
@@ -24732,6 +24772,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
   }
 
@@ -24843,6 +24884,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: ContentNodeUpdateOneWithoutChildrenNestedInput
     children?: ContentNodeUpdateManyWithoutParentNestedInput
@@ -24855,6 +24897,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: ContentNodeUncheckedUpdateManyWithoutParentNestedInput
     content?: ContentUncheckedUpdateManyWithoutNodeNestedInput
@@ -24866,6 +24909,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -24976,6 +25020,7 @@ export namespace Prisma {
     name: string
     kind?: string | null
     sortOrder?: number
+    published?: boolean
     createdAt?: Date | string
   }
 
@@ -24998,6 +25043,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutNodesNestedInput
     children?: ContentNodeUpdateManyWithoutParentNestedInput
@@ -25010,6 +25056,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: ContentNodeUncheckedUpdateManyWithoutParentNestedInput
     content?: ContentUncheckedUpdateManyWithoutNodeNestedInput
@@ -25021,6 +25068,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     kind?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
+    published?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

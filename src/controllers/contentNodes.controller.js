@@ -20,6 +20,8 @@ const shape = (n) => ({
   name: n.name,
   kind: n.kind || null,
   sortOrder: n.sortOrder,
+  // A section switched off hides everything inside it from the app.
+  published: n.published,
   // Counts let the UI show "3 sections · 7 items" without a second request,
   // and tell it whether this node is a folder or a leaf holding content.
   childCount: n._count?.children ?? undefined,
@@ -193,7 +195,7 @@ export async function update(req, res) {
   const existing = await prisma.contentNode.findUnique({ where: { id } })
   if (!existing) return res.status(404).json({ error: 'Section not found.' })
 
-  const { name, kind, sortOrder } = req.body || {}
+  const { name, kind, sortOrder, published } = req.body || {}
   const data = {}
 
   if (name !== undefined) {
@@ -210,6 +212,9 @@ export async function update(req, res) {
   }
   if (kind !== undefined) data.kind = kind ? String(kind).trim().slice(0, 64) : null
   if (sortOrder !== undefined) data.sortOrder = Number(sortOrder) || 0
+  // Only the section's own flag is written. Everything below stays as it was,
+  // so switching the section back on brings back exactly what was showing.
+  if (published !== undefined) data.published = !!published
 
   if (!Object.keys(data).length) return res.status(400).json({ error: 'Nothing to update.' })
 

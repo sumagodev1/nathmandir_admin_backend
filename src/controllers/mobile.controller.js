@@ -17,7 +17,7 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma.js'
 import { productMaps, resolveProductId } from '../lib/products.js'
 import { groupSchedule } from '../lib/contentSchedule.js'
-import { sectionMap, sectionPath, subtreeIds } from '../lib/sectionTrail.js'
+import { sectionMap, sectionPath, subtreeIds, hiddenSectionIds } from '../lib/sectionTrail.js'
 import { jsonSafe, ymd, paginate } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
@@ -41,6 +41,41 @@ const absUrl = (req, ref) => {
   if (/^https?:\/\//i.test(ref)) return ref
   const base = PUBLIC_BASE || `${req.protocol}://${req.get('host')}`
   return `${base}${ref.startsWith('/') ? '' : '/'}${ref}`
+}
+
+// What the app is allowed to see in one Part: published, not binned, and not
+// filed inside a section that has been switched off.
+//
+// The section filter is a second, independent gate. An item keeps its own
+// `published` untouched while the section above it is down, so switching the
+// section back on brings back exactly what was showing before.
+//
+// The section map comes back too — every caller that lists content also needs
+// it to say where each item sits, and it is already loaded here.
+async function visibleContent(productId) {
+  const sections = await sectionMap([productId])
+  const hidden = hiddenSectionIds(sections)
+  const rows = await prisma.content.findMany({
+    where: {
+      productId,
+      published: true,
+      deletedAt: null,
+      // `nodeId NOT IN (…)` is never true for NULL, so an item sitting
+      // directly in the Part has to be allowed through explicitly.
+      ...(hidden.size ? { OR: [{ nodeId: null }, { nodeId: { notIn: [...hidden] } }] } : {}),
+    },
+    orderBy: { sortOrder: 'asc' },
+    include: { schedule: true },
+  })
+  return { rows, sections, hidden }
+}
+
+// True when the item sits inside a section that has been switched off, at any
+// depth. Used by the single-item endpoints, which look an item up by id and so
+// never pass through the list filter.
+async function inHiddenSection(item) {
+  if (!item.nodeId) return false // sits directly in the Part
+  return hiddenSectionIds(await sectionMap([item.productId])).has(item.nodeId)
 }
 
 // Returns the Set of product IDs the user currently owns.
@@ -446,14 +481,9 @@ async function get_content(req, res) {
   const ownedIds = await getOwnedProductIds(user.id)
   const owned = ownedIds.has(product.id)
 
-  const rows = await prisma.content.findMany({
-    where: { productId: product.id, published: true, deletedAt: null },
-    orderBy: { sortOrder: 'asc' },
-    include: { schedule: true },
-  })
-
-  // Section names for this Part, so each item can say where it belongs.
-  const sections = await sectionMap([product.id])
+  // Section names for this Part, so each item can say where it belongs —
+  // and the filter that drops anything inside a switched-off section.
+  const { rows, sections } = await visibleContent(product.id)
 
   // ?section=<id> narrows the list to one part of the menu — the section the
   // user tapped, plus everything inside it. ?section=none returns the items
@@ -518,17 +548,16 @@ async function get_sections(req, res) {
   const ownedIds = await getOwnedProductIds(user.id)
   const owned = ownedIds.has(product.id)
 
-  const [nodes, rows] = await Promise.all([
+  const [allNodes, { rows, hidden }] = await Promise.all([
     prisma.contentNode.findMany({
       where: { productId: product.id },
       orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
     }),
-    prisma.content.findMany({
-      where: { productId: product.id, published: true, deletedAt: null },
-      orderBy: { sortOrder: 'asc' },
-      include: { schedule: true },
-    }),
+    visibleContent(product.id),
   ])
+  // A switched-off section is dropped from the menu itself, not just emptied —
+  // an empty heading in the app would read as content that failed to load.
+  const nodes = allNodes.filter((n) => !hidden.has(n.id))
 
   // One song as it appears inside the menu.
   const asFile = (c) => ({
@@ -629,9 +658,20 @@ async function subscribed_items(req, res) {
   const products = await prisma.product.findMany({ where: { id: { in: productIds } } })
   const byId = new Map(products.map((p) => [p.id, p]))
 
+  // Counted the same way the list is built, or a module would advertise more
+  // songs than opening it actually shows.
+  const allSections = await sectionMap(productIds)
+  const hiddenSections = hiddenSectionIds(allSections)
   const counts = await prisma.content.groupBy({
     by: ['productId'],
-    where: { productId: { in: productIds }, published: true, deletedAt: null },
+    where: {
+      productId: { in: productIds },
+      published: true,
+      deletedAt: null,
+      ...(hiddenSections.size
+        ? { OR: [{ nodeId: null }, { nodeId: { notIn: [...hiddenSections] } }] }
+        : {}),
+    },
     _count: { _all: true },
   })
   const countMap = new Map(counts.map((c) => [c.productId, c._count._all]))
@@ -671,11 +711,7 @@ async function sub_items(req, res) {
     return sendFail(res, 'This module is not subscribed', STATUS.FORBIDDEN)
   }
 
-  const rows = await prisma.content.findMany({
-    where: { productId: product.id, published: true, deletedAt: null },
-    orderBy: { sortOrder: 'asc' },
-    include: { schedule: true },
-  })
+  const { rows } = await visibleContent(product.id)
 
   const items = rows.map((c) => ({
     id: c.id,
@@ -709,6 +745,11 @@ async function get_media(req, res) {
   if (!item || !item.published || item.deletedAt) {
     return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
   }
+  // Also gone if the section holding it was switched off. A phone still
+  // holding an older list would otherwise open a song the admin has taken down.
+  if (await inHiddenSection(item)) {
+    return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
+  }
 
   const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
   if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)
@@ -737,7 +778,15 @@ async function mark_played(req, res) {
 
   try {
     const item = await prisma.content.findUnique({ where: { id: Number(id) } })
-    if (!item || item.deletedAt) return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
+    // Same test get_media applies. An app still holding a list from before the
+    // item was switched off would otherwise keep adding to its play count,
+    // making a hidden song look busier than songs anyone can actually reach.
+    if (!item || !item.published || item.deletedAt) {
+      return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
+    }
+    if (await inHiddenSection(item)) {
+      return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
+    }
 
     const user = await prisma.user.findUnique({ where: { id: req.mobileUser.id } })
     if (!user) return sendFail(res, 'User not found', STATUS.NOT_FOUND)

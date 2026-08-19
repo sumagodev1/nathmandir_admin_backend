@@ -188,6 +188,7 @@ exports.Prisma.ContentNodeScalarFieldEnum = {
   name: 'name',
   kind: 'kind',
   sortOrder: 'sortOrder',
+  published: 'published',
   createdAt: 'createdAt'
 };
 
