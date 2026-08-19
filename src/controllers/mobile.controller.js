@@ -110,6 +110,12 @@ async function loginuser(req, res) {
   const user = await prisma.user.findFirst({ where: { phone: mobile } })
   if (!user) return sendFail(res, 'Please Register First', STATUS.NOT_FOUND)
 
+  // Turned away here as well as at verifyOTP, so a disabled account does not
+  // burn an SMS on an OTP it can never use.
+  if (user.status === 'disabled') {
+    return sendFail(res, 'This account has been disabled. Please contact the temple.', STATUS.UNAUTHORIZED)
+  }
+
   // Fixed OTP for the test account, random 4-digit otherwise.
   const otp = mobile === '1234567890' ? '1947' : String(Math.floor(1000 + Math.random() * 9000))
 
@@ -135,6 +141,13 @@ async function verifyOTP(req, res) {
   const user = await prisma.user.findFirst({ where: { phone: mobile, otp } })
   if (!user) return sendFail(res, 'OTP Incorrect', STATUS.UNAUTHORIZED)
 
+  // `status` is the admin's enable/disable switch. Until now nothing checked
+  // it, so "disable this user" in the panel changed a column and stopped
+  // nothing — the person kept full access. This is where it finally bites.
+  if (user.status === 'disabled') {
+    return sendFail(res, 'This account has been disabled. Please contact the temple.', STATUS.UNAUTHORIZED)
+  }
+
   // Issue a JWT for this mobile session (long-lived — the app stays logged in).
   const token = jwt.sign(
     { id: user.id, mobile: user.phone, name: user.name },
@@ -142,9 +155,16 @@ async function verifyOTP(req, res) {
     { expiresIn: process.env.MOBILE_JWT_EXPIRES || '365d' }
   )
 
-  // Clear OTP, mark active and persist the token. Overwriting the token
-  // already invalidates any other device's session.
-  await prisma.user.update({ where: { id: user.id }, data: { otp: '', status: 'active' } })
+  // Clear the OTP and stamp the login. `status` is deliberately NOT written
+  // here any more: forcing it to 'active' on every login would quietly undo an
+  // admin's disable the moment the person logged in again.
+  //
+  // last_login was never written by anything, which is why the dashboard's
+  // "Inactive (7 days)" card counted every user who ever registered.
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { otp: '', lastLogin: new Date() },
+  })
   await prisma.$executeRawUnsafe(`UPDATE users SET token = ? WHERE id = ?`, token, user.id)
 
   // Bind this device only when a DID was supplied (it is optional).
@@ -160,7 +180,10 @@ async function verifyOTP(req, res) {
   const freshUser = await prisma.user.findUnique({ where: { id: user.id }, include: { access: true } })
   return sendOk(res, 'Login Success', {
     token,
-    data: toPhpUser({ ...freshUser, otp: '', status: 'active', token }, (await productMaps()).codeById),
+    // The login just succeeded, so this account is enabled by definition — a
+    // disabled one was turned away above. Reporting the row's real status
+    // keeps the response honest instead of hard-coding 'active'.
+    data: toPhpUser({ ...freshUser, otp: '', token }, (await productMaps()).codeById),
   })
 }
 
@@ -186,8 +209,15 @@ async function active_session(req, res) {
   if (!id || !mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
   try {
-    await prisma.user.update({ where: { id: Number(id) }, data: { status: 'disabled' } })
+    // Deleting the device rows IS the logout — check_active_session reads
+    // login_user, nothing else. This used to also set status='disabled', which
+    // meant every logout looked identical to an admin ban: it is why 81
+    // accounts sat "disabled" and why the dashboard's Active Users count kept
+    // drifting down on its own. Now that a disabled account is actually turned
+    // away at login, writing it here would lock people out of their own books.
     await prisma.$executeRawUnsafe(`DELETE FROM login_user WHERE mobile = ?`, mobile)
+    // Drop the stored JWT too, or the old token keeps working after "logout".
+    await prisma.$executeRawUnsafe(`UPDATE users SET token = NULL WHERE id = ?`, Number(id))
     return sendOk(res, 'Logout Success From All Devices')
   } catch {
     return sendFail(res, 'Unable to logout', STATUS.SERVER_ERROR)
@@ -303,10 +333,17 @@ async function update_session(req, res) {
   }
 
   try {
-    await prisma.user.updateMany({
-      where: { phone: mobile },
-      data: { status: active === '1' ? 'active' : 'disabled' },
-    })
+    // Session state lives in login_user, not on the user row. This used to
+    // write users.status, which collided with the admin's enable/disable
+    // switch — the app could silently re-enable an account the panel had just
+    // disabled, or disable one nobody had touched.
+    //
+    // active='0' ends the session by removing the device rows. active='1' is
+    // accepted and does nothing: a session is created by verifyOTP, which is
+    // the only place a device id exists to bind.
+    if (active !== '1') {
+      await prisma.$executeRawUnsafe(`DELETE FROM login_user WHERE mobile = ?`, mobile)
+    }
     return sendOk(res, 'Updated Successfully', { active })
   } catch {
     return sendFail(res, 'Something went wrong', STATUS.SERVER_ERROR)
@@ -868,9 +905,15 @@ async function authenticateMobile(req) {
     return { ok: false, message: 'Session expired or invalid. Please log in again.' }
   }
 
-  const rows = jsonSafe(await prisma.$queryRawUnsafe(`SELECT token FROM users WHERE id = ?`, payload.id))
+  const rows = jsonSafe(await prisma.$queryRawUnsafe(`SELECT token, status FROM users WHERE id = ?`, payload.id))
   if (!rows.length || rows[0].token !== token) {
     return { ok: false, message: 'Logged in on another device. Please log in again.' }
+  }
+  // Checked on every call, not just at login: a token issued before the admin
+  // disabled the account is valid for a year, so without this the person would
+  // keep full access until it expired.
+  if (rows[0].status === 'disabled') {
+    return { ok: false, message: 'This account has been disabled. Please contact the temple.' }
   }
   return { ok: true, payload }
 }
