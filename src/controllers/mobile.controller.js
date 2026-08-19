@@ -865,17 +865,80 @@ async function gallery(req, res) {
 
   // Tabs for the app: always every published category, never just the
   // filtered one, so the tab bar does not shrink after a filter is applied.
-  const catRows = await prisma.album.groupBy({
-    by: ['category'],
-    where: { published: true },
-    _count: { _all: true },
+  const [catRows, master] = await Promise.all([
+    prisma.album.groupBy({
+      by: ['category'],
+      where: { published: true },
+      _count: { _all: true },
+    }),
+    // The master carries the Marathi label and the order an admin chose. The
+    // app used to hard-code both, so a new category could not be named.
+    prisma.galleryCategory.findMany({ orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] }),
+  ])
+  const bySlug = new Map(master.map((m) => [m.slug, m]))
+  const countOf = new Map(catRows.map((c) => [c.category, c._count._all]))
+
+  // A flat row per slug, as the deployed APK already reads it. `parent` and
+  // `name` are additions — an older app ignores them, a newer one can draw the
+  // two levels without another call.
+  const flat = catRows
+    .map((c) => {
+      const m = bySlug.get(c.category)
+      return {
+        key: c.category,
+        // Falls back to the slug for a category created before the master, so
+        // the app always has something to print.
+        name: m?.name || c.category,
+        parent: m?.parentId ? master.find((x) => x.id === m.parentId)?.slug ?? null : null,
+        sortOrder: m?.sortOrder ?? 999,
+        albumCount: c._count._all,
+      }
+    })
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.key.localeCompare(b.key))
+
+  // Built from the master, not from `flat` — a parent whose own albums are all
+  // filed one level down has no row of its own in the album table, and building
+  // the tree from albums alone dropped it and orphaned its children.
+  const row = (m) => ({
+    key: m.slug,
+    name: m.name,
+    parent: m.parentId ? master.find((x) => x.id === m.parentId)?.slug ?? null : null,
+    sortOrder: m.sortOrder,
+    albumCount: countOf.get(m.slug) || 0,
   })
-  const categories = catRows
-    .map((c) => ({ key: c.category, albumCount: c._count._all }))
-    .sort((a, b) => a.key.localeCompare(b.key))
+
+  const tree = master
+    .filter((m) => !m.parentId)
+    .map((m) => {
+      const children = master.filter((k) => k.parentId === m.id).map(row)
+      const self = row(m)
+      return {
+        ...self,
+        // The whole branch, so a parent never reads as empty while its albums
+        // sit one level down — which is also what tapping it returns.
+        albumCount: self.albumCount + children.reduce((n, k) => n + k.albumCount, 0),
+        children,
+      }
+    })
+    // A category with nothing in it anywhere would be a tab leading to an
+    // empty screen.
+    .filter((c) => c.albumCount > 0)
+
+  // Album categories with no master row — created before the master existed.
+  // They still hold photos, so they belong in the tree as top-level entries.
+  const known = new Set(master.map((m) => m.slug))
+  const legacy = flat.filter((c) => !known.has(c.key)).map((c) => ({ ...c, children: [] }))
+
+  const categories = flat // unchanged shape for the deployed APK
+  const categoryTree = [...tree, ...legacy].sort(
+    (a, b) => a.sortOrder - b.sortOrder || a.key.localeCompare(b.key)
+  )
 
   return sendOk(res, 'Gallery loaded', {
     categories,
+    // The same categories as two levels. Added alongside `categories` rather
+    // than replacing it, so the deployed APK keeps reading what it always has.
+    categoryTree,
     albums,
     photos: pg.data,
     total: pg.total,
@@ -897,6 +960,105 @@ async function gallery_album(req, res) {
   if (!album) return sendFail(res, 'Album not found', STATUS.NOT_FOUND)
 
   return sendOk(res, 'Album loaded', { album: shapeGalleryAlbum(req, album) })
+}
+
+// ── gallery_category ─ [public] { category, photoId?, page?, limit? } ──
+// One category, everything the screens after it need, in a single call:
+//
+//   albums[] — a cover per album, for the screen that opens when a category
+//              is tapped. Each carries its own photos, so opening an album
+//              needs no second request.
+//   photos[] — the same pictures as one flat run across the whole category,
+//              for a full-screen viewer that swipes past an album's edge.
+//
+// Nothing here names a category, so it works for maharaj, temple, events and
+// anything an admin adds later without a code change. `category=all` is
+// accepted and returns every published category at once.
+//
+// `photoId` is optional: pass the photo that was tapped and `startIndex` comes
+// back as its position in photos[], so the viewer opens on the right picture
+// instead of the app having to search the list itself. It is the index in the
+// FULL list, so it is only meaningful when the whole list is requested.
+async function gallery_category(req, res) {
+  const category = field(req, 'category')
+  if (!category || !String(category).trim()) {
+    return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
+  }
+
+  // Tapping a top-level category shows everything under it, including albums
+  // filed into its subcategories — otherwise a parent would look empty while
+  // all its pictures sat one level down.
+  const asked = String(category)
+  let slugs = null // null = every category
+  let subcategories = []
+  if (asked !== 'all') {
+    const row = await prisma.galleryCategory.findUnique({
+      where: { slug: asked },
+      include: { children: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+    })
+    if (row) {
+      subcategories = row.children.map((k) => ({ key: k.slug, name: k.name, sortOrder: k.sortOrder }))
+      slugs = [row.slug, ...row.children.map((k) => k.slug)]
+    } else {
+      // A slug with no master row is still a real album category — albums
+      // predating the master have one — so filter on it directly.
+      slugs = [asked]
+    }
+  }
+
+  const where = { published: true }
+  if (slugs) where.category = { in: slugs }
+
+  const rows = await prisma.album.findMany({
+    where,
+    include: { photos: true },
+    orderBy: { id: 'desc' }, // newest album first — matches panel and website
+  })
+  // An unknown category is not an empty gallery — say so, or the app shows a
+  // blank screen for what is really a typo.
+  if (!rows.length && String(category) !== 'all') {
+    return sendFail(res, 'Category not found', STATUS.NOT_FOUND)
+  }
+
+  const albums = rows.map((a) => shapeGalleryAlbum(req, a))
+
+  // Flat run for the viewer. An album with no photos added yet falls back to
+  // its cover, otherwise a freshly created album would be invisible here while
+  // still showing in albums[].
+  const photos = albums.flatMap((a) => {
+    const from = { albumId: a.id, albumTitle: a.title, category: a.category }
+    if (a.photos.length) return a.photos.map((p) => ({ ...p, ...from }))
+    if (!a.cover) return []
+    return [{ key: `c${a.id}`, id: null, url: a.cover, caption: '', sortOrder: 0, isCover: true, ...from }]
+  })
+
+  // Where the tapped photo sits in the full run, before any paging is applied.
+  const photoRef = field(req, 'photoId')
+  const startIndex = photoRef
+    ? photos.findIndex((p) => String(p.id) === String(photoRef) || p.key === String(photoRef))
+    : -1
+
+  const pg = paginate(
+    photos,
+    { page: field(req, 'page'), limit: field(req, 'limit') },
+    { defaultLimit: 60, maxLimit: 300 }
+  )
+
+  return sendOk(res, 'Category loaded', {
+    category: String(category),
+    // The levels below this one, so the app can offer them as a second row of
+    // tabs. Empty for a subcategory or for an unknown slug.
+    subcategories,
+    albumCount: albums.length,
+    photoCount: photos.length,
+    albums,
+    photos: pg.data,
+    startIndex, // -1 when no photoId was sent, or it is not in this category
+    total: pg.total,
+    page: pg.page,
+    pages: pg.pages,
+    limit: pg.limit,
+  })
 }
 
 // ── apicall → handler map (mirrors the PHP switch) ─────────────
@@ -925,6 +1087,7 @@ export const handlers = {
   // Photo gallery — public, read-only.
   gallery,
   gallery_album,
+  gallery_category,
 }
 
 // apicalls that do NOT need a Bearer token — they run before a token
@@ -937,6 +1100,7 @@ const PUBLIC_APICALLS = new Set([
   'admin_login',
   'gallery',
   'gallery_album',
+  'gallery_category',
 ])
 
 // Validate the mobile app's Bearer token: verify the JWT signature AND

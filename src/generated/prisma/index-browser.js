@@ -249,10 +249,21 @@ exports.Prisma.ChapterScalarFieldEnum = {
   sortOrder: 'sortOrder'
 };
 
+exports.Prisma.GalleryCategoryScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  name: 'name',
+  parentId: 'parentId',
+  sortOrder: 'sortOrder',
+  published: 'published',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AlbumScalarFieldEnum = {
   id: 'id',
   title: 'title',
   category: 'category',
+  categoryId: 'categoryId',
   cover: 'cover',
   date: 'date',
   published: 'published'
@@ -359,6 +370,7 @@ exports.Prisma.ModelName = {
   Notification: 'Notification',
   Book: 'Book',
   Chapter: 'Chapter',
+  GalleryCategory: 'GalleryCategory',
   Album: 'Album',
   Photo: 'Photo',
   Page: 'Page',

@@ -3,10 +3,35 @@
 import { prisma } from '../lib/prisma.js'
 import { ymd, paginate } from '../lib/helpers.js'
 
+// Resolve whatever the form sent into the pair an album stores: the master row
+// it belongs to, and the slug every deployed APK filters on.
+//
+// `categoryId` is what the panel's dropdown now sends. A bare `category` slug
+// is still accepted so older callers keep working; it is looked up so the two
+// columns can never drift apart.
+async function resolveCategory({ categoryId, category }) {
+  if (categoryId !== undefined && categoryId !== null && categoryId !== '') {
+    const row = await prisma.galleryCategory.findUnique({ where: { id: Number(categoryId) } })
+    if (!row) return { error: 'Unknown category.' }
+    return { categoryId: row.id, category: row.slug }
+  }
+  if (category) {
+    const row = await prisma.galleryCategory.findUnique({ where: { slug: String(category) } })
+    // An unknown slug is kept as-is rather than refused: albums created before
+    // the master existed still have to be editable.
+    return { categoryId: row?.id ?? null, category: String(category) }
+  }
+  return { error: 'Category is required.' }
+}
+
 const shapeAlbum = (a) => ({
   id: a.id,
-  title: a.title,
   category: a.category,
+  categoryId: a.categoryId ?? null,
+  // The label the panel shows. Null for an album whose slug predates the
+  // master, which the panel renders as the raw slug.
+  categoryName: a.categoryRef?.name ?? null,
+  title: a.title,
   cover: a.cover,
   date: ymd(a.date),
   published: a.published,
@@ -23,7 +48,7 @@ export async function list(req, res) {
   const where = category && category !== 'all' ? { category: String(category) } : {}
   const albums = await prisma.album.findMany({
     where,
-    include: { _count: { select: { photos: true } } },
+    include: { _count: { select: { photos: true } }, categoryRef: true },
     // Newest first, which also matches the public gallery (public.controller.js
     // already serves albums id desc) — the two used to disagree.
     orderBy: { id: 'desc' },
@@ -35,20 +60,29 @@ export async function list(req, res) {
 // GET /api/albums/:id  — one album with photos
 export async function get(req, res) {
   const id = Number(req.params.id)
-  const album = await prisma.album.findUnique({ where: { id }, include: { photos: true } })
+  const album = await prisma.album.findUnique({ where: { id }, include: { photos: true, categoryRef: true } })
   if (!album) return res.status(404).json({ error: 'Album not found.' })
   res.json({ album: shapeAlbum(album) })
 }
 
 // POST /api/albums  — create album
 export async function create(req, res) {
-  const { title, category, date = null, cover = '', published = true } = req.body || {}
+  const { title, category, categoryId, date = null, cover = '', published = true } = req.body || {}
   if (!title?.trim()) return res.status(400).json({ error: 'Album title is required.' })
-  if (!category) return res.status(400).json({ error: 'Category is required.' })
+
+  const cat = await resolveCategory({ categoryId, category })
+  if (cat.error) return res.status(400).json({ error: cat.error })
 
   const album = await prisma.album.create({
-    data: { title: title.trim(), category, date: date ? new Date(date) : null, cover: cover || null, published: !!published },
-    include: { photos: true },
+    data: {
+      title: title.trim(),
+      category: cat.category,
+      categoryId: cat.categoryId,
+      date: date ? new Date(date) : null,
+      cover: cover || null,
+      published: !!published,
+    },
+    include: { photos: true, categoryRef: true },
   })
   res.status(201).json({ album: shapeAlbum(album) })
 }
@@ -56,17 +90,24 @@ export async function create(req, res) {
 // PATCH /api/albums/:id  — update album (title, cover, published…)
 export async function update(req, res) {
   const id = Number(req.params.id)
-  const { title, category, date, cover, published } = req.body || {}
+  const { title, category, categoryId, date, cover, published } = req.body || {}
   const data = {}
   if (title !== undefined) data.title = String(title).trim()
-  if (category !== undefined) data.category = category
+  // Both columns move together, or the app and the panel would disagree about
+  // which category an album is in.
+  if (categoryId !== undefined || category !== undefined) {
+    const cat = await resolveCategory({ categoryId, category })
+    if (cat.error) return res.status(400).json({ error: cat.error })
+    data.category = cat.category
+    data.categoryId = cat.categoryId
+  }
   if (date !== undefined) data.date = date ? new Date(date) : null
   if (cover !== undefined) data.cover = cover || null
   if (published !== undefined) data.published = !!published
 
   try {
     await prisma.album.update({ where: { id }, data })
-    const album = await prisma.album.findUnique({ where: { id }, include: { photos: true } })
+    const album = await prisma.album.findUnique({ where: { id }, include: { photos: true, categoryRef: true } })
     res.json({ album: shapeAlbum(album) })
   } catch {
     res.status(404).json({ error: 'Album not found.' })
@@ -90,7 +131,7 @@ export async function addPhoto(req, res) {
   const { url, caption = '' } = req.body || {}
   if (!url) return res.status(400).json({ error: 'Photo url is required.' })
 
-  const album = await prisma.album.findUnique({ where: { id: albumId }, include: { photos: true } })
+  const album = await prisma.album.findUnique({ where: { id: albumId }, include: { photos: true, categoryRef: true } })
   if (!album) return res.status(404).json({ error: 'Album not found.' })
 
   await prisma.photo.create({
@@ -99,7 +140,7 @@ export async function addPhoto(req, res) {
   // First photo becomes the cover if the album has none.
   if (!album.cover) await prisma.album.update({ where: { id: albumId }, data: { cover: url } })
 
-  const updated = await prisma.album.findUnique({ where: { id: albumId }, include: { photos: true } })
+  const updated = await prisma.album.findUnique({ where: { id: albumId }, include: { photos: true, categoryRef: true } })
   res.status(201).json({ album: shapeAlbum(updated) })
 }
 
@@ -108,7 +149,7 @@ export async function removePhoto(req, res) {
   const albumId = Number(req.params.id)
   const photoId = Number(req.params.photoId)
   await prisma.photo.deleteMany({ where: { id: photoId, albumId } })
-  const updated = await prisma.album.findUnique({ where: { id: albumId }, include: { photos: true } })
+  const updated = await prisma.album.findUnique({ where: { id: albumId }, include: { photos: true, categoryRef: true } })
   if (!updated) return res.status(404).json({ error: 'Album not found.' })
   res.json({ album: shapeAlbum(updated) })
 }

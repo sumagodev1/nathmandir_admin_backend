@@ -322,17 +322,55 @@ model Chapter {
 }
 
 // ── Photo Gallery: Albums + Photos ───────────────────────────
+// Gallery categories, editable by an admin instead of hard-coded in the app.
+// `slug` is what the deployed APK already sends and receives ("maharaj"), so it
+// stays the wire value; `name` is the Marathi label the panel and app display.
+// Renaming a category therefore never breaks a phone that is still asking for
+// the old slug.
+// A subcategory is the same row with a parent, rather than a second table:
+// both levels need identical add/edit/delete/publish behaviour, and one table
+// keeps `slug` unique across the lot, which matters because the app filters on
+// the slug alone and cannot tell the two levels apart.
+model GalleryCategory {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique @db.VarChar(64)
+  name      String   @db.VarChar(191)
+  parentId  Int?     @map("parent_id") // null = top-level category
+  sortOrder Int      @default(0) @map("sort_order")
+  published Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  albums Album[]
+  // Restrict, not cascade: deleting a category must never silently take its
+  // subcategories with it. The API refuses that delete and says what to do.
+  parent   GalleryCategory?  @relation("GalleryCategoryTree", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  children GalleryCategory[] @relation("GalleryCategoryTree")
+
+  @@index([parentId])
+  @@map("gallery_category")
+}
+
 model Album {
-  id        Int       @id @default(autoincrement())
-  title     String
-  category  String // maharaj, events
-  cover     String?   @db.Text
+  id Int @id @default(autoincrement())
+
+  title String
+  // The category slug. Kept alongside `categoryId` because every deployed APK
+  // filters on this string — dropping it would break the gallery on phones
+  // nobody can update. Written from the chosen category, never typed by hand.
+  category   String
+  categoryId Int?    @map("category_id")
+  cover      String? @db.Text
+
   date      DateTime?
   published Boolean   @default(true)
 
   photos Photo[]
+  // Nulled rather than cascaded: deleting a category must never take the
+  // albums (and their photos) with it. The API refuses that delete anyway.
+  categoryRef GalleryCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   @@index([published, category]) // public gallery listing
+  @@index([categoryId])
   @@map("albums")
 }
 

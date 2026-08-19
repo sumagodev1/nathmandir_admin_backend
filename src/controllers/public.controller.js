@@ -12,11 +12,16 @@ import { prisma } from '../lib/prisma.js'
 import { ymd, jsonSafe } from '../lib/helpers.js'
 
 // ── Gallery ─ published albums, each with its photos ───────────
-// GET /api/public/gallery?category=all|maharaj|events
+// GET /api/public/gallery?category=<slug>|all
+//
+// Category names come from the gallery_category master rather than a list
+// hard-coded in the website, so adding a category in the panel is enough to
+// make it appear here with its Marathi label.
 const shapeAlbum = (a) => ({
   id: a.id,
   title: a.title,
   category: a.category,
+  categoryName: a.categoryRef?.name || null,
   cover: a.cover,
   date: ymd(a.date),
   photos: (a.photos || [])
@@ -28,12 +33,39 @@ const shapeAlbum = (a) => ({
 
 export async function gallery(req, res) {
   const { category = 'all' } = req.query
+
+  // Every category an admin has defined, parents first, each carrying its
+  // children — the website used to hold its own copy of this list, which meant
+  // a new category was invisible until someone edited the code.
+  const master = await prisma.galleryCategory.findMany({
+    where: { published: true },
+    orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+  })
+  const byId = new Map(master.map((c) => [c.id, c]))
+  const categories = master
+    .filter((c) => !c.parentId)
+    .map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      children: master
+        .filter((k) => k.parentId === c.id)
+        .map((k) => ({ slug: k.slug, name: k.name, parentSlug: c.slug })),
+    }))
+
   const where = { published: true }
-  if (category && category !== 'all') where.category = String(category)
+  if (category && category !== 'all') {
+    // Choosing a parent shows everything beneath it too, so a category never
+    // looks empty while its pictures sit one level down.
+    const picked = master.find((c) => c.slug === String(category))
+    const slugs = picked
+      ? [picked.slug, ...master.filter((k) => k.parentId === picked.id).map((k) => k.slug)]
+      : [String(category)] // a slug with no master row is still a real album category
+    where.category = { in: slugs }
+  }
 
   const albums = await prisma.album.findMany({
     where,
-    include: { photos: true },
+    include: { photos: true, categoryRef: true },
     orderBy: { id: 'desc' },
   })
 
@@ -45,15 +77,15 @@ export async function gallery(req, res) {
   // surface the cover so the album still appears on the website rather than being invisible.
   const photos = shaped.flatMap((a) => {
     if (a.photos.length > 0) {
-      return a.photos.map((p) => ({ ...p, albumId: a.id, category: a.category, albumTitle: a.title }))
+      return a.photos.map((p) => ({ ...p, albumId: a.id, category: a.category, categoryName: a.categoryName, albumTitle: a.title }))
     }
     if (a.cover) {
-      return [{ id: `cover-${a.id}`, url: a.cover, caption: '', albumId: a.id, category: a.category, albumTitle: a.title }]
+      return [{ id: `cover-${a.id}`, url: a.cover, caption: '', albumId: a.id, category: a.category, categoryName: a.categoryName, albumTitle: a.title }]
     }
     return []
   })
 
-  res.json({ albums: shaped, photos, total: shaped.length })
+  res.json({ albums: shaped, photos, categories, total: shaped.length })
 }
 
 // ── Library ─ published books with their chapters ──────────────

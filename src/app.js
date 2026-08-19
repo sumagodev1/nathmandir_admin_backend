@@ -15,6 +15,7 @@ import salesRoutes from './routes/sales.routes.js'
 import accessRoutes from './routes/access.routes.js'
 import libraryRoutes from './routes/library.routes.js'
 import galleryRoutes from './routes/gallery.routes.js'
+import galleryCategoryRoutes from './routes/galleryCategories.routes.js'
 import pagesRoutes from './routes/pages.routes.js'
 import settingsRoutes from './routes/settings.routes.js'
 import notificationsRoutes from './routes/notifications.routes.js'
@@ -109,6 +110,7 @@ app.use('/api/sales', salesRoutes)
 app.use('/api/access', accessRoutes)
 app.use('/api/books', libraryRoutes)
 app.use('/api/albums', galleryRoutes)
+app.use('/api/gallery-categories', galleryCategoryRoutes)
 app.use('/api/pages', pagesRoutes)
 app.use('/api/settings', settingsRoutes)
 app.use('/api/notifications', notificationsRoutes)
