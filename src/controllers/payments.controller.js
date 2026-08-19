@@ -1,9 +1,28 @@
-// ── Payments controller (raw production tables) ───────────────
-// Merges Razorpay (user_payment) + legacy Instamojo (userpayment).
+// ── Payments controller (raw production table) ────────────────
+// Reads `user_payment` and nothing else.
+//
+// There is a second, near-identically named table, `userpayment`. It held
+// Instamojo donations, stopped being written in Dec 2021, and is not a
+// trustworthy ledger: 60 of its 131 rows carry a blank amount and 21 point at
+// user ids that no longer exist. It used to be merged in here, which is why
+// this screen and the Donations screen never agreed. It is now excluded
+// everywhere — the rows stay in the database as history.
 import { prisma } from '../lib/prisma.js'
 import { ymd, jsonSafe, paginate } from '../lib/helpers.js'
 
 const PKG = { 1: 'Gitanjali Part 1', 2: 'Gitanjali Part 2', 3: 'Donation', 4: 'Upasana Part', 5: 'Nityaniyam Part' }
+
+// Package 3 is a donation; the rest are books. Splitting on this is what lets
+// the total be explained rather than just asserted.
+const BOOK_PACKAGES = new Set([1, 2, 4, 5])
+
+// `user_payment` spans both gateways — it survived the 2022 switch and only
+// its order-id format and status wording changed. Labelling every row
+// "Razorpay" hid that, so the pre-2022 payments are named for the gateway that
+// actually took them: an Instamojo order id starts MOJO…, and `Credit` was
+// Instamojo's word for settled (Razorpay says `Completed`).
+const gatewayOf = (orderId, stage) =>
+  /^MOJO/i.test(orderId || '') || /^credit$/i.test(stage || '') ? 'Instamojo' : 'Razorpay'
 
 // GET /api/payments?gateway=all|razorpay|instamojo&status=&query=&page=&limit=
 export async function list(req, res) {
@@ -16,40 +35,20 @@ export async function list(req, res) {
      FROM user_payment up LEFT JOIN users u ON u.id = up.user_id
      ORDER BY up.created_at DESC`
   )
-  const insta = await prisma.$queryRawUnsafe(
-    `SELECT id, userId, name AS userName, mobile, donation_for AS donationFor, amt AS amount,
-            order_id AS orderId, transaction_id AS paymentId, payment_status AS stage, createAt AS createdAt
-     FROM userpayment ORDER BY createAt DESC`
-  )
-
-  let rows = [
-    ...jsonSafe(razor).map((r) => ({
-      id: 'R' + r.id,
-      gateway: 'Razorpay',
-      userId: r.userId,
-      user: r.userName || '',
-      mobile: r.userMobile || '',
-      module: PKG[r.packageId] || `Package ${r.packageId}`,
-      amount: Number(r.amount) || 0,
-      txn: r.paymentId || '',
-      ref: r.orderId || '',
-      status: r.stage || '',
-      date: ymd(r.createdAt),
-    })),
-    ...jsonSafe(insta).map((r) => ({
-      id: 'I' + r.id,
-      gateway: 'Instamojo',
-      userId: r.userId,
-      user: r.userName || '',
-      mobile: r.mobile || '',
-      module: r.donationFor === '1' ? 'Audio' : '—',
-      amount: Number(r.amount) || 0,
-      txn: r.paymentId && r.paymentId !== 'None' ? r.paymentId : '',
-      ref: r.orderId || '',
-      status: r.stage || '',
-      date: ymd(r.createdAt),
-    })),
-  ]
+  let rows = jsonSafe(razor).map((r) => ({
+    id: 'R' + r.id,
+    gateway: gatewayOf(r.orderId, r.stage),
+    userId: r.userId,
+    user: r.userName || '',
+    mobile: r.userMobile || '',
+    module: PKG[r.packageId] || `Package ${r.packageId}`,
+    kind: BOOK_PACKAGES.has(Number(r.packageId)) ? 'book' : 'donation',
+    amount: Number(r.amount) || 0,
+    txn: r.paymentId || '',
+    ref: r.orderId || '',
+    status: r.stage || '',
+    date: ymd(r.createdAt),
+  }))
 
   const q = String(query).trim().toLowerCase()
   rows = rows
@@ -63,6 +62,16 @@ export async function list(req, res) {
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
 
   const completed = rows.filter((r) => /completed|credit/i.test(r.status))
+  // Books and donations, counted separately and then added up. The dashboard
+  // headline is the same number, so the two screens can be compared directly
+  // instead of leaving the reader to guess why they differ.
+  const tally = (list) => ({ count: list.length, amount: list.reduce((s, r) => s + r.amount, 0) })
+  const breakdown = {
+    books: tally(completed.filter((r) => r.kind === 'book')),
+    donations: tally(completed.filter((r) => r.kind === 'donation')),
+    total: tally(completed),
+  }
+
   const pg = paginate(rows, req.query)
   res.json({
     payments: pg.data,
@@ -71,6 +80,7 @@ export async function list(req, res) {
     pages: pg.pages,
     limit: pg.limit,
     completedCount: completed.length,
-    completedAmount: completed.reduce((s, r) => s + r.amount, 0),
+    completedAmount: breakdown.total.amount,
+    breakdown,
   })
 }

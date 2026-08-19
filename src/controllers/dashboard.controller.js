@@ -4,6 +4,28 @@ import { prisma } from '../lib/prisma.js'
 import { productMaps } from '../lib/products.js'
 import { isActiveGrant, activeGrantWhere } from '../lib/helpers.js'
 
+// Donation money, from `user_payment` package 3 (status 1 = settled) — the
+// same single source the Payments screen reads.
+//
+// The old `userpayment` table is deliberately NOT counted: it stopped being
+// written in Dec 2021, 60 of its 131 rows have a blank amount, and 21 point at
+// deleted users. Including it was what made this screen and Payments disagree
+// with Donations. It stays in the database as history.
+//
+// It is a legacy raw table outside the Prisma schema, so a missing one is
+// reported as zero rather than taking the whole dashboard down with a 500.
+async function donationTotals() {
+  try {
+    const [row] = await prisma.$queryRawUnsafe(
+      `SELECT COUNT(*) c, SUM(amount + 0) a FROM user_payment WHERE package_id = 3 AND status = 1`
+    )
+    return { count: Number(row?.c || 0), amount: Number(row?.a || 0) }
+  } catch (err) {
+    console.error(`⚠️  /api/dashboard/stats: skipping donations — ${err.message.split('\n').pop().trim()}`)
+    return { count: 0, amount: 0 }
+  }
+}
+
 // GET /api/dashboard/stats
 export async function stats(req, res) {
   const users = await prisma.user.findMany({ include: { access: true } })
@@ -38,8 +60,16 @@ export async function stats(req, res) {
     else if (p2) onlyPart2++
   }
 
-  const [revenue, plays, products, accessByProduct, salesByProduct] = await Promise.all([
-    prisma.sale.aggregate({ _sum: { amount: true } }),
+  const [revenue, donations, plays, products, accessByProduct, salesByProduct] = await Promise.all([
+    // Same status filter as the per-module figures below, so the book total
+    // always equals the sum of the modules under it.
+    prisma.sale.aggregate({ where: { status: 'success' }, _sum: { amount: true } }),
+    // Donation money, from the same two places the Payments screen reads it:
+    // package 3 of user_payment (in-app), and the legacy Instamojo table.
+    // Counting it here is what makes the dashboard headline agree with the
+    // Payments headline — they used to disagree by the whole donation total
+    // with nothing on either screen explaining the gap.
+    donationTotals(),
     prisma.content.aggregate({ _sum: { plays: true } }),
     prisma.product.findMany({ select: { id: true, code: true, name: true, shortName: true, price: true } }),
     // "Subscribers" per module, expired grants excluded — same rule as the
@@ -56,6 +86,8 @@ export async function stats(req, res) {
       _sum: { amount: true },
     }),
   ])
+
+  const bookRevenue = revenue._sum.amount || 0
 
   // ── Most Popular Modules — subscribers + revenue per product ──
   const subMap = Object.fromEntries(accessByProduct.map((a) => [a.productId, a._count.productId]))
@@ -82,7 +114,14 @@ export async function stats(req, res) {
     activeUsers,
     inactive7,
     partSubscription: { onlyPart1, onlyPart2, both },
-    totalRevenue: revenue._sum.amount || 0,
+    // Headline = books + donations, the same figure the Payments screen shows.
+    // `revenueBreakdown` is what lets the UI say WHY it is that number.
+    totalRevenue: bookRevenue + donations.amount,
+    revenueBreakdown: {
+      books: { count: salesByProduct.reduce((n, s) => n + s._count.productId, 0), amount: bookRevenue },
+      donations,
+      total: { count: 0, amount: bookRevenue + donations.amount },
+    },
     totalPlays: plays._sum.plays || 0,
     popularModules,
   })
