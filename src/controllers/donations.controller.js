@@ -51,14 +51,29 @@ async function readSource(label, sql) {
 
 // GET /api/donations?page=&limit=
 export async function list(req, res) {
-  // Legacy in-app donations.
+  // In-app donations, read from the payment record itself.
+  //
+  // This used to read `user_donation`, which the app was supposed to write
+  // alongside the payment — but for at least one transaction it never did, and
+  // that donation was invisible here while showing normally under Payments
+  // (₹1,001 from user 264 on 2022-02-17, razorpay pay_IwvVE50P6z9TJW). Sourcing
+  // from the row Razorpay actually settles removes the second write that could
+  // be missed. `user_donation` holds no donation that is not in here.
+  //
+  // package_id 3 is "Donation" in the `package` table (1/2 = Gitanjali Parts,
+  // 4 = Upasana, 5 = Nityaniyam). Matched on package_id rather than the
+  // payment_type text column, which is blank on some completed rows.
+  //
+  // status = 1 is settled. Without it the 46 abandoned checkouts still sitting
+  // at status 0 would be counted, adding a fictional ₹1.18 lakh to the total.
   const appRows = await readSource(
-    'user_donation (in-app)',
-    `SELECT d.id, d.userID AS userId, u.name AS userName, d.mobile,
-            d.donation_normal_amt AS amount, d.createdAt
-     FROM user_donation d
-     LEFT JOIN users u ON u.id = CAST(d.userID AS UNSIGNED)
-     ORDER BY d.createdAt DESC`
+    'user_payment (in-app donations)',
+    `SELECT p.id, p.user_id AS userId, u.name AS userName, u.phone AS mobile,
+            p.amount, p.razorpay_payment_id AS paymentId, p.created_at AS createdAt
+     FROM user_payment p
+     LEFT JOIN users u ON u.id = p.user_id
+     WHERE p.package_id = 3 AND p.status = 1
+     ORDER BY p.created_at DESC`
   )
   // New website Razorpay donations (successful only).
   // Website Razorpay donations plus anything an admin recorded by hand.
@@ -78,7 +93,9 @@ export async function list(req, res) {
       mobile: r.mobile || '',
       category: '',
       amount: Number(r.amount) || 0,
-      txn: '',
+      // Now that the source is the payment row, the Razorpay id is available —
+      // the Transaction ID column used to be a dash on every app donation.
+      txn: r.paymentId || '',
       date: ymd(r.createdAt),
       _at: new Date(r.createdAt).getTime() || 0,
     })),

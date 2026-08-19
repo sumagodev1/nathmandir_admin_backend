@@ -342,7 +342,7 @@ async function home(req, res) {
   // Published-song count per module (for the badge under each module)
   const counts = await prisma.content.groupBy({
     by: ['productId'],
-    where: { published: true, deletedAt: null },
+    where: { published: true },
     _count: { _all: true },
   })
   const countMap = new Map(counts.map((c) => [c.productId, c._count._all]))
@@ -781,7 +781,7 @@ async function gallery(req, res) {
   // filtered one, so the tab bar does not shrink after a filter is applied.
   const catRows = await prisma.album.groupBy({
     by: ['category'],
-    where: { published: true, deletedAt: null },
+    where: { published: true },
     _count: { _all: true },
   })
   const categories = catRows
