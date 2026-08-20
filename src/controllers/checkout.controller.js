@@ -296,7 +296,10 @@ export async function createOrder(req, res) {
         `INSERT INTO user_payment
            (user_id, buyer_name, buyer_mobile, package_id, amount,
             razorpay_order_id, razorpay_stageOfPayment, payment_type, status, created_at)
-         VALUES (NULL, ?, ?, ?, ?, ?, 'created', ?, '0', NOW())`,
+         -- 'Started', not 'created': all 874 rows the old PHP system wrote use
+         -- that word, and mixing the two meant the Payments screen showed the
+         -- same state under two different names depending on its age.
+         VALUES (NULL, ?, ?, ?, ?, ?, 'Started', ?, '0', NOW())`,
         // user_id stays NULL until the payment clears, so the name and number
         // are kept here too. Without them a failed or abandoned attempt showed
         // as "#" with no mobile — precisely the row an admin needs to identify.
