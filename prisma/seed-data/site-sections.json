@@ -1,0 +1,1236 @@
+{
+  "donate": {
+    "categories": [
+      {
+        "id": "temple-development",
+        "iconKey": "temple",
+        "title": {
+          "en": "Temple Development",
+          "hi": "मंदिर विकास",
+          "mr": "मंदिर विकास"
+        },
+        "text": {
+          "en": "Support the upkeep, preservation and ongoing development of the shrine and its premises.",
+          "hi": "मंदिर एवं परिसर के रखरखाव, संरक्षण और सतत विकास में सहयोग दें।",
+          "mr": "मंदिर व परिसराची देखभाल, जतन व सतत विकासासाठी सहकार्य करा."
+        }
+      },
+      {
+        "id": "annadan",
+        "iconKey": "food",
+        "title": {
+          "en": "Annadan (Mahaprasad)",
+          "hi": "अन्नदान (महाप्रसाद)",
+          "mr": "अन्नदान (महाप्रसाद)"
+        },
+        "text": {
+          "en": "Offer mahaprasad to devotees on festival days and through the year.",
+          "hi": "उत्सव के दिनों और वर्ष भर भक्तों को महाप्रसाद अर्पित करें।",
+          "mr": "उत्सवाच्या दिवशी व वर्षभर भक्तांना महाप्रसाद अर्पण करा."
+        }
+      },
+      {
+        "id": "festival-support",
+        "iconKey": "festival",
+        "title": {
+          "en": "Festival Support",
+          "hi": "उत्सव सहयोग",
+          "mr": "उत्सव सहकार्य"
+        },
+        "text": {
+          "en": "Help conduct Nath Shashthi, Guru Purnima, Datta Jayanti and other annual festivals.",
+          "hi": "नाथषष्ठी, गुरु पूर्णिमा, दत्त जयंती आदि वार्षिक उत्सवों के आयोजन में सहयोग करें।",
+          "mr": "नाथषष्ठी, गुरूपौर्णिमा, दत्तजयंती आदी वार्षिक उत्सव आयोजनात सहकार्य करा."
+        }
+      },
+      {
+        "id": "general",
+        "iconKey": "heart",
+        "title": {
+          "en": "General Donation",
+          "hi": "सामान्य देणगी",
+          "mr": "सर्वसाधारण देणगी"
+        },
+        "text": {
+          "en": "A general offering used wherever the seva and needs of the temple are greatest.",
+          "hi": "एक सामान्य अर्पण जो मंदिर की सेवा व आवश्यकता के अनुसार उपयोग होता है।",
+          "mr": "मंदिराची सेवा व गरजेनुसार वापरली जाणारी सर्वसाधारण देणगी."
+        }
+      }
+    ],
+    "suggestedAmounts": [
+      101,
+      251,
+      501,
+      1100,
+      2100,
+      5100
+    ]
+  },
+  "events": {
+    "festivals": [
+      {
+        "slug": "nath-shashthi",
+        "month": {
+          "en": "March",
+          "hi": "मार्च",
+          "mr": "मार्च"
+        },
+        "name": {
+          "en": "Nath Shashthi",
+          "hi": "नाथषष्ठी",
+          "mr": "नाथषष्ठी"
+        },
+        "highlight": true,
+        "short": {
+          "en": "The nirvana day of Shri Madhavnath Maharaj — the holiest observance of the year.",
+          "hi": "श्री माधवनाथ महाराज का निर्वाण दिवस — वर्ष का सर्वाधिक पवित्र उत्सव।",
+          "mr": "श्री माधवनाथ महाराजांचा निर्वाण दिवस — वर्षातील सर्वात पवित्र उत्सव."
+        },
+        "description": {
+          "en": "Nath Shashthi marks the nirvana (mahasamadhi) day of Shri Madhavnath Maharaj and falls in the month of March. Devotees observe a collective day-long recitation (parayan), followed by morning rituals and afternoon mahanaivedya offerings.",
+          "hi": "नाथषष्ठी श्री माधवनाथ महाराज के निर्वाण (महासमाधि) दिवस का प्रतीक है और मार्च माह में आता है। भक्त सामूहिक दिवस-भर का पारायण करते हैं, तत्पश्चात प्रातःकालीन पूजन और दोपहर का महानैवेद्य अर्पण होता है।",
+          "mr": "नाथषष्ठी म्हणजे श्री माधवनाथ महाराजांचा निर्वाण (महासमाधी) दिवस; तो मार्च महिन्यात येतो. भक्त सामूहिक दिवसभर पारायण करतात, त्यानंतर सकाळचे पूजन व दुपारी महानैवेद्य अर्पण होते."
+        }
+      },
+      {
+        "slug": "padwa",
+        "month": {
+          "en": "Chaitra (Apr)",
+          "hi": "चैत्र (अप्रैल)",
+          "mr": "चैत्र (एप्रिल)"
+        },
+        "name": {
+          "en": "Padwa (Gudi Padwa)",
+          "hi": "पाडवा (गुड़ी पाडवा)",
+          "mr": "पाडवा (गुढी पाडवा)"
+        },
+        "highlight": true,
+        "short": {
+          "en": "Chaitra Shudh Pratipada — the birth day of Nath Maharaj.",
+          "hi": "चैत्र शुद्ध प्रतिपदा — नाथ महाराज का जन्म दिवस।",
+          "mr": "चैत्र शुद्ध प्रतिपदा — नाथ महाराजांचा जन्म दिवस."
+        },
+        "description": {
+          "en": "Padwa, on Chaitra Shudh Pratipada, is the day Nath Maharaj was born. The celebration includes raising the gudi at 7 AM, recitations, abhishek (sacred anointing) and refreshments for devotees.",
+          "hi": "चैत्र शुद्ध प्रतिपदा को पाडवा वह दिन है जब नाथ महाराज का जन्म हुआ। इस अवसर पर प्रातः 7 बजे गुड़ी की स्थापना, पारायण, अभिषेक और भक्तों के लिए अल्पाहार होता है।",
+          "mr": "चैत्र शुद्ध प्रतिपदेला पाडवा हा नाथ महाराजांचा जन्मदिवस आहे. या दिवशी सकाळी ७ वाजता गुढी उभारणे, पारायण, अभिषेक व भक्तांसाठी अल्पोपाहार होतो."
+        }
+      },
+      {
+        "slug": "vardhapan-din",
+        "month": {
+          "en": "Vaishakh (May)",
+          "hi": "वैशाख (मई)",
+          "mr": "वैशाख (मे)"
+        },
+        "name": {
+          "en": "Vardhapan Din (Anniversary)",
+          "hi": "वर्धापन दिन",
+          "mr": "वर्धापन दिन"
+        },
+        "short": {
+          "en": "The temple anniversary, observed in the month of Vaishakh.",
+          "hi": "मंदिर का वर्धापन दिवस, वैशाख माह में।",
+          "mr": "मंदिराचा वर्धापन दिन, वैशाख महिन्यात."
+        },
+        "description": {
+          "en": "The temple’s anniversary (Vardhapan Din) is celebrated in the month of Vaishakh, commemorating the consecration of the shrine with special worship, recitation and mahaprasad.",
+          "hi": "मंदिर का वर्धापन दिवस वैशाख माह में मनाया जाता है, जिसमें विशेष पूजन, पारायण और महाप्रसाद के साथ प्रतिष्ठा की स्मृति मनाई जाती है।",
+          "mr": "मंदिराचा वर्धापन दिन वैशाख महिन्यात साजरा होतो; विशेष पूजन, पारायण व महाप्रसादाने प्रतिष्ठेची स्मृती जपली जाते."
+        }
+      },
+      {
+        "slug": "guru-purnima",
+        "month": {
+          "en": "Ashadh (Jul)",
+          "hi": "आषाढ़ (जुलाई)",
+          "mr": "आषाढ (जुलै)"
+        },
+        "name": {
+          "en": "Guru Purnima",
+          "hi": "गुरु पूर्णिमा",
+          "mr": "गुरूपौर्णिमा"
+        },
+        "highlight": true,
+        "short": {
+          "en": "The day of reverence to the Sadguru, in the month of Ashadh.",
+          "hi": "सद्गुरु के प्रति श्रद्धा का दिवस, आषाढ़ माह में।",
+          "mr": "सद्गुरूंप्रती श्रद्धेचा दिवस, आषाढ महिन्यात."
+        },
+        "description": {
+          "en": "Guru Purnima falls every year in the month of Ashadh. Morning rituals begin at 6 AM with abhishek and worship at 7 AM, concluding with mahaprasad for all devotees.",
+          "hi": "गुरु पूर्णिमा प्रतिवर्ष आषाढ़ माह में आती है। प्रातः 6 बजे पूजन प्रारंभ होकर 7 बजे अभिषेक व पूजन होता है, और सभी भक्तों के लिए महाप्रसाद के साथ समापन होता है।",
+          "mr": "गुरूपौर्णिमा दरवर्षी आषाढ महिन्यात येते. सकाळी ६ वाजता पूजन सुरू होऊन ७ वाजता अभिषेक व पूजन होते आणि सर्व भक्तांसाठी महाप्रसादाने सांगता होते."
+        }
+      },
+      {
+        "slug": "krishna-janmashtami",
+        "month": {
+          "en": "Shravan (Aug)",
+          "hi": "श्रावण (अगस्त)",
+          "mr": "श्रावण (ऑगस्ट)"
+        },
+        "name": {
+          "en": "Krishna Janmashtami",
+          "hi": "कृष्ण जन्माष्टमी",
+          "mr": "कृष्ण जन्माष्टमी"
+        },
+        "short": {
+          "en": "Shravan Vadya Ashtami — the birth of Lord Krishna, celebrated every year.",
+          "hi": "श्रावण वद्य अष्टमी — भगवान कृष्ण का जन्म, प्रतिवर्ष।",
+          "mr": "श्रावण वद्य अष्टमी — भगवान श्रीकृष्णाचा जन्म, दरवर्षी."
+        },
+        "description": {
+          "en": "Krishna Janma is celebrated every year at Nath Mandir on Shravan Vadya Ashtami. Community singing leads up to the midnight birth celebration, followed by rituals and offerings.",
+          "hi": "नाथ मंदिर में प्रतिवर्ष श्रावण वद्य अष्टमी को कृष्ण जन्म मनाया जाता है। सामूहिक भजन के साथ मध्यरात्रि जन्मोत्सव, तत्पश्चात पूजन व नैवेद्य होता है।",
+          "mr": "नाथ मंदिरात दरवर्षी श्रावण वद्य अष्टमीला कृष्ण जन्म साजरा होतो. सामूहिक भजनासह मध्यरात्री जन्मोत्सव, त्यानंतर पूजन व नैवेद्य होते."
+        }
+      },
+      {
+        "slug": "datta-jayanti",
+        "month": {
+          "en": "December",
+          "hi": "दिसंबर",
+          "mr": "डिसेंबर"
+        },
+        "name": {
+          "en": "Datta Jayanti",
+          "hi": "दत्त जयंती",
+          "mr": "दत्तजयंती"
+        },
+        "highlight": true,
+        "short": {
+          "en": "The birth of Lord Dattatreya, celebrated in December.",
+          "hi": "भगवान दत्तात्रेय का जन्मोत्सव, दिसंबर में।",
+          "mr": "भगवान दत्तात्रेयांचा जन्मोत्सव, डिसेंबरमध्ये."
+        },
+        "description": {
+          "en": "Datta Jayanti is celebrated in the month of December. It features a three-day scripture recitation (saptah/parayan) beforehand, with evening celebrations and multiple distributions of mahaprasad.",
+          "hi": "दत्त जयंती दिसंबर माह में मनाई जाती है। इससे पूर्व तीन दिवसीय पारायण होता है, सायंकालीन उत्सव और अनेक बार महाप्रसाद वितरण होता है।",
+          "mr": "दत्तजयंती डिसेंबर महिन्यात साजरी होते. यापूर्वी तीन दिवसांचे पारायण, सायंकाळचे उत्सव व अनेकवार महाप्रसाद वितरण होते."
+        }
+      }
+    ]
+  },
+  "maharaj": {
+    "intro": {
+      "name": {
+        "en": "Yogiraj Sadguru Shri Madhavnath Maharaj",
+        "hi": "योगिराज सद्गुरु श्री माधवनाथ महाराज",
+        "mr": "योगिराज सद्गुरु श्री माधवनाथ महाराज"
+      },
+      "lifespan": {
+        "en": "March 1857 – March 1936",
+        "hi": "मार्च 1857 – मार्च 1936",
+        "mr": "मार्च १८५७ – मार्च १९३६"
+      },
+      "summary": {
+        "en": "A realised soul (Siddhapurush) of the Nath tradition and head of a Nath monastery, Shri Madhavnath Maharaj turned the hearts of countless devotees away from mere ritual towards naam-sankirtan, bhajan and devotion. Born to a devout couple, orphaned young, a Himalayan ascetic at thirteen — his life is a beacon of grace, simplicity and self-realisation.",
+        "hi": "नाथ परंपरा के सिद्धपुरुष एवं नाथ मठ के अधिकारी श्री माधवनाथ महाराज ने असंख्य भक्तों के हृदय को नामसंकीर्तन, भजन और भक्ति की ओर मोड़ा। एक धर्मपरायण दम्पति के यहाँ जन्मे, बाल्यकाल में ही पिता को खोया, तेरह वर्ष की आयु में हिमालय के तपस्वी — उनका जीवन कृपा, सरलता और आत्मसाक्षात्कार का दीपस्तंभ है।",
+        "mr": "नाथ संप्रदायातील सिद्धपुरुष व नाथ संप्रदायी मठाचे अधिकारी श्री माधवनाथ महाराज यांनी असंख्य भक्तांचे लक्ष कर्मकांडाकडून नामसंकीर्तन, भजन-पूजन व भक्तीकडे वळवले. धर्मप्रवण दाम्पत्याच्या पोटी जन्म, बालपणीच पितृछत्र हरपले, वयाच्या तेराव्या वर्षी हिमालयातील तपस्वी — त्यांचे जीवन कृपा, साधेपणा व आत्मसाक्षात्काराचा दीपस्तंभ आहे."
+      }
+    },
+    "essence": {
+      "en": "A life given wholly to God — and one simple message: remember His name.",
+      "hi": "संपूर्ण जीवन ईश्वर को समर्पित — और एक सरल संदेश: उसका नाम स्मरण करो।",
+      "mr": "संपूर्ण जीवन ईश्वराला समर्पित — आणि एकच साधा संदेश: त्याचे नाम स्मरण करा."
+    },
+    "biography": [
+      {
+        "en": "Shri Madhavnath was born to the devout couple Malhardada and Mathurabai. His father Malhardada passed away shortly after his birth, and the responsibility of raising young Madhav fell upon his mother.",
+        "hi": "श्री माधवनाथ का जन्म धर्मपरायण दम्पति मल्हारदादा एवं मथुराबाई के यहाँ हुआ। उनके जन्म के कुछ ही समय बाद पिता मल्हारदादा का देहांत हो गया और बालक माधव के पालन-पोषण का भार माता पर आ गया।",
+        "mr": "मल्हारदादा व मथुराबाई या धर्मप्रवण दाम्पत्याच्या पोटी श्री माधवनाथांचा जन्म झाला. त्याच्या जन्मानंतर लवकरच मल्हारदादांचा मृत्यू झाला आणि बालक माधवाच्या संगोपनाची जबाबदारी मातेवर आली."
+      },
+      {
+        "en": "At the tender age of thirteen, Madhav undertook a pilgrimage across the length of Bharat — from the southern seas to the Himalayas (Aasetu-Himachal) — and performed penance in the Himalayas for six years. He then arrived at Karvi.",
+        "hi": "मात्र तेरह वर्ष की आयु में माधव ने सेतु से हिमाचल तक (आसेतु-हिमाचल) समस्त भारत की यात्रा की और छह वर्ष हिमालय में तपश्चर्या की। तत्पश्चात वे करवी आये।",
+        "mr": "१३ वर्षांच्या माधवाने आसेतु हिमाचल यात्रा केली व ६ वर्षे हिमालयात तपश्चर्या केली. नंतर तो करवीला आला."
+      },
+      {
+        "en": "He was initiated at the age of ten at the Chitrakut monastery, and received his guru-mantra near the samadhi of Guptanath within the Chitrakut cave. His native village was Pangri in Nashik district, on the Nashik–Shirdi road, where he spent the first ten years of his life.",
+        "hi": "दस वर्ष की आयु में चित्रकूट के मठ में उनकी दीक्षा हुई और चित्रकूट गुफा में गुप्तनाथ की समाधि के समीप उन्हें गुरुमंत्र प्राप्त हुआ। उनका मूल गाँव नाशिक जिले का पांगरी था, नाशिक–शिर्डी मार्ग पर, जहाँ उन्होंने जीवन के पहले दस वर्ष बिताये।",
+        "mr": "वयाच्या दहाव्या वर्षी चित्रकूट येथील मठात त्यांची दीक्षा झाली व चित्रकूटच्या गुंफेत गुप्तनाथांच्या समाधीजवळ त्यांना गुरुमंत्र प्राप्त झाला. त्यांचे मूळ गाव नाशिक जिल्ह्यातील पांगरी, नाशिक–शिर्डी रस्त्यावर, जिथे त्यांनी आयुष्याची पहिली दहा वर्षे घालवली."
+      },
+      {
+        "en": "Madhav performed many miracles, and so the faith of many came to rest upon him — and thus Madhav became Shri Madhavnath Maharaj. He travelled the length and breadth of India and established temples in many places.",
+        "hi": "माधव ने अनेक चमत्कार कर दिखाये जिससे अनेक लोगों की श्रद्धा उन पर स्थिर हो गई — और इस प्रकार माधव श्री माधवनाथ महाराज बन गये। उन्होंने सम्पूर्ण भारत का भ्रमण किया और अनेक स्थानों पर मंदिर स्थापित किये।",
+        "mr": "माधवांनी अनेक चमत्कार करून दाखविले, त्यामुळे अनेकांची त्यांच्यावर श्रद्धा बसली आणि माधवाचे श्री माधवनाथ महाराज झाले. त्यांनी संपूर्ण भारतभर भ्रमण केले व अनेक ठिकाणी मंदिरे स्थापन केली."
+      },
+      {
+        "en": "Though he belonged to the Nath order, he did not lay stress on yoga alone; instead he drew the attention of the people towards naam-sankirtan, bhajan and worship. Through this path of devotion he uplifted countless seekers.",
+        "hi": "यद्यपि वे नाथ संप्रदाय के थे, फिर भी उन्होंने केवल योग पर बल न देकर लोगों का ध्यान नामसंकीर्तन, भजन और पूजन की ओर आकृष्ट किया। इसी भक्तिमार्ग से उन्होंने असंख्य साधकों का उद्धार किया।",
+        "mr": "ते नाथसंप्रदायी असले तरी त्यांनी योगावर भर न देता नामसंकीर्तन, भजन-पूजन याकडे जनतेचे लक्ष वेधले. याच भक्तिमार्गाने त्यांनी असंख्य साधकांचा उद्धार केला."
+      }
+    ],
+    "timeline": [
+      {
+        "year": {
+          "en": "The Beginning",
+          "hi": "आरंभ",
+          "mr": "आरंभ"
+        },
+        "title": {
+          "en": "Birth",
+          "hi": "जन्म",
+          "mr": "जन्म"
+        },
+        "text": {
+          "en": "He was born to a devout couple, Malhardada and Mathurabai. Even as a baby, a quiet spiritual light seemed to shine within him.",
+          "hi": "श्री माधवनाथ महाराज का जन्म मल्हारदादा और मथुराबाई जैसे ईश्वरभक्त माता-पिता के घर हुआ। नन्हे शिशु के रूप में भी उनके मुख पर एक अलौकिक शांति और तेज झलकता था।",
+          "mr": "श्री माधवनाथ महाराजांचा जन्म मल्हारदादा व मथुराबाई या ईश्वरभक्त दांपत्याच्या घरी झाला. अगदी तान्हुलं असतानाही त्यांच्या मुखावर एक अलौकिक शांती व तेज झळकत असे."
+        }
+      },
+      {
+        "year": {
+          "en": "Childhood",
+          "hi": "बचपन",
+          "mr": "बालपण"
+        },
+        "title": {
+          "en": "A Father Lost",
+          "hi": "पिता का वियोग",
+          "mr": "पितृवियोग"
+        },
+        "text": {
+          "en": "He lost his father while still a child. This early sorrow turned his heart, even younger, towards God and away from worldly things.",
+          "hi": "अभी वे बालक ही थे कि पिता का साया उनके सिर से उठ गया। इस गहरे दुःख ने छोटी-सी उम्र में ही उनके मन को संसार से हटाकर ईश्वर की ओर मोड़ दिया।",
+          "mr": "ते लहान असतानाच त्यांच्या वडिलांचे छत्र हरपले. या खोल दुःखाने अगदी कोवळ्या वयातच त्यांचे मन संसारातून निवृत्त होऊन ईश्वराकडे वळले."
+        }
+      },
+      {
+        "year": {
+          "en": "A Devout Child",
+          "hi": "भक्त बालक",
+          "mr": "भक्त बालक"
+        },
+        "title": {
+          "en": "Drawn to the Divine",
+          "hi": "ईश्वर की ओर झुकाव",
+          "mr": "ईश्वराकडे ओढ"
+        },
+        "text": {
+          "en": "From a young age he loved prayer, devotion and quiet contemplation — far more than the games and goals of ordinary life.",
+          "hi": "बचपन से ही उनका मन प्रार्थना, भजन और ईश्वर-चिंतन में रमता था। खेल-खिलौनों और सांसारिक बातों से कहीं अधिक उन्हें परमात्मा की लगन थी।",
+          "mr": "लहानपणापासूनच त्यांचे मन प्रार्थना, भजन व ईश्वरचिंतनात रमत असे. खेळ-खेळणी आणि सांसारिक गोष्टींपेक्षा त्यांना परमेश्वराची ओढ अधिक होती."
+        }
+      },
+      {
+        "year": {
+          "en": "Around age 13",
+          "hi": "लगभग 13 वर्ष",
+          "mr": "सुमारे १३ वर्षे"
+        },
+        "title": {
+          "en": "Leaving Home",
+          "hi": "गृहत्याग",
+          "mr": "गृहत्याग"
+        },
+        "text": {
+          "en": "At about thirteen, he left home to begin a lifelong search for truth, self-realisation and the deeper meaning of life.",
+          "hi": "लगभग तेरह वर्ष की आयु में उन्होंने घर-परिवार त्यागकर सत्य और आत्मज्ञान की खोज का मार्ग चुना — एक ऐसी यात्रा जो जीवनभर चलती रही।",
+          "mr": "वयाच्या सुमारे तेराव्या वर्षी त्यांनी घरादाराचा त्याग करून सत्य व आत्मज्ञानाच्या शोधाचा मार्ग धरला — हा प्रवास पुढे आयुष्यभर चालला."
+        }
+      },
+      {
+        "year": {
+          "en": "The Seeker’s Journey",
+          "hi": "साधक की यात्रा",
+          "mr": "साधकाचा प्रवास"
+        },
+        "title": {
+          "en": "Pilgrimage Across India",
+          "hi": "भारत भर तीर्थयात्रा",
+          "mr": "भारतभर तीर्थयात्रा"
+        },
+        "text": {
+          "en": "He travelled far and wide across India, visiting holy places and meeting saints, yogis and seekers, learning from each.",
+          "hi": "उन्होंने भारत के कोने-कोने में तीर्थयात्रा की। अनेक पवित्र स्थानों के दर्शन किए और संतों, योगियों व साधकों के सत्संग से अपना ज्ञान और गहरा किया।",
+          "mr": "त्यांनी भारताच्या कानाकोपऱ्यात तीर्थयात्रा केली. अनेक पवित्र स्थळांचे दर्शन घेतले आणि संत, योगी व साधकांच्या सहवासातून आपले ज्ञान अधिक प्रगल्भ केले."
+        }
+      },
+      {
+        "year": {
+          "en": "Years of Tapas",
+          "hi": "तप के वर्ष",
+          "mr": "तपाची वर्षे"
+        },
+        "title": {
+          "en": "Penance in the Himalayas",
+          "hi": "हिमालय में तपस्या",
+          "mr": "हिमालयातील तपश्चर्या"
+        },
+        "text": {
+          "en": "He spent years in the Himalayas in deep meditation and austerity. These quiet years became the foundation of his spiritual growth.",
+          "hi": "हिमालय की एकांत गोद में उन्होंने कई वर्ष कठोर तप और ध्यान में बिताए। यही साधना-काल उनके आध्यात्मिक उत्थान की नींव बना।",
+          "mr": "हिमालयाच्या निवांत कुशीत त्यांनी अनेक वर्षे कठोर तप व ध्यान केले. हाच साधनाकाळ त्यांच्या आध्यात्मिक उन्नतीचा पाया ठरला."
+        }
+      },
+      {
+        "year": {
+          "en": "Awakening",
+          "hi": "जागृति",
+          "mr": "जागृती"
+        },
+        "title": {
+          "en": "Spiritual Realisation",
+          "hi": "आत्मसाक्षात्कार",
+          "mr": "आत्मसाक्षात्कार"
+        },
+        "text": {
+          "en": "Through years of devotion and discipline, he attained profound wisdom and a deep, lasting state of self-realisation.",
+          "hi": "वर्षों की भक्ति, साधना और संयम के फलस्वरूप उन्हें गहन आत्मज्ञान की प्राप्ति हुई और वे आत्मसाक्षात्कार की उच्च अवस्था में स्थिर हो गए।",
+          "mr": "वर्षानुवर्षांची भक्ती, साधना व संयम यांच्या फलस्वरूप त्यांना गहन आत्मज्ञान प्राप्त झाले आणि ते आत्मसाक्षात्काराच्या उच्च अवस्थेत स्थिरावले."
+        }
+      },
+      {
+        "year": {
+          "en": "The Nath Path",
+          "hi": "नाथ मार्ग",
+          "mr": "नाथ मार्ग"
+        },
+        "title": {
+          "en": "The Nath Tradition",
+          "hi": "नाथ परंपरा",
+          "mr": "नाथ परंपरा"
+        },
+        "text": {
+          "en": "He became closely linked with the Nath tradition and grew into an important guide within its lineage, helping keep its wisdom alive.",
+          "hi": "वे नाथ संप्रदाय से आत्मीयता से जुड़ गए और इस परंपरा के एक प्रमुख मार्गदर्शक बने। नाथ-विद्या को सहेजने और फैलाने में उनका बड़ा योगदान रहा।",
+          "mr": "ते नाथ संप्रदायाशी आत्मीयतेने जोडले गेले आणि या परंपरेचे एक प्रमुख मार्गदर्शक बनले. नाथविद्या जपण्यात व तिच्या प्रसारात त्यांचे मोठे योगदान राहिले."
+        }
+      },
+      {
+        "year": {
+          "en": "At Chitrakoot",
+          "hi": "चित्रकूट में",
+          "mr": "चित्रकूटात"
+        },
+        "title": {
+          "en": "The Chitrakoot Years",
+          "hi": "चित्रकूट काल",
+          "mr": "चित्रकूट काळ"
+        },
+        "text": {
+          "en": "He established a strong spiritual presence at Chitrakoot, where seekers and devotees gathered for his guidance and blessings.",
+          "hi": "चित्रकूट में उन्होंने अपनी आध्यात्मिक उपस्थिति स्थापित की। यहाँ दूर-दूर से साधक और भक्त उनके मार्गदर्शन और आशीर्वाद की चाह में आते थे।",
+          "mr": "चित्रकूट येथे त्यांनी आपली आध्यात्मिक उपस्थिती निर्माण केली. इथे दूरदूरून साधक व भक्त त्यांच्या मार्गदर्शनासाठी व आशीर्वादासाठी येत असत."
+        }
+      },
+      {
+        "year": {
+          "en": "The Guru",
+          "hi": "गुरु",
+          "mr": "गुरु"
+        },
+        "title": {
+          "en": "A Guiding Light",
+          "hi": "मार्गदर्शक ज्योति",
+          "mr": "मार्गदर्शक ज्योत"
+        },
+        "text": {
+          "en": "Thousands came to him for help — spiritual and worldly alike. He guided all with compassion, like a true and caring teacher.",
+          "hi": "हज़ारों लोग अपने आध्यात्मिक और सांसारिक संकटों को लेकर उनके पास आते, और वे सभी को एक करुणामय गुरु की भाँति सहारा और दिशा देते।",
+          "mr": "हजारो लोक आपल्या आध्यात्मिक व सांसारिक अडचणी घेऊन त्यांच्याकडे येत, आणि ते प्रत्येकाला करुणामय गुरूप्रमाणे आधार व दिशा देत."
+        }
+      },
+      {
+        "year": {
+          "en": "His Teachings",
+          "hi": "उनके उपदेश",
+          "mr": "त्यांचे उपदेश"
+        },
+        "title": {
+          "en": "The Path He Showed",
+          "hi": "दिखाया हुआ मार्ग",
+          "mr": "दाखवलेला मार्ग"
+        },
+        "text": {
+          "en": "He taught simple, living values: devotion, remembrance of God, love for the Guru, selfless service, simplicity and discipline.",
+          "hi": "उन्होंने जीवन में उतारने योग्य सरल मूल्य सिखाए — भक्ति, नाम-स्मरण, गुरु-सेवा, निःस्वार्थ सेवा, सादगी और संयम।",
+          "mr": "त्यांनी आचरणात आणता येतील अशी साधी मूल्ये शिकवली — भक्ती, नामस्मरण, गुरुसेवा, निःस्वार्थ सेवा, साधेपणा व संयम."
+        }
+      },
+      {
+        "year": {
+          "en": "Grace & Miracles",
+          "hi": "कृपा व चमत्कार",
+          "mr": "कृपा व चमत्कार"
+        },
+        "title": {
+          "en": "Moments of Grace",
+          "hi": "कृपा के क्षण",
+          "mr": "कृपेचे क्षण"
+        },
+        "text": {
+          "en": "Many devotees experienced his blessings and miracles. These stories deepened their faith and are lovingly remembered to this day.",
+          "hi": "अनेक भक्तों ने उनकी कृपा और चमत्कारों का अनुभव किया। इन अनुभवों ने उनकी श्रद्धा को और दृढ़ किया, और ये कथाएँ आज भी प्रेम से सुनाई जाती हैं।",
+          "mr": "अनेक भक्तांनी त्यांच्या कृपेचा व चमत्कारांचा अनुभव घेतला. या अनुभवांनी त्यांची श्रद्धा अधिक दृढ झाली, आणि या कथा आजही प्रेमाने सांगितल्या जातात."
+        }
+      },
+      {
+        "year": {
+          "en": "A Family of Devotees",
+          "hi": "भक्त परिवार",
+          "mr": "भक्त परिवार"
+        },
+        "title": {
+          "en": "A Growing Sangha",
+          "hi": "बढ़ता सत्संग",
+          "mr": "वाढता सत्संग"
+        },
+        "text": {
+          "en": "A large, devoted community grew around him, carrying his teachings forward through their own lives and practice.",
+          "hi": "उनके चारों ओर एक विशाल और समर्पित भक्त-परिवार खड़ा हुआ, जो अपने जीवन और आचरण से उनके उपदेशों को आगे बढ़ाता रहा।",
+          "mr": "त्यांच्याभोवती एक विशाल व समर्पित भक्त-परिवार उभा राहिला, जो आपल्या जीवनातून व आचरणातून त्यांचे उपदेश पुढे नेत राहिला."
+        }
+      },
+      {
+        "year": {
+          "en": "Nashik",
+          "hi": "नाशिक",
+          "mr": "नाशिक"
+        },
+        "title": {
+          "en": "Nath Mandir, Nashik",
+          "hi": "नाथ मंदिर, नाशिक",
+          "mr": "नाथ मंदिर, नाशिक"
+        },
+        "text": {
+          "en": "His teachings and grace inspired devotees to build Nath Mandir in Nashik — a home for devotion and the Nath tradition.",
+          "hi": "उन्हीं की शिक्षा और कृपा से प्रेरित होकर भक्तों ने नाशिक में नाथ मंदिर की स्थापना की — भक्ति, साधना और नाथ परंपरा का एक पावन धाम।",
+          "mr": "त्यांच्याच शिकवणीने व कृपेने प्रेरित होऊन भक्तांनी नाशिकमध्ये नाथ मंदिर उभारले — भक्ती, साधना व नाथ परंपरेचे एक पावन धाम."
+        }
+      },
+      {
+        "year": {
+          "en": "A Living Legacy",
+          "hi": "जीवंत विरासत",
+          "mr": "जिवंत वारसा"
+        },
+        "title": {
+          "en": "His Legacy Lives On",
+          "hi": "विरासत जीवित है",
+          "mr": "वारसा जिवंत आहे"
+        },
+        "text": {
+          "en": "His presence continues through the temple, the Deepprakash, the festivals, and the daily devotion of countless followers.",
+          "hi": "उनकी उपस्थिति आज भी मंदिर, दीपप्रकाश ग्रंथ, उत्सवों और असंख्य भक्तों की नित्य भक्ति में जीवंत रूप से अनुभव होती है।",
+          "mr": "त्यांची उपस्थिती आजही मंदिर, दीपप्रकाश ग्रंथ, उत्सव व असंख्य भक्तांच्या नित्य भक्तीतून जिवंतपणे जाणवते."
+        }
+      },
+      {
+        "year": {
+          "en": "His Message",
+          "hi": "उनका संदेश",
+          "mr": "त्यांचा संदेश"
+        },
+        "title": {
+          "en": "An Enduring Message",
+          "hi": "चिरस्थायी संदेश",
+          "mr": "चिरंतन संदेश"
+        },
+        "text": {
+          "en": "His life still calls every seeker towards faith, devotion, service, discipline, inner peace and self-realisation.",
+          "hi": "उनका जीवन आज भी हर साधक को श्रद्धा, भक्ति, सेवा, संयम, अंतःशांति और आत्मसाक्षात्कार की ओर बुलाता रहता है।",
+          "mr": "त्यांचे जीवन आजही प्रत्येक साधकाला श्रद्धा, भक्ती, सेवा, संयम, अंतःशांती व आत्मसाक्षात्काराकडे आवाहन करत राहते."
+        }
+      }
+    ],
+    "teachings": [
+      {
+        "en": "Devotion above ritual — turn the mind to naam-sankirtan, bhajan and worship rather than dry ceremony.",
+        "hi": "कर्मकांड से ऊपर भक्ति — मन को नामसंकीर्तन, भजन और पूजन में लगाओ, न कि केवल विधि-विधान में।",
+        "mr": "कर्मकांडापेक्षा भक्ती श्रेष्ठ — मन नामसंकीर्तन, भजन व पूजनात लावा, केवळ विधीत नको."
+      },
+      {
+        "en": "The repetition of the divine name (naam-smaran) is the simplest and surest path for every household devotee.",
+        "hi": "नाम-स्मरण ही प्रत्येक गृहस्थ भक्त के लिए सरलतम और निश्चित मार्ग है।",
+        "mr": "नामस्मरण हाच प्रत्येक गृहस्थ भक्तासाठी सर्वात सोपा व निश्चित मार्ग आहे."
+      },
+      {
+        "en": "Faith and surrender to the Sadguru ripen into self-realisation.",
+        "hi": "सद्गुरु के प्रति श्रद्धा और समर्पण आत्मसाक्षात्कार में परिणत होते हैं।",
+        "mr": "सद्गुरूवरील श्रद्धा व शरणागती आत्मसाक्षात्कारात परिणत होते."
+      },
+      {
+        "en": "Serve all beings with humility and simplicity; the temple is the home of the whole community.",
+        "hi": "विनम्रता और सरलता से सभी प्राणियों की सेवा करो; मंदिर समस्त समाज का घर है।",
+        "mr": "नम्रता व साधेपणाने सर्व प्राणिमात्रांची सेवा करा; मंदिर हे समस्त समाजाचे घर आहे."
+      }
+    ],
+    "legacy": {
+      "en": "The grace of Shri Madhavnath Maharaj lives on through the Shri Madhavnath Sansthan, the temple at Vihitgaon, the annual festivals, and the Deepprakash scripture that records his life in 35 cantos. Generations of devotees continue to find peace, guidance and refuge at his feet.",
+      "hi": "श्री माधवनाथ महाराज की कृपा श्री माधवनाथ संस्थान, विहितगाव के मंदिर, वार्षिक उत्सवों और 35 अध्यायों में उनके जीवन का वर्णन करने वाले दीपप्रकाश ग्रंथ के माध्यम से जीवित है। पीढ़ी-दर-पीढ़ी भक्त उनके चरणों में शांति, मार्गदर्शन और आश्रय पाते रहते हैं।",
+      "mr": "श्री माधवनाथ महाराजांची कृपा श्री माधवनाथ संस्थान, विहितगावचे मंदिर, वार्षिक उत्सव व त्यांच्या जीवनाचे ३५ अध्यायांत वर्णन करणारा दीपप्रकाश ग्रंथ यांच्याद्वारे आजही जिवंत आहे. पिढ्यानपिढ्या भक्त त्यांच्या चरणी शांती, मार्गदर्शन व आश्रय मिळवत आहेत."
+    }
+  },
+  "story": {
+    "chapters": [
+      {
+        "id": "the-sadguru",
+        "image": "/maharaj-hero.png",
+        "tone": "maroon",
+        "symbol": "🕉",
+        "link": "/maharaj",
+        "cta": {
+          "title": {
+            "en": "Know the Maharaj",
+            "hi": "महाराज को जानें",
+            "mr": "महाराजांना जाणून घ्या"
+          },
+          "desc": {
+            "en": "His life, journey and teachings",
+            "hi": "उनका जीवन, यात्रा और उपदेश",
+            "mr": "त्यांचे जीवन, प्रवास व उपदेश"
+          }
+        },
+        "eyebrow": {
+          "en": "The Sadguru",
+          "hi": "सद्गुरु",
+          "mr": "सद्गुरु"
+        },
+        "title": {
+          "en": "Who was Shri Madhavnath Maharaj",
+          "hi": "श्री माधवनाथ महाराज कौन थे",
+          "mr": "श्री माधवनाथ महाराज कोण होते"
+        },
+        "paragraphs": [
+          {
+            "en": "Yogiraj Sadguru Shri Madhavnath Maharaj (1857–1936) was a realised soul (siddhapurush) of the Nath tradition and the head of a Nath monastery. Orphaned in childhood, he set out at the age of thirteen on a pilgrimage from the southern seas to the Himalayas, and after six years of penance the light of grace blossomed within him.",
+            "hi": "योगिराज सद्गुरु श्री माधवनाथ महाराज (1857–1936) नाथ परंपरा के सिद्धपुरुष एवं नाथ मठ के अधिकारी थे। बाल्यकाल में पितृहीन होकर, तेरह वर्ष की आयु में उन्होंने सेतु से हिमालय तक तीर्थयात्रा की और छह वर्ष तपश्चर्या के पश्चात उनके भीतर कृपा का प्रकाश प्रकट हुआ।",
+            "mr": "योगिराज सद्गुरु श्री माधवनाथ महाराज (१८५७–१९३६) हे नाथ संप्रदायातील सिद्धपुरुष व नाथ मठाचे अधिकारी होते. बालपणीच पितृछत्र हरपलेल्या माधवांनी वयाच्या तेराव्या वर्षी आसेतु हिमाचल तीर्थयात्रा केली आणि सहा वर्षांच्या तपश्चर्येनंतर त्यांच्या अंतरंगात कृपेचा प्रकाश उमलला."
+          },
+          {
+            "en": "Though he belonged to the Nath order, he did not lay stress on yoga alone. His one belief was simple and luminous — that naam-smaran (remembrance of the divine name), bhajan and heartfelt devotion are the surest path for every soul. His goal was to turn the hearts of ordinary householders away from dry ritual and towards love of the Divine.",
+            "hi": "यद्यपि वे नाथ संप्रदाय के थे, फिर भी उन्होंने केवल योग पर बल नहीं दिया। उनकी एक ही सरल और दीप्त श्रद्धा थी — नाम-स्मरण, भजन और हृदय की भक्ति ही प्रत्येक जीव के लिए निश्चित मार्ग है। उनका ध्येय था कि सामान्य गृहस्थों का मन कोरे कर्मकांड से हटकर ईश्वर-प्रेम की ओर मुड़े।",
+            "mr": "ते नाथसंप्रदायी असले तरी त्यांनी केवळ योगावर भर दिला नाही. त्यांची एकच साधी व तेजस्वी श्रद्धा होती — नामस्मरण, भजन व हृदयापासूनची भक्ती हाच प्रत्येक जीवासाठी निश्चित मार्ग. सामान्य गृहस्थांचे मन कोरड्या कर्मकांडाकडून ईश्वरप्रेमाकडे वळवणे हेच त्यांचे ध्येय होते."
+          }
+        ]
+      },
+      {
+        "id": "the-inspiration",
+        "image": null,
+        "tone": "gold",
+        "symbol": "🪔",
+        "link": "/trust",
+        "cta": {
+          "title": {
+            "en": "About the Trust",
+            "hi": "न्यास के बारे में",
+            "mr": "विश्वस्त मंडळाविषयी"
+          },
+          "desc": {
+            "en": "The people who care for the temple",
+            "hi": "मंदिर की देखभाल करने वाले लोग",
+            "mr": "मंदिराची देखभाल करणारे लोक"
+          }
+        },
+        "eyebrow": {
+          "en": "The Inspiration",
+          "hi": "प्रेरणा",
+          "mr": "प्रेरणा"
+        },
+        "title": {
+          "en": "The Founder President’s Resolve",
+          "hi": "संस्थापक अध्यक्ष का संकल्प",
+          "mr": "संस्थापक अध्यक्षांचा संकल्प"
+        },
+        "paragraphs": [
+          {
+            "en": "Generations later, that same grace took root in the heart of Shri Balkrishna (Balasaheb) Kashinath Joshi, the founder president of the Shri Madhavnath Sansthan. Moved by the Maharaj’s living presence and inspired by Shri Sanjayji Namjoshi of Indore, he resolved to give that grace a permanent home.",
+            "hi": "पीढ़ियों बाद वही कृपा श्री माधवनाथ संस्थान के संस्थापक अध्यक्ष श्री बालकृष्ण (बालासाहेब) काशिनाथ जोशी के हृदय में अंकुरित हुई। महाराज की जीवंत उपस्थिति से प्रेरित होकर और इंदौर के श्री संजयजी नामजोशी की प्रेरणा से उन्होंने उस कृपा को एक स्थायी धाम देने का संकल्प किया।",
+            "mr": "पिढ्यांनंतर तीच कृपा श्री माधवनाथ संस्थानचे संस्थापक अध्यक्ष श्री बाळकृष्ण (बाळासाहेब) काशिनाथ जोशी यांच्या हृदयात रुजली. महाराजांच्या जिवंत सान्निध्याने प्रेरित होऊन व इंदोरचे श्री संजयजी नामजोशी यांच्या प्रेरणेने त्यांनी त्या कृपेला कायमस्वरूपी धाम देण्याचा संकल्प केला."
+          },
+          {
+            "en": "His motive was one of devotion and gratitude — to ensure that the Maharaj’s name, teachings and blessings would never fade, but remain a refuge for the devotees yet to come. In 2009 he purchased land at Vihitgaon, and the dream of a temple began to take shape.",
+            "hi": "उनका हेतु भक्ति और कृतज्ञता का था — कि महाराज का नाम, उपदेश और आशीर्वाद कभी लुप्त न हो, अपितु आने वाले भक्तों के लिए आश्रय बना रहे। सन 2009 में उन्होंने विहितगाव में भूमि क्रय की और मंदिर का स्वप्न आकार लेने लगा।",
+            "mr": "त्यांचा हेतू भक्ती व कृतज्ञतेचा होता — महाराजांचे नाम, उपदेश व आशीर्वाद कधीही लोप पावू नये, तर येणाऱ्या भक्तांसाठी आश्रय राहावा. सन २००९ मध्ये त्यांनी विहितगाव येथे जागा खरेदी केली आणि मंदिराचे स्वप्न आकार घेऊ लागले."
+          }
+        ]
+      },
+      {
+        "id": "the-abode",
+        "image": null,
+        "tone": "sacred",
+        "symbol": "🛕",
+        "link": "/temple",
+        "cta": {
+          "title": {
+            "en": "Visit the Temple",
+            "hi": "मंदिर के दर्शन करें",
+            "mr": "मंदिराचे दर्शन घ्या"
+          },
+          "desc": {
+            "en": "Darshan timings, facilities & how to reach",
+            "hi": "दर्शन समय, सुविधाएँ और कैसे पहुँचें",
+            "mr": "दर्शन वेळा, सुविधा व कसे पोहोचाल"
+          }
+        },
+        "eyebrow": {
+          "en": "The Sacred Abode",
+          "hi": "पावन धाम",
+          "mr": "पावन धाम"
+        },
+        "title": {
+          "en": "A Living Home for His Grace",
+          "hi": "उनकी कृपा का जीवंत धाम",
+          "mr": "त्यांच्या कृपेचे जिवंत धाम"
+        },
+        "paragraphs": [
+          {
+            "en": "And so, in Baleshwar stone, the Shri Madhavnath Mandir rose at Vihitgaon — consecrated on 27 February 2012. It was built not as a monument, but as a living home for the Maharaj’s grace: a peaceful, sacred refuge where anyone may come and rest at his feet.",
+            "hi": "और इस प्रकार बालेश्वर पत्थर में श्री माधवनाथ मंदिर विहितगाव में खड़ा हुआ — 27 फरवरी 2012 को इसकी प्राण-प्रतिष्ठा हुई। यह किसी स्मारक के रूप में नहीं, अपितु महाराज की कृपा के जीवंत धाम के रूप में बना — एक शांत, पावन आश्रय जहाँ कोई भी आकर उनके चरणों में विश्राम पा सके।",
+            "mr": "आणि अशा प्रकारे बाळेश्वर दगडात श्री माधवनाथ मंदिर विहितगाव येथे उभे राहिले — २७ फेब्रुवारी २०१२ रोजी त्याची प्राणप्रतिष्ठा झाली. हे केवळ स्मारक म्हणून नव्हे, तर महाराजांच्या कृपेचे जिवंत धाम म्हणून उभे राहिले — एक शांत, पावन आश्रय जिथे कोणीही येऊन त्यांच्या चरणी विसावा घेऊ शकेल."
+          },
+          {
+            "en": "It belongs to everyone — householders and seekers, the young and the elderly, devotees near and far. Its goal is to keep alive the simple path the Maharaj taught: daily worship and naam-smaran, the annual festivals, annadan and the Deepprakash — so that, generation after generation, hearts may continue to find peace, guidance and refuge here.",
+            "hi": "यह सबका है — गृहस्थ और साधक, युवा और वृद्ध, निकट और दूर के भक्त। इसका ध्येय है महाराज द्वारा सिखाए सरल मार्ग को जीवित रखना — दैनिक पूजन व नाम-स्मरण, वार्षिक उत्सव, अन्नदान और दीपप्रकाश — ताकि पीढ़ी-दर-पीढ़ी हृदय यहाँ शांति, मार्गदर्शन और आश्रय पाते रहें।",
+            "mr": "हे सर्वांचे आहे — गृहस्थ व साधक, तरुण व वृद्ध, जवळचे व दूरचे भक्त. महाराजांनी शिकवलेला साधा मार्ग जिवंत ठेवणे हेच याचे ध्येय — दैनंदिन पूजन व नामस्मरण, वार्षिक उत्सव, अन्नदान आणि दीपप्रकाश — जेणेकरून पिढ्यानपिढ्या हृदये येथे शांती, मार्गदर्शन व आश्रय मिळवत राहतील."
+          }
+        ]
+      }
+    ]
+  },
+  "temple": {
+    "intro": {
+      "en": "Shri Madhavnath Mandir stands at Vihitgaon, on Nashik Road in Nashik. Raised through the devotion and labour of countless Nath devotees, it is a magnificent shrine in Baleshwar stone — a living, sacred space where the grace of Shri Madhavnath Maharaj is felt every day.",
+      "hi": "श्री माधवनाथ मंदिर नाशिक के नाशिक रोड स्थित विहितगाव में है। असंख्य नाथ भक्तों की भक्ति और श्रम से निर्मित यह बालेश्वर पत्थर का भव्य मंदिर है — एक जीवंत, पावन स्थान जहाँ प्रतिदिन श्री माधवनाथ महाराज की कृपा अनुभव होती है।",
+      "mr": "श्री माधवनाथ मंदिर नाशिकमधील नाशिकरोड येथील विहितगावात आहे. असंख्य नाथ भक्तांच्या भक्ती व श्रमातून उभे राहिलेले हे बाळेश्वर दगडातील भव्य मंदिर — एक जिवंत, पावन स्थान जिथे दररोज श्री माधवनाथ महाराजांची कृपा अनुभवता येते."
+    },
+    "essence": {
+      "en": "Not a monument of stone — a living home for grace, open to all.",
+      "hi": "पत्थर का स्मारक नहीं — कृपा का जीवंत धाम, सबके लिए खुला।",
+      "mr": "दगडाचे स्मारक नव्हे — कृपेचे जिवंत धाम, सर्वांसाठी खुले."
+    },
+    "history": [
+      {
+        "en": "Shri Madhavnath Mandir is located at Vihitgaon, Nashik Road, Nashik. In the year 2009, Shri Balasaheb Kashinath Joshi purchased land for the temple at Lam Road, Vihitgaon (the deed dated 9/9/2009).",
+        "hi": "श्री माधवनाथ मंदिर नाशिक रोड, विहितगाव, नाशिक में स्थित है। सन 2009 में श्री बालासाहेब काशिनाथ जोशी ने लाम रोड, विहितगाव में मंदिर के लिए भूमि क्रय की (दिनांक 9/9/2009)।",
+        "mr": "श्री माधवनाथ मंदिर नाशिकरोड, विहितगाव, नाशिक येथे आहे. सन २००९ साली श्री बाळासाहेब काशिनाथ जोशी यांनी लॅम रोड, विहितगाव येथे मंदिरासाठी जागा खरेदी केली (दि. ९/९/२००९)."
+      },
+      {
+        "en": "Inspired by Shri Sanjayji Namjoshi of Indore, a magnificent temple to Shri Madhavnath Maharaj was raised in Baleshwar stone on this five-and-a-half guntha plot. The Shri Madhavnath Seva Mandal and the Nath devotee families of the region contributed greatly, both financially and through their labour.",
+        "hi": "इंदौर के श्री संजयजी नामजोशी की प्रेरणा से इस साढ़े पाँच गुंठा भूखंड पर बालेश्वर पत्थर में श्री माधवनाथ महाराज का भव्य मंदिर खड़ा हुआ। श्री माधवनाथ सेवा मंडल तथा क्षेत्र के नाथ भक्त परिवारों का आर्थिक एवं श्रम का बड़ा योगदान रहा।",
+        "mr": "इंदोरचे श्री संजयजी नामजोशी यांच्या प्रेरणेने या साडेपाच गुंठ्यांच्या जागेवर बाळेश्वर दगडात श्री माधवनाथ महाराजांचे भव्य मंदिर साकार झाले. श्री माधवनाथ सेवा मंडळ व परिसरातील नाथ भक्त परिवार यांचा आर्थिक व श्रमाचा मोठा हिस्सा आहे."
+      },
+      {
+        "en": "The compound measures 96 feet in length and 58 feet in width. The main sanctum (gabhara) is 12′ × 14′, and the spire (shikhar) rises 45 feet from ground level. The temple was completed in about fifteen months.",
+        "hi": "परिसर 96 फुट लंबा और 58 फुट चौड़ा है। मुख्य गर्भगृह 12′ × 14′ का है और शिखर भूमि से 45 फुट ऊँचा है। मंदिर लगभग पंद्रह महीनों में पूर्ण हुआ।",
+        "mr": "आवार ९६ फूट लांब व ५८ फूट रुंद आहे. मुख्य गाभारा १२′ × १४′ चा असून शिखर जमिनीपासून ४५ फूट उंच आहे. मंदिर सुमारे पंधरा महिन्यांत पूर्ण झाले."
+      },
+      {
+        "en": "The work was guided by architect Shri Jayvant Pawar and engineers Shri Krishna Pawar and Shri Sagar Balkrishna Joshi, and made possible by the donations of innumerable Nath devotees and the tireless effort of the Shri Madhavnath Seva Mandal. A two-storey guest residence (bhakta-niwas) was built to host visiting devotees.",
+        "hi": "यह कार्य वास्तुविद श्री जयवंत पवार तथा अभियंता श्री कृष्णा पवार व श्री सागर बालकृष्ण जोशी के मार्गदर्शन में हुआ और असंख्य नाथ भक्तों के दान तथा श्री माधवनाथ सेवा मंडल के अथक परिश्रम से संभव हुआ। दर्शनार्थ आने वाले भक्तों के लिए दो-मंजिला भक्त निवास भी बनाया गया।",
+        "mr": "हे काम आर्किटेक्ट श्री जयवंत पवार व इंजि. श्री कृष्णा पवार आणि इंजि. श्री सागर बाळकृष्ण जोशी यांच्या मार्गदर्शनाखाली झाले आणि असंख्य नाथ भक्तांच्या देणगीने व श्री माधवनाथ सेवा मंडळाच्या अथक परिश्रमाने शक्य झाले. दर्शनासाठी येणाऱ्या भक्तांसाठी दुमजली भक्त निवासही बांधण्यात आले."
+      }
+    ],
+    "murti": [
+      {
+        "en": "The main sanctum houses a magnificent and captivating 3-foot idol of Shri Madhavnath Maharaj. Behind it stands a 2-foot enchanting idol of Shri Vitthal-Rakhumai carved in black stone.",
+        "hi": "मुख्य गर्भगृह में श्री माधवनाथ महाराज की 3 फुट की भव्य और मनोहर मूर्ति है। उसके पीछे काले पाषाण में निर्मित श्री विट्ठल-रखुमाई की 2 फुट ऊँची मनोवेधक मूर्ति है।",
+        "mr": "मुख्य गाभाऱ्यात श्री माधवनाथ महाराजांची ३ फुटांची भव्य व आकर्षक मूर्ती आहे. तिच्या मागे काळ्या पाषाणात घडवलेली श्री विठ्ठल-रखुमाईची २ फूट उंचीची मनोवेधक मूर्ती आहे."
+      },
+      {
+        "en": "In the assembly hall, on the right, is a rare idol of Shri Sai Baba reclining in repose at Dwarkamai; on the left are attractive idols of Shri Gajanan Maharaj and Gopalkrishna.",
+        "hi": "सभामंडप में दाहिनी ओर द्वारकामाई में विश्राम मुद्रा में श्री साईबाबा की दुर्लभ मूर्ति है; बायीं ओर श्री गजानन महाराज एवं गोपालकृष्ण की आकर्षक मूर्तियाँ हैं।",
+        "mr": "सभामंडपात उजव्या बाजूस द्वारकामाईत विश्रांती स्थितीतील श्री साईबाबांची दुर्मिळ मूर्ती आहे; डाव्या बाजूस श्री गजानन महाराज व गोपालकृष्णाची आकर्षक मूर्ती आहे."
+      },
+      {
+        "en": "The idols were carved from white Makrana stone by the craftsman Bharat Bhushan of Rajasthan. The shrine features an ornate entrance doorway and a finely carved dome within the sanctum, flanked at the entrance by two 3-foot guardian figures.",
+        "hi": "मूर्तियाँ राजस्थान के शिल्पी भरत भूषण द्वारा श्वेत मकराना पत्थर से निर्मित हैं। मंदिर में नक्काशीदार प्रवेशद्वार तथा गर्भगृह के भीतर सुंदर नक्काशीदार गुंबद है, और प्रवेशद्वार पर 3 फुट के दो द्वारपाल हैं।",
+        "mr": "मूर्ती राजस्थानचे शिल्पकार भरत भूषण यांनी पांढऱ्या मकराना दगडातून घडवल्या आहेत. मंदिरात नक्षीदार प्रवेशद्वार व गाभाऱ्याच्या आतील बाजूस नक्षीदार घुमट असून प्रवेशद्वारी ३ फुटांचे दोन द्वारपाल आहेत."
+      },
+      {
+        "en": "The Pran-Pratishtha (consecration) ceremony of the idols took place on 27 February 2012.",
+        "hi": "मूर्तियों का प्राण-प्रतिष्ठा समारोह 27 फरवरी 2012 को संपन्न हुआ।",
+        "mr": "मूर्तींचा प्राणप्रतिष्ठा सोहळा २७ फेब्रुवारी २०१२ रोजी संपन्न झाला."
+      }
+    ],
+    "renovation": {
+      "en": "The Shri Madhavnath Sansthan Trust maintains and preserves the temple with great care. Thanks to this diligent upkeep, the delicate stone carvings of the temple can still be admired today as though they were new.",
+      "hi": "श्री माधवनाथ संस्थान न्यास मंदिर का अत्यंत सावधानी से रखरखाव और जीर्णोद्धार करता है। इसी परिश्रमी देखभाल के कारण मंदिर की नाजुक नक्काशी आज भी नई-सी दिखाई देती है।",
+      "mr": "श्री माधवनाथ संस्थान विश्वस्त मंडळ मंदिराचे व्यवस्थापन व जीर्णोद्धार उत्तम तऱ्हेने सांभाळते. त्यामुळे मंदिराचे नाजूक नक्षीकाम आजही आपण अगदी नव्यासारखे पाहू शकतो."
+    },
+    "facilities": [
+      {
+        "iconKey": "bed",
+        "title": {
+          "en": "Bhakta Niwas",
+          "hi": "भक्त निवास",
+          "mr": "भक्त निवास"
+        },
+        "text": {
+          "en": "A two-storey guest residence for visiting devotees and pilgrims.",
+          "hi": "दर्शनार्थ आने वाले भक्तों एवं तीर्थयात्रियों के लिए दो-मंजिला भक्त निवास।",
+          "mr": "दर्शनासाठी येणाऱ्या भक्तांसाठी व यात्रेकरूंसाठी दुमजली भक्त निवास."
+        }
+      },
+      {
+        "iconKey": "food",
+        "title": {
+          "en": "Mahaprasad / Annadan",
+          "hi": "महाप्रसाद / अन्नदान",
+          "mr": "महाप्रसाद / अन्नदान"
+        },
+        "text": {
+          "en": "Daily mahanaivedya and mahaprasad served to devotees, especially on festival days.",
+          "hi": "भक्तों को प्रतिदिन महानैवेद्य व महाप्रसाद, विशेषकर उत्सव के दिनों में।",
+          "mr": "भक्तांना दररोज महानैवेद्य व महाप्रसाद, विशेषतः उत्सवाच्या दिवशी."
+        }
+      },
+      {
+        "iconKey": "hall",
+        "title": {
+          "en": "Sabha Mandap",
+          "hi": "सभामंडप",
+          "mr": "सभामंडप"
+        },
+        "text": {
+          "en": "A spacious hall for bhajan, kirtan, satsang and festival gatherings.",
+          "hi": "भजन, कीर्तन, सत्संग और उत्सव समारोहों के लिए विशाल सभामंडप।",
+          "mr": "भजन, कीर्तन, सत्संग व उत्सव समारंभांसाठी प्रशस्त सभामंडप."
+        }
+      },
+      {
+        "iconKey": "parking",
+        "title": {
+          "en": "Parking",
+          "hi": "वाहन तळ",
+          "mr": "वाहनतळ"
+        },
+        "text": {
+          "en": "Convenient parking space for devotees arriving by vehicle.",
+          "hi": "वाहन से आने वाले भक्तों के लिए सुविधाजनक पार्किंग।",
+          "mr": "वाहनाने येणाऱ्या भक्तांसाठी सोयीस्कर वाहनतळ."
+        }
+      },
+      {
+        "iconKey": "water",
+        "title": {
+          "en": "Drinking Water",
+          "hi": "पेयजल",
+          "mr": "पिण्याचे पाणी"
+        },
+        "text": {
+          "en": "Clean drinking water facility available within the temple premises.",
+          "hi": "मंदिर परिसर में स्वच्छ पेयजल की सुविधा।",
+          "mr": "मंदिर परिसरात स्वच्छ पिण्याच्या पाण्याची सोय."
+        }
+      },
+      {
+        "iconKey": "accessible",
+        "title": {
+          "en": "Senior & Accessible",
+          "hi": "वरिष्ठ व सुलभ",
+          "mr": "ज्येष्ठ व सुलभ"
+        },
+        "text": {
+          "en": "Calm, easy-to-navigate darshan suitable for senior citizens and families.",
+          "hi": "वरिष्ठ नागरिकों और परिवारों के लिए शांत, सुगम दर्शन व्यवस्था।",
+          "mr": "ज्येष्ठ नागरिक व कुटुंबांसाठी शांत, सुलभ दर्शन व्यवस्था."
+        }
+      }
+    ],
+    "timings": [
+      {
+        "kind": "daily",
+        "iconKey": "sunrise",
+        "time": {
+          "en": "7:30 AM",
+          "hi": "प्रातः 7:30",
+          "mr": "सकाळी ७:३०"
+        },
+        "label": {
+          "en": "Morning Aarti & Panchapadi",
+          "hi": "प्रातः आरती व पंचपदी",
+          "mr": "सकाळची आरती व पंचपदी"
+        },
+        "note": {
+          "en": "The day begins as the sanctum opens and the first aarti rises with the panchapadi.",
+          "hi": "गर्भगृह खुलते ही दिन का आरंभ होता है और पंचपदी के साथ प्रथम आरती गूँजती है।",
+          "mr": "गाभारा उघडताच दिवसाची सुरुवात होते आणि पंचपदीसह पहिली आरती दुमदुमते."
+        }
+      },
+      {
+        "kind": "daily",
+        "iconKey": "noon",
+        "time": {
+          "en": "12:00 PM",
+          "hi": "दोपहर 12:00",
+          "mr": "दुपारी १२:००"
+        },
+        "label": {
+          "en": "Mahanaivedya",
+          "hi": "महानैवेद्य",
+          "mr": "महानैवेद्य"
+        },
+        "note": {
+          "en": "At midday, the mahanaivedya is offered at the Maharaj’s feet.",
+          "hi": "मध्याह्न में महाराज के चरणों में महानैवेद्य अर्पित किया जाता है।",
+          "mr": "दुपारी महाराजांच्या चरणी महानैवेद्य अर्पण केला जातो."
+        }
+      },
+      {
+        "kind": "daily",
+        "iconKey": "sunset",
+        "time": {
+          "en": "7:30 PM",
+          "hi": "सायं 7:30",
+          "mr": "सायं ७:३०"
+        },
+        "label": {
+          "en": "Evening Aarti",
+          "hi": "सायं आरती",
+          "mr": "सायंकाळची आरती"
+        },
+        "note": {
+          "en": "As dusk falls, the lamps are lit and the evening aarti closes the day.",
+          "hi": "सांझ ढलते ही दीप प्रज्वलित होते हैं और सायं आरती दिन का समापन करती है।",
+          "mr": "संध्याकाळ होताच दीप प्रज्वलित होतात आणि सायंआरतीने दिवसाची सांगता होते."
+        }
+      },
+      {
+        "kind": "weekly",
+        "iconKey": "music",
+        "time": {
+          "en": "Friday · 7–10 PM",
+          "hi": "शुक्रवार · 7–10 बजे",
+          "mr": "शुक्रवार · ७–१० रात्री"
+        },
+        "label": {
+          "en": "Geetanjali",
+          "hi": "गीतांजली",
+          "mr": "गीतांजली"
+        },
+        "note": {
+          "en": "An evening of devotional singing and bhajans, offered in the loving presence of the Maharaj.",
+          "hi": "महाराज की प्रेममयी उपस्थिति में भक्तिगीतों और भजनों से सजी एक संध्या।",
+          "mr": "महाराजांच्या प्रेममय सान्निध्यात भक्तिगीते व भजनांनी सजलेली एक संध्याकाळ."
+        }
+      },
+      {
+        "kind": "weekly",
+        "iconKey": "music",
+        "time": {
+          "en": "Sunday · 7–10 PM",
+          "hi": "रविवार · 7–10 बजे",
+          "mr": "रविवार · ७–१० रात्री"
+        },
+        "label": {
+          "en": "Upasana",
+          "hi": "उपासना",
+          "mr": "उपासना"
+        },
+        "note": {
+          "en": "Collective worship, naam-smaran and quiet meditation that all devotees are welcome to join.",
+          "hi": "सामूहिक पूजन, नाम-स्मरण और शांत ध्यान — जिसमें सभी भक्त सम्मिलित हो सकते हैं।",
+          "mr": "सामूहिक पूजन, नामस्मरण व शांत ध्यान — ज्यात सर्व भक्त सहभागी होऊ शकतात."
+        }
+      }
+    ],
+    "howToReach": [
+      {
+        "mode": {
+          "en": "By Road",
+          "hi": "सड़क मार्ग",
+          "mr": "रस्तेमार्ग"
+        },
+        "text": {
+          "en": "The temple is at Lam Road, Vihitgaon, Nashik Road, well connected within Nashik city by road and auto.",
+          "hi": "मंदिर लाम रोड, विहितगाव, नाशिक रोड पर है, जो सड़क व ऑटो से नाशिक शहर से भली-भाँति जुड़ा है।",
+          "mr": "मंदिर लॅम रोड, विहितगाव, नाशिकरोड येथे असून रस्ते व रिक्षाने नाशिक शहराशी उत्तम जोडलेले आहे."
+        }
+      },
+      {
+        "mode": {
+          "en": "By Train",
+          "hi": "रेल मार्ग",
+          "mr": "रेल्वेमार्ग"
+        },
+        "text": {
+          "en": "Nashik Road Railway Station is the nearest railhead, a short ride from Vihitgaon.",
+          "hi": "निकटतम रेलवे स्टेशन नाशिक रोड है, जो विहितगाव से थोड़ी दूरी पर है।",
+          "mr": "जवळचे रेल्वे स्थानक नाशिकरोड असून विहितगावपासून थोड्या अंतरावर आहे."
+        }
+      },
+      {
+        "mode": {
+          "en": "By Air",
+          "hi": "वायु मार्ग",
+          "mr": "विमानमार्ग"
+        },
+        "text": {
+          "en": "Nashik (Ozar) Airport serves the region; Mumbai and Pune airports are within driving distance.",
+          "hi": "नाशिक (ओझर) हवाई अड्डा क्षेत्र की सेवा करता है; मुंबई व पुणे हवाई अड्डे भी पहुँच में हैं।",
+          "mr": "नाशिक (ओझर) विमानतळ या भागाची सेवा करते; मुंबई व पुणे विमानतळेही अंतरावर आहेत."
+        }
+      }
+    ]
+  },
+  "trust": {
+    "essence": {
+      "en": "Keeping the Maharaj’s grace alive — for every devotee, for every generation.",
+      "hi": "महाराज की कृपा को जीवित रखना — प्रत्येक भक्त के लिए, प्रत्येक पीढ़ी के लिए।",
+      "mr": "महाराजांची कृपा जिवंत ठेवणे — प्रत्येक भक्तासाठी, प्रत्येक पिढीसाठी."
+    },
+    "vision": {
+      "en": "Our promise is simple — to keep the blessings of Sadguru Shri Madhavnath Maharaj alive, and to keep this temple a warm, open home for everyone, for years and years to come.",
+      "hi": "हमारा वादा सरल है — सद्गुरु श्री माधवनाथ महाराज का आशीर्वाद जीवित रखना, और इस मंदिर को सबके लिए एक अपनापन भरा, खुला घर बनाए रखना, वर्षों-वर्षों तक।",
+      "mr": "आमचं वचन साधं आहे — सद्गुरु श्री माधवनाथ महाराजांचा आशीर्वाद जिवंत ठेवणं, आणि हे मंदिर सर्वांसाठी एक आपुलकीचं, खुलं घर ठेवणं, वर्षानुवर्षे."
+    },
+    "mission": [
+      {
+        "en": "To look after the temple and its beautiful carvings, and keep them as good as new.",
+        "hi": "मंदिर और इसकी सुंदर नक्काशी की देखभाल करना, और इसे नए जैसा बनाए रखना।",
+        "mr": "मंदिर व त्याच्या सुंदर नक्षीकामाची काळजी घेणं, आणि ते नव्यासारखं ठेवणं."
+      },
+      {
+        "en": "To do the daily prayers, aarti and every festival with full devotion.",
+        "hi": "रोज़ की पूजा, आरती और हर उत्सव को पूरी भक्ति से करना।",
+        "mr": "रोजची पूजा, आरती व प्रत्येक उत्सव पूर्ण भक्तीने करणं."
+      },
+      {
+        "en": "To serve every devotee with free meals, a place to stay and satsang — and welcome everyone.",
+        "hi": "हर भक्त की सेवा करना — मुफ़्त भोजन, ठहरने की जगह और सत्संग के साथ, और सबका स्वागत करना।",
+        "mr": "प्रत्येक भक्ताची सेवा करणं — मोफत भोजन, राहण्याची सोय व सत्संगासह, आणि सर्वांचं स्वागत करणं."
+      },
+      {
+        "en": "To pass on the Deepprakash and the Maharaj’s teachings to the next generations.",
+        "hi": "दीपप्रकाश और महाराज के उपदेश अगली पीढ़ियों तक पहुँचाना।",
+        "mr": "दीपप्रकाश व महाराजांचे उपदेश पुढच्या पिढ्यांपर्यंत पोहोचवणं."
+      }
+    ],
+    "founder": {
+      "name": {
+        "en": "Shri Balkrishna Kashinath Joshi",
+        "hi": "श्री बालकृष्ण काशिनाथ जोशी",
+        "mr": "श्री बाळकृष्ण काशिनाथ जोशी"
+      },
+      "role": {
+        "en": "Founder President & Source of Inspiration",
+        "hi": "संस्थापक अध्यक्ष व प्रेरणास्थान",
+        "mr": "संस्थापक अध्यक्ष व प्रेरणास्थान"
+      },
+      "about": {
+        "en": "Around the year 2009, Shri Balasaheb (Balkrishna) Kashinath Joshi purchased the land for Shri Madhavnath’s temple at Lam Road, Vihitgaon. As the founder president and source of inspiration of the Shri Madhavnath Sansthan, it is by his resolve and effort that this temple stands today.",
+        "hi": "लगभग सन 2009 में श्री बालासाहेब (बालकृष्ण) काशिनाथ जोशी ने लाम रोड, विहितगाव में श्री माधवनाथ के मंदिर के लिए भूमि क्रय की। श्री माधवनाथ संस्थान के संस्थापक अध्यक्ष व प्रेरणास्थान के रूप में, उन्हीं के संकल्प और परिश्रम से आज यह मंदिर खड़ा है।",
+        "mr": "सुमारे सन २००९ साली श्री बाळासाहेब (बाळकृष्ण) काशिनाथ जोशी यांनी लॅम रोड, विहितगाव येथे श्री माधवनाथांच्या मंदिरासाठी जागा खरेदी केली. श्री माधवनाथ संस्थानाचे संस्थापक अध्यक्ष व प्रेरणास्थान म्हणून, त्यांच्याच संकल्पाने व परिश्रमाने आज हे मंदिर उभे आहे."
+      }
+    },
+    "committees": [
+      {
+        "term": "2012 – 2015",
+        "members": [
+          {
+            "role": "vicePresident",
+            "name": {
+              "en": "Shri Baburao Gopala Nanekar",
+              "hi": "श्री बाबूराव गोपाळा नाणेकर",
+              "mr": "श्री बाबूराव गोपाळा नाणेकर"
+            }
+          },
+          {
+            "role": "secretary",
+            "name": {
+              "en": "Shri Suresh Karbhari Nagare",
+              "hi": "श्री सुरेश कारभारी नागरे",
+              "mr": "श्री सुरेश कारभारी नागरे"
+            }
+          },
+          {
+            "role": "treasurer",
+            "name": {
+              "en": "Shri Arun Narayan Palde",
+              "hi": "श्री अरुण नारायण पाळदे",
+              "mr": "श्री अरुण नारायण पाळदे"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Nivrutti Ganpat Shinde",
+              "hi": "श्री निवृत्ती गणपत शिंदे",
+              "mr": "श्री निवृत्ती गणपत शिंदे"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Raman Keruji Patil",
+              "hi": "श्री रमण केरुजी पाटील",
+              "mr": "श्री रमण केरुजी पाटील"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Chandrashekhar Gangadhar Topne",
+              "hi": "श्री चंद्रशेखर गंगाधर टोपणे",
+              "mr": "श्री चंद्रशेखर गंगाधर टोपणे"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Yashodhan Nivruttinath Vavde",
+              "hi": "श्री यशोधन निवृतीनाथ वावदे",
+              "mr": "श्री यशोधन निवृतीनाथ वावदे"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Dattatray B. Gode",
+              "hi": "श्री दत्तात्रय बी. गोडे",
+              "mr": "श्री दत्तात्रय बी. गोडे"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Omkar Shankarrao Vairagkar",
+              "hi": "श्री ओंकार शंकरराव वैरागकर",
+              "mr": "श्री ओंकार शंकरराव वैरागकर"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Adv. Shri Dinkar Keruji Patil",
+              "hi": "श्री अॅड. दिनकर केरुजी पाटील",
+              "mr": "श्री अॅड. दिनकर केरुजी पाटील"
+            }
+          }
+        ]
+      },
+      {
+        "term": "2015 – 2017",
+        "members": [
+          {
+            "role": "president",
+            "name": {
+              "en": "Shri Somnath Yashwant Jachak",
+              "hi": "श्री सोमनाथ यशवंत जाचक",
+              "mr": "श्री सोमनाथ यशवंत जाचक"
+            }
+          },
+          {
+            "role": "vicePresident",
+            "name": {
+              "en": "Adv. Shri Tryambak Sawakar Godse",
+              "hi": "श्री अॅड. त्र्यंबक सावकार गोडसे",
+              "mr": "श्री अॅड. त्र्यंबक सावकार गोडसे"
+            }
+          },
+          {
+            "role": "secretary",
+            "name": {
+              "en": "Shri Sachin Balasaheb Gawali",
+              "hi": "श्री सचिन बाळासाहेब गवळी",
+              "mr": "श्री सचिन बाळासाहेब गवळी"
+            }
+          },
+          {
+            "role": "treasurer",
+            "name": {
+              "en": "Shri Shekhar Suresh Adhav",
+              "hi": "श्री शेखर सुरेश आढाव",
+              "mr": "श्री शेखर सुरेश आढाव"
+            }
+          },
+          {
+            "role": "legalAdvisor",
+            "name": {
+              "en": "Adv. Shri Dinkar Keruji Patil",
+              "hi": "श्री अॅड. दिनकर केरुजी पाटील",
+              "mr": "श्री अॅड. दिनकर केरुजी पाटील"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Vaibhav Vitthal Halde",
+              "hi": "श्री वैभव विट्ठल हळदे",
+              "mr": "श्री वैभव विट्ठल हळदे"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Shashikant Baburao Nanekar",
+              "hi": "श्री शशिकांत बाबूराव नाणेकर",
+              "mr": "श्री शशिकांत बाबूराव नाणेकर"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Krishna Jagannath Pawar",
+              "hi": "श्री कृष्णा जगन्नाथ पवार",
+              "mr": "श्री कृष्णा जगन्नाथ पवार"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Sachin Ashok Nigal",
+              "hi": "श्री सचिन अशोक निगळ",
+              "mr": "श्री सचिन अशोक निगळ"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Jayvant Namdev Pawar",
+              "hi": "श्री जयवंत नामदेव पवार",
+              "mr": "श्री जयवंत नामदेव पवार"
+            }
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Prashant Balkrishna Joshi",
+              "hi": "श्री प्रशांत बाळकृष्ण जोशी",
+              "mr": "श्री प्रशांत बाळकृष्ण जोशी"
+            }
+          }
+        ]
+      }
+    ],
+    "milestones": [
+      {
+        "year": "2009",
+        "text": {
+          "en": "Land purchased at Lam Road, Vihitgaon for the temple.",
+          "hi": "मंदिर हेतु लाम रोड, विहितगाव में भूमि क्रय।",
+          "mr": "मंदिरासाठी लॅम रोड, विहितगाव येथे जागा खरेदी."
+        }
+      },
+      {
+        "year": "2010–11",
+        "text": {
+          "en": "Temple constructed in Baleshwar stone in about fifteen months.",
+          "hi": "लगभग पंद्रह माह में बालेश्वर पत्थर से मंदिर निर्माण।",
+          "mr": "सुमारे पंधरा महिन्यांत बाळेश्वर दगडात मंदिर बांधकाम."
+        }
+      },
+      {
+        "year": "2012",
+        "text": {
+          "en": "Pran-Pratishtha (consecration) of the idols on 27 February 2012.",
+          "hi": "27 फरवरी 2012 को मूर्तियों की प्राण-प्रतिष्ठा।",
+          "mr": "२७ फेब्रुवारी २०१२ रोजी मूर्तींची प्राणप्रतिष्ठा."
+        }
+      },
+      {
+        "year": "Ongoing",
+        "text": {
+          "en": "Daily worship, annual festivals, annadan and upkeep of the temple.",
+          "hi": "दैनिक पूजन, वार्षिक उत्सव, अन्नदान व मंदिर देखभाल।",
+          "mr": "दैनंदिन पूजन, वार्षिक उत्सव, अन्नदान व मंदिर देखभाल."
+        }
+      }
+    ]
+  }
+}
