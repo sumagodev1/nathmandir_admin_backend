@@ -2,6 +2,7 @@
 // Handlers for /api/sales.
 import { prisma } from '../lib/prisma.js'
 import { ymd, paginate } from '../lib/helpers.js'
+import { donationRows } from '../lib/donationSources.js'
 
 const shape = (s) => ({
   id: s.txnId,
@@ -24,8 +25,26 @@ export async function list(req, res) {
     orderBy: { createdAt: 'desc' },
   })
 
+  // Donations are money received too, and the Report showed only book sales —
+  // so a donation appeared on the Donations screen and nowhere in the revenue
+  // report an admin actually prints.
+  const gifts = (await donationRows('/api/sales')).map((d) => ({
+    id: d.txn || d.ref || d.id,
+    userId: null,
+    user: d.name,
+    product: null,
+    productCode: 'donation',
+    productName: d.category ? `Donation (${d.category})` : 'Donation',
+    amount: d.amount,
+    status: 'success',
+    date: d.date,
+    ref: d.gateway,
+  }))
+
   const q = String(query).trim().toLowerCase()
-  const rows = sales.map(shape).filter((s) => {
+  const rows = [...sales.map(shape), ...gifts]
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+    .filter((s) => {
     const matchQ =
       !q ||
       s.user.toLowerCase().includes(q) ||
@@ -53,6 +72,18 @@ export async function report(req, res) {
       return { id: p.id, name: p.name, count: agg._count, amount: agg._sum.amount || 0 }
     })
   )
+  // One line for donations, under the modules. Not a product, but it is
+  // revenue, and leaving it out made this total disagree with the dashboard.
+  const gifts = await donationRows('/api/sales/report')
+  if (gifts.length) {
+    report.push({
+      id: 'donation',
+      name: 'Donations',
+      count: gifts.length,
+      amount: gifts.reduce((n, g) => n + g.amount, 0),
+    })
+  }
+
   const totalAmount = report.reduce((s, r) => s + r.amount, 0)
   const totalCount = report.reduce((s, r) => s + r.count, 0)
   res.json({ report, totalAmount, totalCount })

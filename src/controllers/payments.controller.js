@@ -9,6 +9,7 @@
 // everywhere — the rows stay in the database as history.
 import { prisma } from '../lib/prisma.js'
 import { ymd, jsonSafe, paginate } from '../lib/helpers.js'
+import { donationRows } from '../lib/donationSources.js'
 
 const PKG = { 1: 'Gitanjali Part 1', 2: 'Gitanjali Part 2', 3: 'Donation', 4: 'Upasana Part', 5: 'Nityaniyam Part' }
 
@@ -41,27 +42,6 @@ export async function list(req, res) {
      FROM user_payment up LEFT JOIN users u ON u.id = up.user_id
      ORDER BY up.created_at DESC`
   )
-  // Website and hand-entered (cash / bank) donations live in their own table,
-  // so a donation taken on the site or typed in by an admin showed on the
-  // Donations screen and nowhere else — not here, not on the dashboard.
-  //
-  // Read defensively: `donation` is a legacy raw table outside the Prisma
-  // schema, and a missing one must not take the whole payments list down.
-  let gifts = []
-  try {
-    gifts = await prisma.$queryRawUnsafe(
-      `SELECT id, name, mobile, amount, category, razorpay_payment_id AS paymentId,
-              razorpay_order_id AS orderId, mode, txn_ref AS txnRef, created_at AS createdAt
-         FROM donation WHERE status = '1' ORDER BY created_at DESC`
-    )
-  } catch (err) {
-    console.error(`⚠️  /api/payments: skipping website donations — ${String(err.message).replace(/\s+/g, ' ').trim().slice(0, 160)}`)
-  }
-
-  // An offline row has no gateway — say how the money actually arrived, so a
-  // cash donation is not mistaken for a card payment.
-  const MODE_LABEL = { online: 'Website', cash: 'Cash', bank: 'Bank Transfer' }
-
   let rows = jsonSafe(razor).map((r) => ({
     id: 'R' + r.id,
     gateway: gatewayOf(r.orderId, r.stage),
@@ -77,22 +57,26 @@ export async function list(req, res) {
     date: ymd(r.createdAt),
   }))
 
+  // Website and hand-entered (cash / bank) donations. The in-app ones already
+  // arrive above as package 3 of user_payment, so only the website source is
+  // added here — taking both would count those twice.
+  const gifts = (await donationRows('/api/payments')).filter((g) => g.source === 'website')
   rows = rows.concat(
-    jsonSafe(gifts).map((g) => ({
-      id: 'D' + g.id,
-      gateway: MODE_LABEL[g.mode] || 'Website',
+    gifts.map((g) => ({
+      id: g.id,
+      gateway: g.gateway,
       userId: null,
-      user: g.name || '',
-      mobile: g.mobile || '',
+      user: g.name,
+      mobile: g.mobile,
       module: 'Donation',
       kind: 'donation',
-      amount: Number(g.amount) || 0,
-      txn: g.paymentId || g.txnRef || '',
-      ref: g.orderId || '',
-      // Only settled rows are read above, so these are complete by definition —
-      // and the word has to match what the Completed filter looks for.
+      amount: g.amount,
+      txn: g.txn,
+      ref: g.ref,
+      // Only settled rows are read, so these are complete by definition — and
+      // the word has to match what the Completed filter looks for.
       status: 'Completed',
-      date: ymd(g.createdAt),
+      date: g.date,
     }))
   )
 
