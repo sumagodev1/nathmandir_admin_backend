@@ -35,6 +35,27 @@ export async function list(req, res) {
      FROM user_payment up LEFT JOIN users u ON u.id = up.user_id
      ORDER BY up.created_at DESC`
   )
+  // Website and hand-entered (cash / bank) donations live in their own table,
+  // so a donation taken on the site or typed in by an admin showed on the
+  // Donations screen and nowhere else — not here, not on the dashboard.
+  //
+  // Read defensively: `donation` is a legacy raw table outside the Prisma
+  // schema, and a missing one must not take the whole payments list down.
+  let gifts = []
+  try {
+    gifts = await prisma.$queryRawUnsafe(
+      `SELECT id, name, mobile, amount, category, razorpay_payment_id AS paymentId,
+              razorpay_order_id AS orderId, mode, txn_ref AS txnRef, created_at AS createdAt
+         FROM donation WHERE status = '1' ORDER BY created_at DESC`
+    )
+  } catch (err) {
+    console.error(`⚠️  /api/payments: skipping website donations — ${String(err.message).replace(/\s+/g, ' ').trim().slice(0, 160)}`)
+  }
+
+  // An offline row has no gateway — say how the money actually arrived, so a
+  // cash donation is not mistaken for a card payment.
+  const MODE_LABEL = { online: 'Website', cash: 'Cash', bank: 'Bank Transfer' }
+
   let rows = jsonSafe(razor).map((r) => ({
     id: 'R' + r.id,
     gateway: gatewayOf(r.orderId, r.stage),
@@ -49,6 +70,25 @@ export async function list(req, res) {
     status: r.stage || '',
     date: ymd(r.createdAt),
   }))
+
+  rows = rows.concat(
+    jsonSafe(gifts).map((g) => ({
+      id: 'D' + g.id,
+      gateway: MODE_LABEL[g.mode] || 'Website',
+      userId: null,
+      user: g.name || '',
+      mobile: g.mobile || '',
+      module: 'Donation',
+      kind: 'donation',
+      amount: Number(g.amount) || 0,
+      txn: g.paymentId || g.txnRef || '',
+      ref: g.orderId || '',
+      // Only settled rows are read above, so these are complete by definition —
+      // and the word has to match what the Completed filter looks for.
+      status: 'Completed',
+      date: ymd(g.createdAt),
+    }))
+  )
 
   const q = String(query).trim().toLowerCase()
   rows = rows

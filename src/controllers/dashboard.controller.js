@@ -15,15 +15,24 @@ import { isActiveGrant, activeGrantWhere } from '../lib/helpers.js'
 // It is a legacy raw table outside the Prisma schema, so a missing one is
 // reported as zero rather than taking the whole dashboard down with a 500.
 async function donationTotals() {
-  try {
-    const [row] = await prisma.$queryRawUnsafe(
-      `SELECT COUNT(*) c, SUM(amount + 0) a FROM user_payment WHERE package_id = 3 AND status = 1`
-    )
-    return { count: Number(row?.c || 0), amount: Number(row?.a || 0) }
-  } catch (err) {
-    console.error(`⚠️  /api/dashboard/stats: skipping donations — ${err.message.split('\n').pop().trim()}`)
-    return { count: 0, amount: 0 }
+  const read = async (label, sql) => {
+    try {
+      const [row] = await prisma.$queryRawUnsafe(sql)
+      return { count: Number(row?.c || 0), amount: Number(row?.a || 0) }
+    } catch (err) {
+      const detail = String(err.message).replace(/\s+/g, ' ').trim().slice(0, 160)
+      console.error(`⚠️  /api/dashboard/stats: skipping ${label} — ${detail}`)
+      return { count: 0, amount: 0 }
+    }
   }
+  // Donations arrive in two live places. Counting only the first is why a
+  // website or cash donation appeared on the Donations screen and nowhere
+  // else — not on this card, and not in the Payments total.
+  const [inApp, website] = await Promise.all([
+    read('in-app donations', `SELECT COUNT(*) c, SUM(amount + 0) a FROM user_payment WHERE package_id = 3 AND status = 1`),
+    read('website/cash donations', `SELECT COUNT(*) c, SUM(amount + 0) a FROM donation WHERE status = '1'`),
+  ])
+  return { count: inApp.count + website.count, amount: inApp.amount + website.amount }
 }
 
 // GET /api/dashboard/stats
