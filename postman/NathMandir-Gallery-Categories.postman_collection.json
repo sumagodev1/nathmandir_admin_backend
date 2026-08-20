@@ -1,0 +1,347 @@
+{
+  "info": {
+    "name": "Nathmandir — Gallery (categories, albums, photos)",
+    "description": "The छायाचित्रे screen, in the order the app calls it.\n\n  Screen 1  gallery            -> categoryTree, one button per entry\n  Screen 2  gallery_category   -> albums[], one card per entry\n  Screen 3  (no call)          -> album.photos[], the grid\n\nNo Bearer token is needed anywhere in this collection — the gallery is public.\n\nRun the folder top to bottom: request 1 saves the first category key into\n{{category}}, so requests 2-4 work with no editing. Every request has tests\nasserting the rules the app relies on, so a change that would break the app\nfails here first.\n\nFull field-by-field guide: docs/APP_GALLERY_CATEGORIES_API.md",
+    "_postman_id": "nathmandir-gallery-categories-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.nathmandir.sumago.ai",
+      "description": "Live server. Use http://localhost:5000 to test locally."
+    },
+    {
+      "key": "category",
+      "value": "",
+      "description": "Filled in automatically by request 1 — the first category key."
+    },
+    {
+      "key": "albumId",
+      "value": "",
+      "description": "Filled in automatically by request 2 — the first album's id."
+    },
+    {
+      "key": "photoId",
+      "value": "",
+      "description": "Filled in automatically by request 2 — a real photo id, for request 4."
+    }
+  ],
+  "item": [
+    {
+      "name": "1. gallery — SCREEN 1, the category buttons",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "",
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('categoryTree is present', () => pm.expect(j.categoryTree).to.be.an('array'));",
+              "",
+              "// Every button needs a stable id and a label to print.",
+              "pm.test('each category has key + name', () => {",
+              "  j.categoryTree.forEach((c) => {",
+              "    pm.expect(c.key, 'key').to.be.a('string').and.not.empty;",
+              "    pm.expect(c.name, 'name').to.be.a('string').and.not.empty;",
+              "  });",
+              "});",
+              "",
+              "// A button that opens an empty screen is a bug, not a category.",
+              "pm.test('no category is empty', () => {",
+              "  j.categoryTree.forEach((c) => pm.expect(c.albumCount, c.key).to.be.above(0));",
+              "});",
+              "",
+              "// The app must not re-sort; the admin chose this order.",
+              "pm.test('already sorted by sortOrder', () => {",
+              "  const o = j.categoryTree.map((c) => c.sortOrder);",
+              "  pm.expect(o).to.deep.equal(o.slice().sort((a, b) => a - b));",
+              "});",
+              "",
+              "if (j.categoryTree.length) {",
+              "  pm.collectionVariables.set('category', j.categoryTree[0].key);",
+              "  console.log('categories:', j.categoryTree.map((c) => `${c.key} (${c.albumCount})`).join(', '));",
+              "} else {",
+              "  console.warn('No categories have albums yet — add one in the admin panel.');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": { "mode": "urlencoded", "urlencoded": [] },
+        "url": {
+          "raw": "{{baseUrl}}/api/mobile?apicall=gallery",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mobile"],
+          "query": [{ "key": "apicall", "value": "gallery" }]
+        },
+        "description": "SCREEN 1 — the category buttons.\n\nNo parameters. No token.\n\nDraw one button per entry in categoryTree, in the order given, printing `name`. Keep `key` — you send it to request 2.\n\nIGNORE `children`. It exists for the website. A subcategory's albums already appear inside the parent on screen 2, so building a screen for it shows the same albums twice.\n\nThe top carousel on screen 1 can use the top-level `photos` array from this same response.\n\n`categories`, `albums` and `photos` are what the older APK reads — the new flow does not need them."
+      },
+      "response": []
+    },
+    {
+      "name": "2. gallery_category — SCREEN 2, the album cards",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "",
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('albums is present', () => pm.expect(j.albums).to.be.an('array'));",
+              "",
+              "// Exactly what a card is made of.",
+              "pm.test('each album has title, cover, photoCount, photos', () => {",
+              "  j.albums.forEach((a) => {",
+              "    pm.expect(a.title, 'title').to.be.a('string').and.not.empty;",
+              "    pm.expect(a.cover, 'cover').to.be.a('string').and.not.empty;",
+              "    pm.expect(a.photoCount, 'photoCount').to.be.a('number');",
+              "    pm.expect(a.photos, 'photos').to.be.an('array');",
+              "  });",
+              "});",
+              "",
+              "// Screen 3 must cost no request.",
+              "pm.test('photos are included, so screen 3 needs no call', () => {",
+              "  j.albums.forEach((a) => pm.expect(a.photos.length, a.title).to.equal(a.photoCount));",
+              "});",
+              "",
+              "// A card must never open an empty grid.",
+              "pm.test('no album opens an empty grid', () => {",
+              "  j.albums.forEach((a) => pm.expect(a.photos.length, a.title).to.be.above(0));",
+              "});",
+              "",
+              "// Drop straight into an image widget — nothing to prepend.",
+              "pm.test('every image URL is absolute https', () => {",
+              "  j.albums.forEach((a) => {",
+              "    pm.expect(a.cover).to.match(/^https?:\\/\\//);",
+              "    a.photos.forEach((p) => pm.expect(p.url, a.title).to.match(/^https?:\\/\\//));",
+              "  });",
+              "});",
+              "",
+              "if (j.albums.length) {",
+              "  pm.collectionVariables.set('albumId', String(j.albums[0].id));",
+              "  const real = j.albums.flatMap((a) => a.photos).find((p) => p.id !== null);",
+              "  if (real) pm.collectionVariables.set('photoId', String(real.id));",
+              "  console.log('cards:', j.albums.map((a) => `${a.title} (${a.photoCount})`).join(', '));",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "category", "value": "{{category}}", "type": "text", "description": "a key from categoryTree" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/mobile?apicall=gallery_category",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mobile"],
+          "query": [{ "key": "apicall", "value": "gallery_category" }]
+        },
+        "description": "SCREEN 2 — the album cards.\n\nDraw one card per entry in `albums`, in the order given (newest first — keep it):\n\n    album.title                 <- heading above the image\n  +---------------------------+\n  |   album.cover             |  <- full-width image\n  +---------------------------+\n  |   अधिक छायाचित्रे          |  <- your own label, opens screen 3\n\nIGNORE `subcategories` (the website's second chip row) and the top-level `photos` (only for the optional viewer, request 4).\n\nDO NOT FILTER `albums` yourself. An album's own `category` can be a SUBCATEGORY key while you asked for the parent — that is the flattening working. Show exactly what came back."
+      },
+      "response": []
+    },
+    {
+      "name": "3. SCREEN 3 — the photo grid (no request needed)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "const album = j.albums.find((a) => String(a.id) === pm.collectionVariables.get('albumId')) || j.albums[0];",
+              "",
+              "pm.test('the tapped album carries its own photos', () => {",
+              "  pm.expect(album.photos).to.be.an('array').that.is.not.empty;",
+              "});",
+              "",
+              "// An album with no photos uploaded yet serves its cover instead.",
+              "pm.test('a stand-in cover is marked, and has no photo id', () => {",
+              "  album.photos.forEach((p) => {",
+              "    if (p.isCover) pm.expect(p.id, 'id of a stand-in cover').to.equal(null);",
+              "  });",
+              "});",
+              "",
+              "// id is null for a stand-in, so a list keyed on id would collide.",
+              "pm.test('key is unique — use it as the list key, not id', () => {",
+              "  const keys = j.albums.flatMap((a) => a.photos).map((p) => p.key);",
+              "  pm.expect(new Set(keys).size).to.equal(keys.length);",
+              "});",
+              "",
+              "console.log(`grid for \"${album.title}\":`);",
+              "album.photos.forEach((p) => console.log(`   ${p.url}${p.isCover ? '   (cover stand-in)' : ''}`));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [{ "key": "category", "value": "{{category}}", "type": "text" }]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/mobile?apicall=gallery_category",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mobile"],
+          "query": [{ "key": "apicall", "value": "gallery_category" }]
+        },
+        "description": "SCREEN 3 — the photo grid.\n\nThere is NO API CALL for this screen. This request repeats request 2 only so the tests can prove it: the photos are already inside the card the user tapped.\n\nIn the app, hold the response from request 2 and read `album.photos` of the tapped card.\n\nShow `url` in a grid, in the order given (already sorted). `caption` is often empty — do not reserve space for it unconditionally.\n\nAn album with no photos uploaded yet gets its cover as the single picture, marked `isCover: true` with `id: null`. That is why the list key must be `key`, never `id`."
+      },
+      "response": []
+    },
+    {
+      "name": "4. OPTIONAL — open a viewer on one photo (photoId -> startIndex)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "const wanted = pm.collectionVariables.get('photoId');",
+              "",
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('startIndex points at the photo that was sent', () => {",
+              "  pm.expect(j.startIndex).to.be.at.least(0);",
+              "  pm.expect(String(j.photos[j.startIndex].id)).to.equal(String(wanted));",
+              "});",
+              "",
+              "console.log(`photoId ${wanted} -> startIndex ${j.startIndex} -> ${j.photos[j.startIndex].url}`);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "category", "value": "{{category}}", "type": "text" },
+            { "key": "photoId", "value": "{{photoId}}", "type": "text", "description": "the photo the user tapped" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/mobile?apicall=gallery_category",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mobile"],
+          "query": [{ "key": "apicall", "value": "gallery_category" }]
+        },
+        "description": "OPTIONAL — only if you want a full-screen viewer that swipes past the end of one album into the next.\n\nSend the tapped photo's id; open your pager at the TOP-LEVEL `photos[startIndex]`.\n\n`startIndex` is -1 when the photo is not in this category — treat it as 0. It indexes the FULL list, so do not send page/limit with it."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Errors — unknown category (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "pm.test('404', () => pm.expect(j.status).to.equal(404));",
+              "pm.test(\"error is the STRING 'true'\", () => pm.expect(j.error).to.equal('true'));",
+              "pm.test('message explains it', () => pm.expect(j.message).to.equal('Category not found'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [{ "key": "category", "value": "no-such-category", "type": "text" }]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/mobile?apicall=gallery_category",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mobile"],
+          "query": [{ "key": "apicall", "value": "gallery_category" }]
+        },
+        "description": "NOTE: the HTTP status is 200; the real status is in the BODY, as with every other operation in this API.\n\n`error` is the STRING \"true\" / \"false\", never a boolean. Check `status`, not the type of `error`."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Errors — category missing (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "pm.test('400', () => pm.expect(j.status).to.equal(400));",
+              "pm.test('message is Check parameter', () => pm.expect(j.message).to.equal('Check parameter'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": { "mode": "urlencoded", "urlencoded": [] },
+        "url": {
+          "raw": "{{baseUrl}}/api/mobile?apicall=gallery_category",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mobile"],
+          "query": [{ "key": "apicall", "value": "gallery_category" }]
+        },
+        "description": "`category` is required. Sending nothing returns 400 'Check parameter'."
+      },
+      "response": []
+    },
+    {
+      "name": "7. gallery_category — every album, category=all",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('returns albums across all categories', () => pm.expect(j.albums).to.be.an('array'));",
+              "console.log('all albums:', j.albums.map((a) => `${a.title} [${a.category}]`).join(', '));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [{ "key": "category", "value": "all", "type": "text" }]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/mobile?apicall=gallery_category",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mobile"],
+          "query": [{ "key": "apicall", "value": "gallery_category" }]
+        },
+        "description": "Every published album, whatever its category. Useful for a search screen or an 'All' tab. `subcategories` is empty here."
+      },
+      "response": []
+    }
+  ]
+}
