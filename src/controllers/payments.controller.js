@@ -29,7 +29,13 @@ export async function list(req, res) {
   const { gateway = 'all', status = 'all', query = '' } = req.query
 
   const razor = await prisma.$queryRawUnsafe(
-    `SELECT up.id, up.user_id AS userId, u.name AS userName, u.phone AS userMobile, up.package_id AS packageId,
+    `SELECT up.id, up.user_id AS userId,
+            -- The account name when there is one, otherwise what was typed on
+            -- the checkout form. A row with no user_id is a payment that never
+            -- completed, and it used to display as "#" with no mobile.
+            COALESCE(u.name, up.buyer_name) AS userName,
+            COALESCE(u.phone, up.buyer_mobile) AS userMobile,
+            up.package_id AS packageId,
             up.amount, up.razorpay_order_id AS orderId, up.razorpay_payment_id AS paymentId,
             up.razorpay_stageOfPayment AS stage, up.payment_type AS ptype, up.created_at AS createdAt
      FROM user_payment up LEFT JOIN users u ON u.id = up.user_id

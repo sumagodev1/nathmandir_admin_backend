@@ -294,8 +294,13 @@ export async function createOrder(req, res) {
     if (it.m?.packageId) {
       await prisma.$executeRawUnsafe(
         `INSERT INTO user_payment
-           (user_id, package_id, amount, razorpay_order_id, razorpay_stageOfPayment, payment_type, status, created_at)
-         VALUES (NULL, ?, ?, ?, 'created', ?, '0', NOW())`,
+           (user_id, buyer_name, buyer_mobile, package_id, amount,
+            razorpay_order_id, razorpay_stageOfPayment, payment_type, status, created_at)
+         VALUES (NULL, ?, ?, ?, ?, ?, 'created', ?, '0', NOW())`,
+        // user_id stays NULL until the payment clears, so the name and number
+        // are kept here too. Without them a failed or abandoned attempt showed
+        // as "#" with no mobile — precisely the row an admin needs to identify.
+        name || null, mobile || null,
         it.m.packageId, String(it.product.price), order.id, it.code
       )
     }
@@ -393,6 +398,27 @@ export async function webhook(req, res) {
   }
 
   const event = req.body?.event
+
+  // A declined card fires payment.failed and nothing else. It was ignored, so
+  // the row sat at 'created' for ever and the Payments screen showed a failed
+  // attempt as if it were still in progress.
+  if (event === 'payment.failed') {
+    const entity = req.body?.payload?.payment?.entity || {}
+    if (entity.order_id) {
+      await prisma.$executeRawUnsafe(
+        `UPDATE user_payment
+            SET razorpay_stageOfPayment = 'Failed',
+                razorpay_payment_id = COALESCE(razorpay_payment_id, ?),
+                updated_at = NOW()
+          WHERE razorpay_order_id = ? AND status <> '1'`,
+        entity.id || null,
+        entity.order_id
+      )
+    }
+    // Always 200: a non-2xx makes Razorpay retry an event we have handled.
+    return res.status(200).json({ status: 'ok' })
+  }
+
   if (event === 'payment.captured' || event === 'order.paid') {
     const entity = req.body?.payload?.payment?.entity || {}
     const orderId = entity.order_id
