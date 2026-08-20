@@ -24,6 +24,7 @@ import {
   razorpayConfigured,
   RAZORPAY_PUBLIC_KEY,
   createRazorpayOrder,
+  fetchRazorpayOrder,
   verifyPaymentSignature,
   verifyWebhookSignature,
 } from '../lib/razorpay.js'
@@ -32,6 +33,10 @@ import {
 // allowed before the devotee has to request a fresh code.
 const OTP_TTL_MS = 10 * 60 * 1000 // 10 minutes
 const OTP_MAX_ATTEMPTS = 5
+// How long a verified number stays good for. The OTP itself expires in 10
+// minutes, but the devotee then picks books and goes through Razorpay, so the
+// verification has to outlive the code.
+const OTP_VERIFIED_TTL_MS = 60 * 60 * 1000 // 1 hour
 
 // Build the public module list (code, name, price) from the products table.
 // Returns ALL active products so newly created Parts appear on the website immediately.
@@ -247,6 +252,19 @@ export async function createOrder(req, res) {
   if (!name) return sendFail(res, 'Name required', STATUS.BAD_REQUEST)
   if (!codes.length) return sendFail(res, 'Select at least one module', STATUS.BAD_REQUEST)
 
+  // The number must have been proven by OTP. sendOtp's comment has always said
+  // this step exists to prove control of the number BEFORE payment, and
+  // verifyOtp duly stamped `verifiedAt` — but nothing ever read it, so posting
+  // straight here skipped the OTP completely and attached a purchase to any
+  // number the caller liked.
+  const proven = await prisma.otpChallenge.findUnique({ where: { phone: mobile } })
+  if (!proven?.verifiedAt) {
+    return sendFail(res, 'Please verify your mobile number first.', STATUS.UNAUTHORIZED)
+  }
+  if (Date.now() - new Date(proven.verifiedAt).getTime() > OTP_VERIFIED_TTL_MS) {
+    return sendFail(res, 'This verification has expired. Please request a new OTP.', STATUS.UNAUTHORIZED)
+  }
+
   // Load the products for every selected module.
   // For legacy MODULES entries use their productId; for new products the code IS the productId.
   const items = []
@@ -323,8 +341,9 @@ export async function createOrder(req, res) {
 // ── 3. POST /verify-payment ───────────────────────────────────
 // { razorpay_order_id, razorpay_payment_id, razorpay_signature, mobile, name, email, module }
 // Verifies the signature, creates/finds the account, and grants access
-// immediately. The mobile number was already collected on the form
-// before payment, so no separate OTP step is needed.
+// immediately. The number was proven by OTP before create-order would issue
+// the order, and the modules are read back from that order — not from this
+// request, which is unauthenticated.
 export async function verifyPayment(req, res) {
   const orderId = String(req.body?.razorpay_order_id ?? '')
   const paymentId = String(req.body?.razorpay_payment_id ?? '')
@@ -335,20 +354,45 @@ export async function verifyPayment(req, res) {
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
 
-  // Validate codes against all products (active or not) — payment already captured.
-  const allProductIds = await fetchAllProductIds()
-  const codes = readModuleCodes(req.body, allProductIds)
-
-  if (!orderId || !paymentId || !signature || !mobile || !codes.length) {
+  if (!orderId || !paymentId || !signature || !mobile) {
     return sendFail(res, 'Missing payment parameters', STATUS.BAD_REQUEST)
   }
 
   if (!verifyPaymentSignature({ orderId, paymentId, signature })) {
     await prisma.$executeRawUnsafe(
-      `UPDATE user_payment SET razorpay_stageOfPayment = 'failed' WHERE razorpay_order_id = ?`,
+      `UPDATE user_payment SET razorpay_stageOfPayment = 'Failed' WHERE razorpay_order_id = ?`,
       orderId
     )
     return sendFail(res, 'Payment verification failed', STATUS.UNAUTHORIZED)
+  }
+
+  // WHICH books were bought is read back from the order, never from the
+  // request. The signature covers `orderId|paymentId` only — it says nothing
+  // about the module list — so a genuine ₹251 payment for one book could be
+  // sent here with every module named and unlock the lot. The notes on the
+  // order were written by this server at create-order, so they are the only
+  // trustworthy source.
+  let order
+  try {
+    order = await fetchRazorpayOrder(orderId)
+  } catch (err) {
+    // Do NOT fall back to the request body; that is the hole this closes. The
+    // payment is real and the webhook grants from the same notes, so the books
+    // still arrive — a moment later instead of instantly.
+    console.error(`⚠️  verify-payment: could not read order ${orderId} — ${err.message}`)
+    return sendOk(res, 'Payment received. Your books will appear shortly.', { pending: true })
+  }
+
+  const allProductIds = await fetchAllProductIds()
+  const notes = order.notes || {}
+  const codes = String(notes.modules || notes.module || '')
+    .split(',')
+    .map((c) => c.trim())
+    .filter((c) => allProductIds.has(c))
+
+  if (!codes.length) {
+    console.error(`⚠️  verify-payment: order ${orderId} names no known module (${JSON.stringify(notes.modules || notes.module || '')})`)
+    return sendFail(res, 'This order does not name a valid module', STATUS.BAD_REQUEST)
   }
 
   // Payment is genuine → create/find the account and grant access via user_access.
@@ -364,7 +408,7 @@ export async function verifyPayment(req, res) {
   // Finalise the payment row (status '1' = complete, unlocked).
   await prisma.$executeRawUnsafe(
     `UPDATE user_payment
-       SET user_id = ?, razorpay_payment_id = ?, razorpay_stageOfPayment = 'completed', status = '1', updated_at = NOW()
+       SET user_id = ?, razorpay_payment_id = ?, razorpay_stageOfPayment = 'Completed', status = '1', updated_at = NOW()
      WHERE razorpay_order_id = ?`,
     user.id, paymentId, orderId
   )
@@ -426,10 +470,63 @@ export async function webhook(req, res) {
     // the state this was found in.
     if (n > 0) {
       console.log(`✓ webhook payment.failed: marked ${n} row(s) Failed for ${entity.order_id}`)
+      return res.status(200).json({ status: 'ok' })
+    }
+
+    // Nothing to mark. Write the failure from the webhook instead of dropping
+    // it: create-order may never have got its row in (it was returning 500 for
+    // a long time), and a payment the devotee actually attempted has to appear
+    // somewhere. Razorpay's notes carry who they were and what they were
+    // buying, because create-order put them there.
+    const notes = entity.notes || {}
+    const buyerMobile = normalizeMobile(notes.mobile) || null
+    const buyerName = (notes.name || '').trim() || null
+    const allIds = await fetchAllProductIds()
+    const failedCodes = String(notes.modules || notes.module || '')
+      .split(',')
+      .map((c) => c.trim())
+      .filter((c) => allIds.has(c))
+
+    // Razorpay retries a webhook it thinks failed, so a second delivery must
+    // not add the row twice.
+    const already = jsonSafe(
+      await prisma.$queryRawUnsafe(
+        `SELECT id FROM user_payment WHERE razorpay_payment_id = ? LIMIT 1`,
+        entity.id || ''
+      )
+    )
+    if (already.length) {
+      console.log(`· webhook payment.failed: ${entity.id} already recorded`)
+      return res.status(200).json({ status: 'ok' })
+    }
+
+    // Amount comes back in paise.
+    const rupees = Math.round((Number(entity.amount) || 0) / 100)
+    let wrote = 0
+    for (const code of failedCodes) {
+      const packageId = MODULES[code]?.packageId
+      if (!packageId) continue // a new product with no legacy package row
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO user_payment
+           (user_id, buyer_name, buyer_mobile, package_id, amount,
+            razorpay_order_id, razorpay_payment_id, razorpay_stageOfPayment,
+            payment_type, status, created_at)
+         VALUES (NULL, ?, ?, ?, ?, ?, ?, 'Failed', ?, '0', NOW())`,
+        buyerName, buyerMobile, packageId, String(rupees),
+        entity.order_id, entity.id || null, code
+      )
+      wrote++
+    }
+
+    if (wrote) {
+      console.log(
+        `✓ webhook payment.failed: recorded ${wrote} failed row(s) for ${entity.order_id} ` +
+          `(${buyerName || 'unknown'} / ${buyerMobile || 'no number'}) — create-order had written none`
+      )
     } else {
       console.warn(
-        `⚠️  webhook payment.failed: no pending row matched order ${entity.order_id}. ` +
-          'Either create-order never wrote one (check for a 500 there), or it is already paid.'
+        `⚠️  webhook payment.failed: order ${entity.order_id} has no pending row and its notes ` +
+          `name no known module (${JSON.stringify(notes.modules || notes.module || '')}), so nothing was recorded`
       )
     }
     // Always 200: a non-2xx makes Razorpay retry an event we have handled.

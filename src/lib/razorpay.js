@@ -80,6 +80,26 @@ export function verifyPaymentSignature({ orderId, paymentId, signature }) {
   return safeEqual(expected, signature)
 }
 
+// ── Read an order back from Razorpay ──────────────────────────
+// The payment signature covers `orderId|paymentId` and nothing else, so it
+// proves the payment is genuine but says NOTHING about which modules were
+// bought. Those live in the order's `notes`, which this server set when it
+// created the order — so they are the only trustworthy source.
+//
+// Throws on failure; the caller must decide, and must not fall back to
+// anything the browser sent.
+export async function fetchRazorpayOrder(orderId) {
+  const auth = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString('base64')
+  const res = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(orderId)}`, {
+    headers: { Authorization: `Basic ${auth}` },
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(body?.error?.description || `Could not read order ${orderId} (${res.status})`)
+  }
+  return body
+}
+
 // ── Verify a webhook signature ────────────────────────────────
 // Razorpay signs the exact raw request body with the webhook secret.
 export function verifyWebhookSignature(rawBody, signature) {
