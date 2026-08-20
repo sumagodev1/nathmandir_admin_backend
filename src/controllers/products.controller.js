@@ -5,6 +5,22 @@
 // at) and a stable public `code` such as "gita1". Both are returned, and
 // :id params accept either form — see lib/products.js.
 import { prisma } from '../lib/prisma.js'
+
+// A price is whole rupees, zero or more. `Number(x) || 0` was doing the
+// checking, which turned a typo into a free book: "abc" became 0 and the
+// module was given away with no warning at all. Negatives were stored as-is,
+// and 99.99 was silently truncated to 99.
+const MAX_PRICE = 1_000_000
+function readPrice(raw) {
+  const n = Number(raw)
+  if (raw === '' || raw === null || raw === undefined || !Number.isFinite(n)) {
+    return { error: 'Enter a price in rupees.' }
+  }
+  if (n < 0) return { error: 'Price cannot be negative.' }
+  if (!Number.isInteger(n)) return { error: 'Price must be a whole number of rupees.' }
+  if (n > MAX_PRICE) return { error: `Price cannot be more than ${MAX_PRICE.toLocaleString('en-IN')}.` }
+  return { value: n }
+}
 import { resolveProductId, uniqueCode } from '../lib/products.js'
 
 // GET /api/products   — all modules (gita1, gita2, upasana, nithya…)
@@ -16,6 +32,8 @@ export async function list(req, res) {
 // POST /api/products   — add a module/part { name, price, shortName?, code? }
 export async function create(req, res) {
   const { name, price = 0, shortName, code } = req.body || {}
+  const created = readPrice(price)
+  if (created.error) return res.status(400).json({ error: created.error })
   if (!name?.trim()) return res.status(400).json({ error: 'Product name is required.' })
 
   // `id` is auto-increment now; only the public code is derived from the name.
@@ -27,7 +45,7 @@ export async function create(req, res) {
       code: newCode,
       name: name.trim(),
       shortName: shortName?.trim() || name.trim(),
-      price: Number(price) || 0,
+      price: created.value,
     },
   })
 
@@ -47,7 +65,11 @@ export async function update(req, res) {
   const data = {}
   if (name !== undefined) data.name = String(name).trim()
   if (shortName !== undefined) data.shortName = String(shortName).trim()
-  if (price !== undefined) data.price = Number(price) || 0
+  if (price !== undefined) {
+    const p = readPrice(price)
+    if (p.error) return res.status(400).json({ error: p.error })
+    data.price = p.value
+  }
   if (active !== undefined) data.active = !!active
 
   try {

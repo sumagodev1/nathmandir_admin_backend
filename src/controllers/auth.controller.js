@@ -3,13 +3,20 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma.js'
+import { verifyRecaptcha } from '../lib/recaptcha.js'
 
 // POST /api/auth/login   — email + password → JWT token
 export async function login(req, res) {
-  const { email, password } = req.body || {}
+  const { email, password, captcha } = req.body || {}
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' })
   }
+
+  // Before the password is even looked at, so a bot cannot use this endpoint to
+  // guess at full speed. There is one admin account, which makes an unlimited
+  // login form the whole attack surface.
+  const check = await verifyRecaptcha(captcha, req.ip)
+  if (!check.ok) return res.status(400).json({ error: check.error })
 
   const admin = await prisma.admin.findUnique({
     where: { email: String(email).trim().toLowerCase() },
@@ -95,22 +102,50 @@ export async function updateProfile(req, res) {
   res.json({ admin, token })
 }
 
-// POST /api/auth/change-password  { currentPassword, newPassword }
+// POST /api/auth/change-password  { currentPassword?, newPassword }
+//
+// `currentPassword` is OPTIONAL, so an admin who has forgotten it can still set
+// a new one from a session they are already signed into.
+//
+// Understand what that trades away: the old password was the only thing
+// stopping somebody who reaches an unattended logged-in screen - or who has
+// lifted a token - from locking the real admin out for good. There is one
+// admin account, so there is no second way back in from the panel.
+//
+// If it IS supplied it must still be right: silently ignoring a wrong one
+// would let a typo through while the admin believed they had confirmed it.
+//
+// The recovery path from the server still exists and needs SSH:
+//   node scripts/create-admin.js <email> <newPassword>
 export async function changePassword(req, res) {
   const { currentPassword, newPassword } = req.body || {}
-  if (!currentPassword || !newPassword) {
-    return res.status(400).json({ error: 'Current and new password are required.' })
+  if (!newPassword) {
+    return res.status(400).json({ error: 'Enter a new password.' })
   }
   if (String(newPassword).length < 8) {
     return res.status(400).json({ error: 'New password must be at least 8 characters.' })
   }
 
   const admin = await prisma.admin.findUnique({ where: { id: req.admin.id } })
-  if (!admin || !(await bcrypt.compare(currentPassword, admin.passwordHash))) {
+  if (!admin) return res.status(404).json({ error: 'Admin not found.' })
+
+  const supplied = String(currentPassword ?? '')
+  if (supplied && !(await bcrypt.compare(supplied, admin.passwordHash))) {
     return res.status(400).json({ error: 'Current password is incorrect.' })
+  }
+
+  if (await bcrypt.compare(String(newPassword), admin.passwordHash)) {
+    return res.status(400).json({ error: 'That is already your password.' })
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 10)
   await prisma.admin.update({ where: { id: admin.id }, data: { passwordHash } })
+
+  // Logged because the old password is no longer required. With that check
+  // gone, this line is the only record that the change happened at all.
+  console.log(
+    `[auth] password changed for ${admin.email} (admin #${admin.id})` +
+      `${supplied ? '' : ' WITHOUT the current password'} at ${new Date().toISOString()}`
+  )
   res.json({ ok: true })
 }
