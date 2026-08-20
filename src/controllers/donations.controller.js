@@ -5,6 +5,7 @@
 // Handler for /api/donations.
 import { prisma } from '../lib/prisma.js'
 import { ymd, jsonSafe, paginate } from '../lib/helpers.js'
+import { normalizeMobile, isValidMobile } from '../lib/phone.js'
 
 const CATEGORY_LABEL = {
   'temple-development': 'Temple Development',
@@ -149,6 +150,11 @@ export async function create(req, res) {
   } = req.body || {}
 
   if (!String(name).trim()) return res.status(400).json({ error: 'Donor name is required.' })
+  // Optional here — a cash donor at the temple may not leave a number — but a
+  // number that IS given has to be reachable.
+  if (String(mobile).trim() && !isValidMobile(mobile)) {
+    return res.status(400).json({ error: 'Enter a valid 10-digit mobile number.' })
+  }
 
   const amt = Number(amount)
   if (!Number.isFinite(amt) || amt <= 0) {
@@ -186,7 +192,7 @@ export async function create(req, res) {
        (name, mobile, email, amount, category, status, mode, txn_ref, note, recorded_by, created_at)
      VALUES (?, ?, ?, ?, ?, '1', ?, ?, ?, ?, ?)`,
     String(name).trim(),
-    String(mobile).trim() || null,
+    normalizeMobile(mobile) || null,
     String(email).trim() || null,
     String(amt),
     String(category).trim() || 'general',

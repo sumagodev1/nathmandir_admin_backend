@@ -7,6 +7,7 @@
 //   POST /api/donate/create-order   { name, mobile, email?, amount, category? }
 //   POST /api/donate/verify-payment { razorpay_order_id, razorpay_payment_id, razorpay_signature }
 import { prisma } from '../lib/prisma.js'
+import { readMobile } from '../lib/phone.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
 import {
   razorpayConfigured,
@@ -23,13 +24,14 @@ export async function createOrder(req, res) {
     return sendFail(res, 'Payment gateway not configured yet.', STATUS.SERVER_ERROR)
   }
   const name = String(req.body?.name ?? '').trim()
-  const mobile = String(req.body?.mobile ?? '').trim()
+  const phone = readMobile(req.body?.mobile)
+  const mobile = phone.value
   const email = String(req.body?.email ?? '').trim()
   let category = String(req.body?.category ?? '').trim()
   const amount = Math.round(Number(req.body?.amount))
 
   if (!name) return sendFail(res, 'Name required', STATUS.BAD_REQUEST)
-  if (!mobile) return sendFail(res, 'Mobile number required', STATUS.BAD_REQUEST)
+  if (!phone.ok) return sendFail(res, 'Enter a valid 10-digit mobile number', STATUS.BAD_REQUEST)
   if (!amount || amount < 1) return sendFail(res, 'Enter a valid donation amount', STATUS.BAD_REQUEST)
   if (!VALID_CATEGORIES.includes(category)) category = 'general'
 

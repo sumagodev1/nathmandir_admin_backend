@@ -20,6 +20,7 @@ import { groupSchedule } from '../lib/contentSchedule.js'
 import { sectionMap, sectionPath, subtreeIds, hiddenSectionIds } from '../lib/sectionTrail.js'
 import { jsonSafe, ymd, paginate } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
+import { normalizeMobile, readMobile } from '../lib/phone.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
 
 // Read a POST field (falls back to query string), matching PHP $_POST.
@@ -263,8 +264,14 @@ async function active_session(req, res) {
 async function register(req, res) {
   const name = field(req, 'name')
   const email = field(req, 'email')
-  const mobile = field(req, 'mobile')
-  if (!name || !email || !mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
+  const phone = readMobile(field(req, 'mobile'))
+  const mobile = phone.value
+  if (!name || !email) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
+  // Registering with a number no OTP can reach locks the account out at the
+  // first login attempt.
+  if (!phone.ok) {
+    return sendFail(res, 'Enter a valid 10-digit mobile number', STATUS.BAD_REQUEST)
+  }
 
   const exists = await prisma.user.findFirst({ where: { phone: mobile } })
   if (exists) return sendFail(res, 'Mobile Number Already exist', STATUS.CONFLICT)

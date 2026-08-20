@@ -1,6 +1,7 @@
 // ── Users controller ──────────────────────────────────────────
 // Handlers for /api/users.
 import { prisma } from '../lib/prisma.js'
+import { normalizeMobile, isValidMobile } from '../lib/phone.js'
 import { ymd, shapeUserRow, grantExpiry, paginate } from '../lib/helpers.js'
 import { resolveProductId } from '../lib/products.js'
 
@@ -69,6 +70,11 @@ export async function create(req, res) {
   if (!name?.trim() || !phone?.trim() || !city?.trim()) {
     return res.status(400).json({ error: 'Name, phone and city are required.' })
   }
+  // The panel used to store whatever was typed, so a 26-digit number was saved
+  // happily — and then no OTP could ever reach it. Stored normalized (digits
+  // only, country code and leading zeros stripped) so the same person is one
+  // row however the number was written.
+  if (!isValidMobile(phone)) return res.status(400).json({ error: 'Enter a valid 10-digit mobile number.' })
 
   const now = new Date()
 
@@ -84,7 +90,7 @@ export async function create(req, res) {
   const user = await prisma.user.create({
     data: {
       name: name.trim(),
-      phone: phone.trim(),
+      phone: normalizeMobile(phone),
       city: city.trim(),
       access: {
         create: resolved.map((a) => {
@@ -121,9 +127,8 @@ export async function update(req, res) {
     data.name = n
   }
   if (phone !== undefined) {
-    const p = String(phone).trim()
-    if (!p) return res.status(400).json({ error: 'Phone cannot be empty.' })
-    data.phone = p
+    if (!isValidMobile(phone)) return res.status(400).json({ error: 'Enter a valid 10-digit mobile number.' })
+    data.phone = normalizeMobile(phone)
   }
   if (city !== undefined) {
     const c = String(city).trim()

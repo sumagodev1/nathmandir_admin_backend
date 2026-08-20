@@ -16,7 +16,7 @@
 import { prisma } from '../lib/prisma.js'
 import { productMaps } from '../lib/products.js'
 import { jsonSafe } from '../lib/helpers.js'
-import { normalizeMobile, isValidMobile } from '../lib/phone.js'
+import { normalizeMobile, isValidMobile, readMobile } from '../lib/phone.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
 import { sendOtpSms } from '../lib/sms.js'
 import {
@@ -131,7 +131,9 @@ export async function modules(req, res) {
 // account by phone (so an EXISTING app user keeps the same account and their
 // purchase attaches to it), stores an OTP, and sends it by SMS.
 export async function sendOtp(req, res) {
-  const mobile = normalizeMobile(req.body?.mobile)
+  // readMobile checks the RAW input; normalizeMobile alone would truncate an
+  // over-long number to its last 10 digits and then happily pass validation.
+  const mobile = readMobile(req.body?.mobile).value
   if (!isValidMobile(mobile)) {
     return sendFail(res, 'Enter a valid 10-digit mobile number', STATUS.BAD_REQUEST)
   }
@@ -164,7 +166,9 @@ export async function sendOtp(req, res) {
 // Confirms the OTP for the number entered on the form. On success the OTP is
 // cleared; the frontend then proceeds to create the Razorpay order and pay.
 export async function verifyOtp(req, res) {
-  const mobile = normalizeMobile(req.body?.mobile)
+  // readMobile checks the RAW input; normalizeMobile alone would truncate an
+  // over-long number to its last 10 digits and then happily pass validation.
+  const mobile = readMobile(req.body?.mobile).value
   const otp = String(req.body?.otp ?? '').trim()
   if (!mobile || !otp) return sendFail(res, 'Enter the OTP', STATUS.BAD_REQUEST)
 
@@ -229,7 +233,9 @@ export async function createOrder(req, res) {
   if (!razorpayConfigured()) {
     return sendFail(res, 'Payment gateway not configured yet.', STATUS.SERVER_ERROR)
   }
-  const mobile = normalizeMobile(req.body?.mobile)
+  // readMobile checks the RAW input; normalizeMobile alone would truncate an
+  // over-long number to its last 10 digits and then happily pass validation.
+  const mobile = readMobile(req.body?.mobile).value
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
 
@@ -315,7 +321,9 @@ export async function verifyPayment(req, res) {
   const orderId = String(req.body?.razorpay_order_id ?? '')
   const paymentId = String(req.body?.razorpay_payment_id ?? '')
   const signature = String(req.body?.razorpay_signature ?? '')
-  const mobile = normalizeMobile(req.body?.mobile)
+  // readMobile checks the RAW input; normalizeMobile alone would truncate an
+  // over-long number to its last 10 digits and then happily pass validation.
+  const mobile = readMobile(req.body?.mobile).value
   const name = String(req.body?.name ?? '').trim()
   const email = String(req.body?.email ?? '').trim()
 
