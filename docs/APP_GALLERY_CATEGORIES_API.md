@@ -192,7 +192,7 @@ category=events
 | Card part | Field |
 |---|---|
 | Title above the image | `title` — **may be an empty string, see below** |
-| Image | `cover` — already a full `https://` URL, never null |
+| Image | `cover` — a full `https://` URL, **or `null` for an empty album** |
 | "अधिक छायाचित्रे" bar | your own label. Tapping it (or the card) opens screen 3. |
 | Photo count, if you want it | `photoCount` |
 
@@ -206,17 +206,27 @@ The same applies to a category's `name` on screen 1, except there you will
 never see a blank: if an admin leaves it empty, the API sends the key instead,
 because a button with no label cannot be tapped.
 
-### Every card is safe to draw
+### An album can arrive empty — skip it
 
-An album with no photos AND no cover is never returned — not on either screen,
-and not counted in `albumCount`. So:
+An admin creates an album first and uploads its photos afterwards. In between,
+that album has **no cover and no photos**, and it is still returned here:
 
-- `cover` is never `null` on a card you receive
-- `photos` is never empty
-- the tab's `albumCount` always equals the number of cards that open
+```json
+{ "id": 23, "title": "", "cover": null, "photoCount": 0, "photos": [] }
+```
 
-You do not need to guard against empty albums. They exist in the panel while an
-admin is still uploading, and appear only once they hold something.
+**Skip any album whose `photos` array is empty.** Drawing it gives a card with
+a broken image that opens an empty grid.
+
+```
+albums.filter(a => a.photos.length > 0)
+```
+
+Do this on screen 2 only. Everything else — the flattening, the ordering — must
+be left exactly as it came back.
+
+Note that `albumCount` and the tab's count include these, so they can be higher
+than the number of cards you draw.
 
 Albums come **newest first**, the same order as the panel and the website.
 Keep that order.
