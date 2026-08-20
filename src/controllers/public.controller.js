@@ -21,7 +21,7 @@ const shapeAlbum = (a) => ({
   id: a.id,
   title: a.title,
   category: a.category,
-  categoryName: a.categoryRef?.name || null,
+  categoryName: a.categoryRef ? a.categoryRef.name || a.categoryRef.slug : null,
   cover: a.cover,
   date: ymd(a.date),
   photos: (a.photos || [])
@@ -59,10 +59,12 @@ export async function gallery(req, res) {
     .filter((c) => !c.parentId)
     .map((c) => ({
       slug: c.slug,
-      name: c.name,
+      // The name is optional, so the key stands in when it is blank — a chip
+      // with no label would be unclickable in practice.
+      name: c.name || c.slug,
       children: master
         .filter((k) => k.parentId === c.id)
-        .map((k) => ({ slug: k.slug, name: k.name, parentSlug: c.slug })),
+        .map((k) => ({ slug: k.slug, name: k.name || k.slug, parentSlug: c.slug })),
     }))
 
   const where = { published: true }

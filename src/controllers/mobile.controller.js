@@ -919,7 +919,7 @@ async function gallery(req, res) {
         key: c.category,
         // Falls back to the slug for a category created before the master, so
         // the app always has something to print.
-        name: m?.name || c.category,
+        name: m?.name || c.category, // blank name falls back to the key
         parent: m?.parentId ? master.find((x) => x.id === m.parentId)?.slug ?? null : null,
         sortOrder: m?.sortOrder ?? 999,
         albumCount: c._count._all,
@@ -932,7 +932,9 @@ async function gallery(req, res) {
   // the tree from albums alone dropped it and orphaned its children.
   const row = (m) => ({
     key: m.slug,
-    name: m.name,
+    // Name is optional in the panel; the key stands in so a button is never
+    // blank in the app.
+    name: m.name || m.slug,
     parent: m.parentId ? master.find((x) => x.id === m.parentId)?.slug ?? null : null,
     sortOrder: m.sortOrder,
     albumCount: countOf.get(m.slug) || 0,
@@ -1032,7 +1034,7 @@ async function gallery_category(req, res) {
       })
       .catch(() => null)
     if (row) {
-      subcategories = row.children.map((k) => ({ key: k.slug, name: k.name, sortOrder: k.sortOrder }))
+      subcategories = row.children.map((k) => ({ key: k.slug, name: k.name || k.slug, sortOrder: k.sortOrder }))
       slugs = [row.slug, ...row.children.map((k) => k.slug)]
     } else {
       // A slug with no master row is still a real album category — albums

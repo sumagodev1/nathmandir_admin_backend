@@ -10,7 +10,12 @@ import { prisma } from '../lib/prisma.js'
 const shape = (c) => ({
   id: c.id,
   slug: c.slug,
-  name: c.name,
+  // Name is optional, so fall back to the key rather than render a blank
+  // button in the app or a blank row in the panel.
+  name: c.name || c.slug,
+  // What is actually stored, so the edit form does not show the fallback as
+  // though the admin had typed it.
+  rawName: c.name,
   // null = a top-level category; a number = a subcategory of that category.
   parentId: c.parentId ?? null,
   parentName: c.parent?.name ?? null,
@@ -71,8 +76,10 @@ export async function list(req, res) {
 // POST /api/gallery-categories  { name, slug?, sortOrder?, published? }
 export async function create(req, res) {
   const { name, slug, parentId, sortOrder, published = true } = req.body || {}
+  // Name is optional. With none given the key becomes the label, so a category
+  // is never blank on screen — but pass a `slug` too, or the generated key is
+  // just a timestamp and means nothing to anyone.
   const cleanName = String(name ?? '').trim()
-  if (!cleanName) return res.status(400).json({ error: 'Category name is required.' })
 
   // An admin typing a Marathi name has no latin letters to slugify, so fall
   // back to a stable generated slug rather than an empty one.
@@ -123,11 +130,8 @@ export async function update(req, res) {
     if (parent.error) return res.status(400).json({ error: parent.error })
     data.parentId = parent.parentId
   }
-  if (name !== undefined) {
-    const cleanName = String(name).trim()
-    if (!cleanName) return res.status(400).json({ error: 'Category name cannot be empty.' })
-    data.name = cleanName
-  }
+  // Clearing the name is allowed; the key stands in for it everywhere.
+  if (name !== undefined) data.name = String(name).trim()
   if (sortOrder !== undefined) data.sortOrder = Number(sortOrder) || 0
   if (published !== undefined) data.published = !!published
 

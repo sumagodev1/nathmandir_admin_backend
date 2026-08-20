@@ -68,14 +68,16 @@ export async function get(req, res) {
 // POST /api/albums  — create album
 export async function create(req, res) {
   const { title, category, categoryId, date = null, cover = '', published = true } = req.body || {}
-  if (!title?.trim()) return res.status(400).json({ error: 'Album title is required.' })
+  // Title is optional. Some albums are just a set of pictures with nothing
+  // worth naming, and forcing a name only produces rows called "1" or "-".
+  // An empty title is stored empty; the card then shows its cover alone.
 
   const cat = await resolveCategory({ categoryId, category })
   if (cat.error) return res.status(400).json({ error: cat.error })
 
   const album = await prisma.album.create({
     data: {
-      title: title.trim(),
+      title: String(title ?? '').trim(),
       category: cat.category,
       categoryId: cat.categoryId,
       date: date ? new Date(date) : null,
