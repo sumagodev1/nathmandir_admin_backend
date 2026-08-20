@@ -1,13 +1,20 @@
 node_modules
-# Keep environment variables out of version control
+
+# Environment variables — never in version control.
+# NOTE: listing a file here does nothing if git already tracks it. .env sat
+# here for a long time and was committed anyway, because it had been added
+# before the rule existed. It is untracked now; keep it that way.
 .env
+.env.*
+!.env.example
+
 # Windows Prisma engine is only for local dev; the server uses the committed Linux engines
 src/generated/prisma/query_engine-windows.dll.node
 
-
-# Keep environment variables out of version control
-.env
-# Ignore documentation and Postman files
+# Documentation and Postman files
+# NOTE: several files in both folders ARE tracked, added with `git add -f`
+# before these rules. A NEW file in them will be ignored unless force-added.
 docs/
 postman/
+
 uploads/
