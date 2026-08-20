@@ -37,7 +37,12 @@ const KINDS = {
     mime: /^image\//,
     ext: /\.(jpe?g|png|gif|webp|avif|bmp|heic|heif)$/i,
     label: 'JPG, PNG, GIF, WEBP, AVIF or HEIC',
-    limit: 10 * 1024 * 1024, // 10 MB
+    // 25 MB. A photo straight off a phone or DSLR is routinely 15-20 MB, and
+    // the old 10 MB cap rejected those with a message that named no number, so
+    // there was no way to tell how much smaller was small enough.
+    // Do still compress before uploading: every one of these is downloaded in
+    // full by every devotee who opens the gallery.
+    limit: 25 * 1024 * 1024,
   },
 }
 
@@ -120,6 +125,10 @@ const storage = multer.diskStorage({
   },
 })
 
+// Bytes -> "15.5 MB", so every size in an error is one the admin can compare
+// against the file on their disk.
+const mb = (n) => `${(n / 1024 / 1024).toFixed(1)} MB`
+
 const upload = multer({
   storage,
   limits: { fileSize: 50 * 1024 * 1024 }, // hard ceiling; per-kind checked below
@@ -149,7 +158,10 @@ export function uploadFile(req, res) {
 
   upload.single('file')(req, res, (err) => {
     if (err) {
-      const msg = err.code === 'LIMIT_FILE_SIZE' ? 'File is too large.' : err.message
+      const msg =
+        err.code === 'LIMIT_FILE_SIZE'
+          ? `That file is over the ${mb(50 * 1024 * 1024)} upload limit.`
+          : err.message
       return res.status(400).json({ error: msg })
     }
     if (!req.file) return res.status(400).json({ error: 'No file received (field name must be "file").' })
@@ -158,7 +170,10 @@ export function uploadFile(req, res) {
 
     if (req.file.size > cfg.limit) {
       drop()
-      return res.status(400).json({ error: 'File is too large for this type.' })
+      // Both numbers, or the admin is left guessing how much to shrink it by.
+      return res.status(400).json({
+        error: `This ${req.params.kind} is ${mb(req.file.size)}. The limit is ${mb(cfg.limit)} — please compress it and try again.`,
+      })
     }
 
     // ── Verify by content, not by name ──
