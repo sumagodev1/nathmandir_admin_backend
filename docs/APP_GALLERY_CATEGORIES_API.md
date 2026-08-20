@@ -191,10 +191,32 @@ category=events
 
 | Card part | Field |
 |---|---|
-| Title above the image | `title` |
-| Image | `cover` — already a full `https://` URL |
+| Title above the image | `title` — **may be an empty string, see below** |
+| Image | `cover` — already a full `https://` URL, never null |
 | "अधिक छायाचित्रे" bar | your own label. Tapping it (or the card) opens screen 3. |
 | Photo count, if you want it | `photoCount` |
+
+### `title` can be empty
+
+Naming an album is optional in the panel — a set of pictures often has nothing
+worth naming. **Draw no heading when `title` is `""`**, rather than an empty
+line above the image. The website does the same.
+
+The same applies to a category's `name` on screen 1, except there you will
+never see a blank: if an admin leaves it empty, the API sends the key instead,
+because a button with no label cannot be tapped.
+
+### Every card is safe to draw
+
+An album with no photos AND no cover is never returned — not on either screen,
+and not counted in `albumCount`. So:
+
+- `cover` is never `null` on a card you receive
+- `photos` is never empty
+- the tab's `albumCount` always equals the number of cards that open
+
+You do not need to guard against empty albums. They exist in the panel while an
+admin is still uploading, and appear only once they hold something.
 
 Albums come **newest first**, the same order as the panel and the website.
 Keep that order.

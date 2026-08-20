@@ -865,7 +865,11 @@ async function gallery(req, res) {
     include: { photos: true },
     orderBy: { id: 'desc' }, // newest album first — matches panel and website
   })
-  const albums = rows.map((a) => shapeGalleryAlbum(req, a))
+  // An album with neither photos nor a cover has nothing to show. The panel no
+  // longer asks for a cover up front, so a freshly created album sits in this
+  // state until its photos are uploaded — and it would otherwise reach the app
+  // as a card with a null image that opens an empty grid.
+  const albums = rows.map((a) => shapeGalleryAlbum(req, a)).filter((a) => a.photos.length > 0)
 
   // Flat photo list for the grid.
   // shapeGalleryAlbum already stands the cover in for an album with no photos
@@ -886,7 +890,12 @@ async function gallery(req, res) {
   const [catRows, master] = await Promise.all([
     prisma.album.groupBy({
       by: ['category'],
-      where: { published: true },
+      // Same rule as the listing: an album with nothing in it is not counted,
+      // or a tab would promise more albums than opening it shows.
+      where: {
+        published: true,
+        OR: [{ cover: { not: null } }, { photos: { some: {} } }],
+      },
       _count: { _all: true },
     }),
     // The master carries the Marathi label and the order an admin chose. The
@@ -1057,7 +1066,11 @@ async function gallery_category(req, res) {
     return sendFail(res, 'Category not found', STATUS.NOT_FOUND)
   }
 
-  const albums = rows.map((a) => shapeGalleryAlbum(req, a))
+  // An album with neither photos nor a cover has nothing to show. The panel no
+  // longer asks for a cover up front, so a freshly created album sits in this
+  // state until its photos are uploaded — and it would otherwise reach the app
+  // as a card with a null image that opens an empty grid.
+  const albums = rows.map((a) => shapeGalleryAlbum(req, a)).filter((a) => a.photos.length > 0)
 
   // Flat run for the viewer. An album with no photos added yet falls back to
   // shapeGalleryAlbum already stands the cover in for an album with no photos

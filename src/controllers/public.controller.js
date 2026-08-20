@@ -87,7 +87,9 @@ export async function gallery(req, res) {
     orderBy: { id: 'desc' },
   })
 
-  const shaped = albums.map(shapeAlbum)
+  // Same rule the app follows: an album with neither photos nor a cover has
+  // nothing to show, and would render as a card with a broken image.
+  const shaped = albums.map(shapeAlbum).filter((a) => a.photos.length > 0 || a.cover)
 
   // Build a flat photo list for the website's gallery grid.
   // For albums that have individual gallery photos, use those.
