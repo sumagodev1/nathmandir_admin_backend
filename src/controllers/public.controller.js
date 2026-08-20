@@ -37,10 +37,23 @@ export async function gallery(req, res) {
   // Every category an admin has defined, parents first, each carrying its
   // children — the website used to hold its own copy of this list, which meant
   // a new category was invisible until someone edited the code.
-  const master = await prisma.galleryCategory.findMany({
-    where: { published: true },
-    orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
-  })
+  // Read defensively. The master is a separate table added later, so a server
+  // running this code before its migration has been applied would otherwise
+  // 500 the entire public gallery — photos and all — over a list of labels.
+  // Without it the gallery still works; the categories are simply unnamed.
+  let master = []
+  try {
+    master = await prisma.galleryCategory.findMany({
+      where: { published: true },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+    })
+  } catch (err) {
+    const detail = String(err.message).replace(/\s+/g, ' ').trim().slice(0, 200)
+    console.error(
+      `⚠️  /api/public/gallery: categories unavailable — ${detail}. ` +
+        'Run: node scripts/add-gallery-categories.js'
+    )
+  }
   const byId = new Map(master.map((c) => [c.id, c]))
   const categories = master
     .filter((c) => !c.parentId)
@@ -65,7 +78,10 @@ export async function gallery(req, res) {
 
   const albums = await prisma.album.findMany({
     where,
-    include: { photos: true, categoryRef: true },
+    // `categoryRef` is only joined when the master actually loaded — the
+    // include itself touches gallery_category, so asking for it when the table
+    // is missing fails the album query too, taking the whole gallery with it.
+    include: { photos: true, ...(master.length ? { categoryRef: true } : {}) },
     orderBy: { id: 'desc' },
   })
 

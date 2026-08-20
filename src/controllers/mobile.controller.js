@@ -811,14 +811,8 @@ async function mark_played(req, res) {
 // Image paths are stored relative ("/uploads/image/…"), so every url is
 // run through absUrl() and handed to the app as a full https URL it can
 // drop straight into an Image widget.
-const shapeGalleryAlbum = (req, a) => ({
-  id: a.id,
-  title: a.title,
-  category: a.category,
-  date: ymd(a.date),
-  cover: absUrl(req, a.cover),
-  photoCount: (a.photos || []).length,
-  photos: (a.photos || [])
+const shapeGalleryAlbum = (req, a) => {
+  const photos = (a.photos || [])
     .slice()
     .sort((x, y) => x.sortOrder - y.sortOrder || x.id - y.id)
     .map((p) => ({
@@ -828,8 +822,34 @@ const shapeGalleryAlbum = (req, a) => ({
       caption: p.caption || '',
       sortOrder: p.sortOrder,
       isCover: false,
-    })),
-})
+    }))
+
+  // An album whose photos have not been uploaded yet still shows a card with
+  // its cover, so tapping it would open an empty grid. Serve the cover as that
+  // album's single picture instead — the devotee sees the image they tapped
+  // rather than a blank screen. `isCover` marks it, and `id` is null because
+  // there is no photo row behind it.
+  if (!photos.length && a.cover) {
+    photos.push({
+      key: `c${a.id}`,
+      id: null,
+      url: absUrl(req, a.cover),
+      caption: '',
+      sortOrder: 0,
+      isCover: true,
+    })
+  }
+
+  return {
+    id: a.id,
+    title: a.title,
+    category: a.category,
+    date: ymd(a.date),
+    cover: absUrl(req, a.cover),
+    photoCount: photos.length,
+    photos,
+  }
+}
 
 // ── gallery ─ [public] { category?, page?, limit? } ────────────
 // Returns both shapes the screen needs in ONE call:
@@ -847,14 +867,12 @@ async function gallery(req, res) {
   })
   const albums = rows.map((a) => shapeGalleryAlbum(req, a))
 
-  // Flat photo list for the grid. An album with no photos added yet falls
-  // back to its cover, otherwise a freshly created album would be invisible.
-  const photos = albums.flatMap((a) => {
-    const from = { albumId: a.id, albumTitle: a.title, category: a.category }
-    if (a.photos.length) return a.photos.map((p) => ({ ...p, ...from }))
-    if (!a.cover) return []
-    return [{ key: `c${a.id}`, id: null, url: a.cover, caption: '', sortOrder: 0, isCover: true, ...from }]
-  })
+  // Flat photo list for the grid.
+  // shapeGalleryAlbum already stands the cover in for an album with no photos
+  // uploaded yet, so this is a straight flatten.
+  const photos = albums.flatMap((a) =>
+    a.photos.map((p) => ({ ...p, albumId: a.id, albumTitle: a.title, category: a.category }))
+  )
 
   // page/limit are optional — sent nothing, the app gets the whole list.
   const pg = paginate(
@@ -873,7 +891,20 @@ async function gallery(req, res) {
     }),
     // The master carries the Marathi label and the order an admin chose. The
     // app used to hard-code both, so a new category could not be named.
-    prisma.galleryCategory.findMany({ orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] }),
+    //
+    // Read defensively: it is a table added later, so a server running this
+    // code before its migration would otherwise fail the whole gallery screen
+    // over a list of labels. Without it the photos still load and each
+    // category simply falls back to showing its slug.
+    prisma.galleryCategory
+      .findMany({ orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] })
+      .catch((err) => {
+        console.error(
+          `⚠️  gallery: categories unavailable — ${String(err.message).replace(/\s+/g, ' ').trim().slice(0, 200)}. ` +
+            'Run: node scripts/add-gallery-categories.js'
+        )
+        return []
+      }),
   ])
   const bySlug = new Map(master.map((m) => [m.slug, m]))
   const countOf = new Map(catRows.map((c) => [c.category, c._count._all]))
@@ -992,10 +1023,14 @@ async function gallery_category(req, res) {
   let slugs = null // null = every category
   let subcategories = []
   if (asked !== 'all') {
-    const row = await prisma.galleryCategory.findUnique({
-      where: { slug: asked },
-      include: { children: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
-    })
+    // Same guard as above: with no master, the slug is still filtered on
+    // directly, so the category's own albums come back as they always did.
+    const row = await prisma.galleryCategory
+      .findUnique({
+        where: { slug: asked },
+        include: { children: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+      })
+      .catch(() => null)
     if (row) {
       subcategories = row.children.map((k) => ({ key: k.slug, name: k.name, sortOrder: k.sortOrder }))
       slugs = [row.slug, ...row.children.map((k) => k.slug)]
@@ -1023,14 +1058,11 @@ async function gallery_category(req, res) {
   const albums = rows.map((a) => shapeGalleryAlbum(req, a))
 
   // Flat run for the viewer. An album with no photos added yet falls back to
-  // its cover, otherwise a freshly created album would be invisible here while
-  // still showing in albums[].
-  const photos = albums.flatMap((a) => {
-    const from = { albumId: a.id, albumTitle: a.title, category: a.category }
-    if (a.photos.length) return a.photos.map((p) => ({ ...p, ...from }))
-    if (!a.cover) return []
-    return [{ key: `c${a.id}`, id: null, url: a.cover, caption: '', sortOrder: 0, isCover: true, ...from }]
-  })
+  // shapeGalleryAlbum already stands the cover in for an album with no photos
+  // uploaded yet, so this is a straight flatten.
+  const photos = albums.flatMap((a) =>
+    a.photos.map((p) => ({ ...p, albumId: a.id, albumTitle: a.title, category: a.category }))
+  )
 
   // Where the tapped photo sits in the full run, before any paging is applied.
   const photoRef = field(req, 'photoId')
