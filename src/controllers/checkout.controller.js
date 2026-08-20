@@ -407,15 +407,29 @@ export async function webhook(req, res) {
   // attempt as if it were still in progress.
   if (event === 'payment.failed') {
     const entity = req.body?.payload?.payment?.entity || {}
-    if (entity.order_id) {
-      await prisma.$executeRawUnsafe(
-        `UPDATE user_payment
-            SET razorpay_stageOfPayment = 'Failed',
-                razorpay_payment_id = COALESCE(razorpay_payment_id, ?),
-                updated_at = NOW()
-          WHERE razorpay_order_id = ? AND status <> '1'`,
-        entity.id || null,
-        entity.order_id
+    if (!entity.order_id) {
+      console.warn('⚠️  webhook payment.failed: no order_id in the payload — nothing to mark')
+      return res.status(200).json({ status: 'ok' })
+    }
+
+    const n = await prisma.$executeRawUnsafe(
+      `UPDATE user_payment
+          SET razorpay_stageOfPayment = 'Failed',
+              razorpay_payment_id = COALESCE(razorpay_payment_id, ?),
+              updated_at = NOW()
+        WHERE razorpay_order_id = ? AND status <> '1'`,
+      entity.id || null,
+      entity.order_id
+    )
+    // Say what happened, always. A webhook that quietly matches nothing is
+    // indistinguishable from one that was never delivered, and that is exactly
+    // the state this was found in.
+    if (n > 0) {
+      console.log(`✓ webhook payment.failed: marked ${n} row(s) Failed for ${entity.order_id}`)
+    } else {
+      console.warn(
+        `⚠️  webhook payment.failed: no pending row matched order ${entity.order_id}. ` +
+          'Either create-order never wrote one (check for a 500 there), or it is already paid.'
       )
     }
     // Always 200: a non-2xx makes Razorpay retry an event we have handled.
@@ -450,13 +464,14 @@ export async function webhook(req, res) {
         const user = await findOrCreateUser({ mobile: normalizeMobile(notes.mobile), name: notes.name, email: notes.email })
         await prisma.user.update({ where: { id: user.id }, data: { isPaid: 1 } })
         await recordAccessAndSales({ userId: user.id, codes, paymentId, orderId })
-        await prisma.$executeRawUnsafe(
+        const n = await prisma.$executeRawUnsafe(
           `UPDATE user_payment
              SET user_id = ?, razorpay_payment_id = COALESCE(razorpay_payment_id, ?),
-                 razorpay_stageOfPayment = 'completed', status = '1', updated_at = NOW()
+                 razorpay_stageOfPayment = 'Completed', status = '1', updated_at = NOW()
            WHERE razorpay_order_id = ?`,
           user.id, paymentId, orderId
         )
+        console.log(`✓ webhook ${event}: unlocked ${codes.join(', ')} for user ${user.id}, ${n} payment row(s) updated`)
       }
     }
   }
