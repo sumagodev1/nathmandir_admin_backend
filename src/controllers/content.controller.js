@@ -6,6 +6,7 @@ import { prisma } from '../lib/prisma.js'
 import { resolveProductId } from '../lib/products.js'
 import { findOrCreateChild, DAY_KIND } from '../lib/defaultSections.js'
 import { sectionMap, sectionPath } from '../lib/sectionTrail.js'
+import { removeUploadIfUnused } from '../lib/uploadFiles.js'
 import { groupSchedule, parseSchedule } from '../lib/contentSchedule.js'
 import { UPLOADS_ROOT } from './uploads.controller.js'
 import { GITANJALI_PART1_ITEMS } from '../data/gitanjaliPart1.js'
@@ -312,7 +313,17 @@ export async function update(req, res) {
   }
 
   try {
+    // Read the old path first: re-uploading a song used to leave the previous
+    // file in uploads/audio forever, and those are the biggest files here.
+    const before = data.audioUrl !== undefined
+      ? await prisma.content.findUnique({ where: { id }, select: { audioUrl: true } })
+      : null
+
     const updated = await prisma.content.update({ where: { id }, data, include: WITH_RELATIONS })
+
+    if (before?.audioUrl && before.audioUrl !== data.audioUrl) {
+      await removeUploadIfUnused(before.audioUrl)
+    }
     res.json({ content: shape(updated, await sectionMap([updated.productId])) })
   } catch {
     res.status(404).json({ error: 'Content item not found.' })
@@ -332,7 +343,11 @@ export async function remove(req, res) {
   const hard = req.query.hard === '1' || req.query.hard === 'true'
   try {
     if (hard) {
+      // Only here. A binned item is meant to be restorable, so its audio must
+      // survive the soft delete.
+      const gone = await prisma.content.findUnique({ where: { id }, select: { audioUrl: true } })
       await prisma.content.delete({ where: { id } })
+      if (gone?.audioUrl) await removeUploadIfUnused(gone.audioUrl)
       return res.json({ ok: true, hard: true })
     }
     const item = await prisma.content.update({ where: { id }, data: { deletedAt: new Date() } })

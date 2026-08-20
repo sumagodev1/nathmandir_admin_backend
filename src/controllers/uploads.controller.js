@@ -24,25 +24,37 @@ export const UPLOADS_ROOT = path.resolve(__dirname, '../../uploads')
 // extension is on the list below. That is safe here because uploads are
 // admin-only, and express.static serves files by EXTENSION — a file saved as
 // .mp3 is served as audio/mpeg whatever its bytes contain.
+// Size caps come from .env so they can be changed without a deploy — and so
+// they can differ per environment. A missing or unreadable value falls back to
+// the number below rather than to zero, which would refuse every upload.
+const envMb = (key, fallback) => {
+  const n = Number(process.env[key])
+  return (Number.isFinite(n) && n > 0 ? n : fallback) * 1024 * 1024
+}
+const MAX_AUDIO = envMb('UPLOAD_MAX_AUDIO_MB', 50)
+const MAX_IMAGE = envMb('UPLOAD_MAX_IMAGE_MB', 25)
+// The hard ceiling multer enforces while streaming, before the per-kind check.
+// Whichever kind is largest, or a 50 MB audio file would be cut off by a
+// 25 MB image limit.
+const MAX_ANY = Math.max(MAX_AUDIO, MAX_IMAGE)
+
 const KINDS = {
   audio: {
     dir: 'audio',
     mime: /^audio\//,
     ext: /\.(mp3|mpga|m4a|m4b|aac|wav|wave|ogg|oga|opus|flac|weba|wma|aif|aiff)$/i,
     label: 'MP3, M4A, AAC, WAV, OGG, OPUS or FLAC',
-    limit: 50 * 1024 * 1024, // 50 MB
+    limit: MAX_AUDIO,
   },
   image: {
     dir: 'image',
     mime: /^image\//,
     ext: /\.(jpe?g|png|gif|webp|avif|bmp|heic|heif)$/i,
     label: 'JPG, PNG, GIF, WEBP, AVIF or HEIC',
-    // 25 MB. A photo straight off a phone or DSLR is routinely 15-20 MB, and
-    // the old 10 MB cap rejected those with a message that named no number, so
-    // there was no way to tell how much smaller was small enough.
-    // Do still compress before uploading: every one of these is downloaded in
-    // full by every devotee who opens the gallery.
-    limit: 25 * 1024 * 1024,
+    // Defaults to 25 MB: a photo straight off a phone or DSLR is routinely
+    // 15-20 MB. Do still compress before uploading — every one of these is
+    // downloaded in full by every devotee who opens the gallery.
+    limit: MAX_IMAGE,
   },
 }
 
@@ -131,7 +143,7 @@ const mb = (n) => `${(n / 1024 / 1024).toFixed(1)} MB`
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // hard ceiling; per-kind checked below
+  limits: { fileSize: MAX_ANY }, // hard ceiling; per-kind checked below
   fileFilter: (req, file, cb) => {
     const cfg = KINDS[req.params.kind]
     if (!cfg) return cb(new Error('Invalid upload kind.'))
@@ -160,7 +172,7 @@ export function uploadFile(req, res) {
     if (err) {
       const msg =
         err.code === 'LIMIT_FILE_SIZE'
-          ? `That file is over the ${mb(50 * 1024 * 1024)} upload limit.`
+          ? `That file is over the ${mb(MAX_ANY)} upload limit.`
           : err.message
       return res.status(400).json({ error: msg })
     }

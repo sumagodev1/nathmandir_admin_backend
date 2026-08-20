@@ -2,6 +2,7 @@
 // Handlers for /api/albums.
 import { prisma } from '../lib/prisma.js'
 import { ymd, paginate } from '../lib/helpers.js'
+import { removeUploadIfUnused, removeUploadsIfUnused } from '../lib/uploadFiles.js'
 
 // Resolve whatever the form sent into the pair an album stores: the master row
 // it belongs to, and the slug every deployed APK filters on.
@@ -108,7 +109,14 @@ export async function update(req, res) {
   if (published !== undefined) data.published = !!published
 
   try {
+    const before = await prisma.album.findUnique({ where: { id }, select: { cover: true } })
     await prisma.album.update({ where: { id }, data })
+    // A cover swapped for a different file leaves the old one orphaned —
+    // unless it is also one of this album's photos, which is the usual case
+    // and is exactly what removeUploadIfUnused checks.
+    if (before && data.cover !== undefined && before.cover && before.cover !== data.cover) {
+      await removeUploadIfUnused(before.cover)
+    }
     const album = await prisma.album.findUnique({ where: { id }, include: { photos: true, categoryRef: true } })
     res.json({ album: shapeAlbum(album) })
   } catch {
@@ -120,7 +128,12 @@ export async function update(req, res) {
 export async function remove(req, res) {
   const id = Number(req.params.id)
   try {
+    // Read the paths before the cascade removes the rows that name them.
+    const album = await prisma.album.findUnique({ where: { id }, include: { photos: true } })
     await prisma.album.delete({ where: { id } })
+    if (album) {
+      await removeUploadsIfUnused([album.cover, ...album.photos.map((p) => p.url)])
+    }
     res.json({ ok: true })
   } catch {
     res.status(404).json({ error: 'Album not found.' })
@@ -150,7 +163,11 @@ export async function addPhoto(req, res) {
 export async function removePhoto(req, res) {
   const albumId = Number(req.params.id)
   const photoId = Number(req.params.photoId)
+  const photo = await prisma.photo.findFirst({ where: { id: photoId, albumId } })
   await prisma.photo.deleteMany({ where: { id: photoId, albumId } })
+  // After the row is gone, so a path still used as the album cover survives.
+  if (photo) await removeUploadIfUnused(photo.url)
+
   const updated = await prisma.album.findUnique({ where: { id: albumId }, include: { photos: true, categoryRef: true } })
   if (!updated) return res.status(404).json({ error: 'Album not found.' })
   res.json({ album: shapeAlbum(updated) })
