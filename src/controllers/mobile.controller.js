@@ -142,7 +142,10 @@ const toPhpUser = (u, codeById = new Map()) => {
   }
 }
 
-// ── loginuser ─ POST { mobile } → generate + send OTP ──────────
+// ── loginuser ─ POST { mobile, appHash? } → generate + send OTP ─
+// `appHash` is the app's 11-character SMS Retriever hash. When present (and
+// the autofill template is configured) it is appended to the SMS so Android
+// fills the OTP in by itself. Old apps send nothing and get the old SMS.
 async function loginuser(req, res) {
   const mobile = field(req, 'mobile')
   if (!mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
@@ -160,7 +163,8 @@ async function loginuser(req, res) {
   const otp = mobile === '1234567890' ? '1947' : String(Math.floor(1000 + Math.random() * 9000))
 
   await prisma.user.update({ where: { id: user.id }, data: { otp } })
-  await sendOtpSms(mobile, otp) // returns false in dev; OTP is still sent back below
+  // returns false in dev; OTP is still sent back below
+  await sendOtpSms(mobile, otp, { appHash: field(req, 'appHash') ?? field(req, 'app_hash') })
 
   // NOTE: the app relies on `otp` in the response (same as the old PHP).
   return sendOk(res, 'OTP Sent Successfully', { otp })

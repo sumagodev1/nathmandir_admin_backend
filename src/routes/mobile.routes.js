@@ -9,7 +9,8 @@
 //   Everything else returns 401 without a valid token.
 //
 // Operations (apicall):
-//   loginuser            { mobile }                       [public]  → send OTP
+//   loginuser            { mobile, appHash? }             [public]  → send OTP
+//                        (appHash optional: 11-char Android SMS Retriever hash → OTP autofill)
 //   verifyOTP            { otp, mobile, DID? }            [public]  → login → JWT
 //                        (DID optional: sent = bind this device; omitted = no device row)
 //   register            { name, email, mobile, city?, address? }  [public]
