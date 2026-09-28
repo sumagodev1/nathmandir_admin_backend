@@ -3505,6 +3505,7 @@ export namespace Prisma {
     shortName: string | null
     price: number | null
     active: boolean | null
+    coverUrl: string | null
   }
 
   export type ProductMaxAggregateOutputType = {
@@ -3514,6 +3515,7 @@ export namespace Prisma {
     shortName: string | null
     price: number | null
     active: boolean | null
+    coverUrl: string | null
   }
 
   export type ProductCountAggregateOutputType = {
@@ -3523,6 +3525,7 @@ export namespace Prisma {
     shortName: number
     price: number
     active: number
+    coverUrl: number
     _all: number
   }
 
@@ -3544,6 +3547,7 @@ export namespace Prisma {
     shortName?: true
     price?: true
     active?: true
+    coverUrl?: true
   }
 
   export type ProductMaxAggregateInputType = {
@@ -3553,6 +3557,7 @@ export namespace Prisma {
     shortName?: true
     price?: true
     active?: true
+    coverUrl?: true
   }
 
   export type ProductCountAggregateInputType = {
@@ -3562,6 +3567,7 @@ export namespace Prisma {
     shortName?: true
     price?: true
     active?: true
+    coverUrl?: true
     _all?: true
   }
 
@@ -3658,6 +3664,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active: boolean
+    coverUrl: string | null
     _count: ProductCountAggregateOutputType | null
     _avg: ProductAvgAggregateOutputType | null
     _sum: ProductSumAggregateOutputType | null
@@ -3686,6 +3693,7 @@ export namespace Prisma {
     shortName?: boolean
     price?: boolean
     active?: boolean
+    coverUrl?: boolean
     content?: boolean | Product$contentArgs<ExtArgs>
     access?: boolean | Product$accessArgs<ExtArgs>
     sales?: boolean | Product$salesArgs<ExtArgs>
@@ -3701,6 +3709,7 @@ export namespace Prisma {
     shortName?: boolean
     price?: boolean
     active?: boolean
+    coverUrl?: boolean
   }
 
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3726,6 +3735,7 @@ export namespace Prisma {
       shortName: string
       price: number
       active: boolean
+      coverUrl: string | null
     }, ExtArgs["result"]["product"]>
     composites: {}
   }
@@ -4105,6 +4115,7 @@ export namespace Prisma {
     readonly shortName: FieldRef<"Product", 'String'>
     readonly price: FieldRef<"Product", 'Int'>
     readonly active: FieldRef<"Product", 'Boolean'>
+    readonly coverUrl: FieldRef<"Product", 'String'>
   }
     
 
@@ -5711,6 +5722,7 @@ export namespace Prisma {
     title: string | null
     duration: number | null
     audioUrl: string | null
+    coverUrl: string | null
     lyrics: string | null
     plays: number | null
     listeners: number | null
@@ -5727,6 +5739,7 @@ export namespace Prisma {
     title: string | null
     duration: number | null
     audioUrl: string | null
+    coverUrl: string | null
     lyrics: string | null
     plays: number | null
     listeners: number | null
@@ -5743,6 +5756,7 @@ export namespace Prisma {
     title: number
     duration: number
     audioUrl: number
+    coverUrl: number
     lyrics: number
     plays: number
     listeners: number
@@ -5781,6 +5795,7 @@ export namespace Prisma {
     title?: true
     duration?: true
     audioUrl?: true
+    coverUrl?: true
     lyrics?: true
     plays?: true
     listeners?: true
@@ -5797,6 +5812,7 @@ export namespace Prisma {
     title?: true
     duration?: true
     audioUrl?: true
+    coverUrl?: true
     lyrics?: true
     plays?: true
     listeners?: true
@@ -5813,6 +5829,7 @@ export namespace Prisma {
     title?: true
     duration?: true
     audioUrl?: true
+    coverUrl?: true
     lyrics?: true
     plays?: true
     listeners?: true
@@ -5916,6 +5933,7 @@ export namespace Prisma {
     title: string
     duration: number
     audioUrl: string | null
+    coverUrl: string | null
     lyrics: string | null
     plays: number
     listeners: number
@@ -5951,6 +5969,7 @@ export namespace Prisma {
     title?: boolean
     duration?: boolean
     audioUrl?: boolean
+    coverUrl?: boolean
     lyrics?: boolean
     plays?: boolean
     listeners?: boolean
@@ -5972,6 +5991,7 @@ export namespace Prisma {
     title?: boolean
     duration?: boolean
     audioUrl?: boolean
+    coverUrl?: boolean
     lyrics?: boolean
     plays?: boolean
     listeners?: boolean
@@ -6002,6 +6022,7 @@ export namespace Prisma {
       title: string
       duration: number
       audioUrl: string | null
+      coverUrl: string | null
       lyrics: string | null
       plays: number
       listeners: number
@@ -6387,6 +6408,7 @@ export namespace Prisma {
     readonly title: FieldRef<"Content", 'String'>
     readonly duration: FieldRef<"Content", 'Int'>
     readonly audioUrl: FieldRef<"Content", 'String'>
+    readonly coverUrl: FieldRef<"Content", 'String'>
     readonly lyrics: FieldRef<"Content", 'String'>
     readonly plays: FieldRef<"Content", 'Int'>
     readonly listeners: FieldRef<"Content", 'Int'>
@@ -19688,7 +19710,8 @@ export namespace Prisma {
     name: 'name',
     shortName: 'shortName',
     price: 'price',
-    active: 'active'
+    active: 'active',
+    coverUrl: 'coverUrl'
   };
 
   export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
@@ -19729,6 +19752,7 @@ export namespace Prisma {
     title: 'title',
     duration: 'duration',
     audioUrl: 'audioUrl',
+    coverUrl: 'coverUrl',
     lyrics: 'lyrics',
     plays: 'plays',
     listeners: 'listeners',
@@ -20086,6 +20110,7 @@ export namespace Prisma {
     shortName?: StringFilter<"Product"> | string
     price?: IntFilter<"Product"> | number
     active?: BoolFilter<"Product"> | boolean
+    coverUrl?: StringNullableFilter<"Product"> | string | null
     content?: ContentListRelationFilter
     access?: UserAccessListRelationFilter
     sales?: SaleListRelationFilter
@@ -20099,6 +20124,7 @@ export namespace Prisma {
     shortName?: SortOrder
     price?: SortOrder
     active?: SortOrder
+    coverUrl?: SortOrderInput | SortOrder
     content?: ContentOrderByRelationAggregateInput
     access?: UserAccessOrderByRelationAggregateInput
     sales?: SaleOrderByRelationAggregateInput
@@ -20115,6 +20141,7 @@ export namespace Prisma {
     shortName?: StringFilter<"Product"> | string
     price?: IntFilter<"Product"> | number
     active?: BoolFilter<"Product"> | boolean
+    coverUrl?: StringNullableFilter<"Product"> | string | null
     content?: ContentListRelationFilter
     access?: UserAccessListRelationFilter
     sales?: SaleListRelationFilter
@@ -20128,6 +20155,7 @@ export namespace Prisma {
     shortName?: SortOrder
     price?: SortOrder
     active?: SortOrder
+    coverUrl?: SortOrderInput | SortOrder
     _count?: ProductCountOrderByAggregateInput
     _avg?: ProductAvgOrderByAggregateInput
     _max?: ProductMaxOrderByAggregateInput
@@ -20145,6 +20173,7 @@ export namespace Prisma {
     shortName?: StringWithAggregatesFilter<"Product"> | string
     price?: IntWithAggregatesFilter<"Product"> | number
     active?: BoolWithAggregatesFilter<"Product"> | boolean
+    coverUrl?: StringNullableWithAggregatesFilter<"Product"> | string | null
   }
 
   export type UserWhereInput = {
@@ -20302,6 +20331,7 @@ export namespace Prisma {
     title?: StringFilter<"Content"> | string
     duration?: IntFilter<"Content"> | number
     audioUrl?: StringNullableFilter<"Content"> | string | null
+    coverUrl?: StringNullableFilter<"Content"> | string | null
     lyrics?: StringNullableFilter<"Content"> | string | null
     plays?: IntFilter<"Content"> | number
     listeners?: IntFilter<"Content"> | number
@@ -20321,6 +20351,7 @@ export namespace Prisma {
     title?: SortOrder
     duration?: SortOrder
     audioUrl?: SortOrderInput | SortOrder
+    coverUrl?: SortOrderInput | SortOrder
     lyrics?: SortOrderInput | SortOrder
     plays?: SortOrder
     listeners?: SortOrder
@@ -20343,6 +20374,7 @@ export namespace Prisma {
     title?: StringFilter<"Content"> | string
     duration?: IntFilter<"Content"> | number
     audioUrl?: StringNullableFilter<"Content"> | string | null
+    coverUrl?: StringNullableFilter<"Content"> | string | null
     lyrics?: StringNullableFilter<"Content"> | string | null
     plays?: IntFilter<"Content"> | number
     listeners?: IntFilter<"Content"> | number
@@ -20362,6 +20394,7 @@ export namespace Prisma {
     title?: SortOrder
     duration?: SortOrder
     audioUrl?: SortOrderInput | SortOrder
+    coverUrl?: SortOrderInput | SortOrder
     lyrics?: SortOrderInput | SortOrder
     plays?: SortOrder
     listeners?: SortOrder
@@ -20386,6 +20419,7 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"Content"> | string
     duration?: IntWithAggregatesFilter<"Content"> | number
     audioUrl?: StringNullableWithAggregatesFilter<"Content"> | string | null
+    coverUrl?: StringNullableWithAggregatesFilter<"Content"> | string | null
     lyrics?: StringNullableWithAggregatesFilter<"Content"> | string | null
     plays?: IntWithAggregatesFilter<"Content"> | number
     listeners?: IntWithAggregatesFilter<"Content"> | number
@@ -21336,6 +21370,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     content?: ContentCreateNestedManyWithoutProductInput
     access?: UserAccessCreateNestedManyWithoutProductInput
     sales?: SaleCreateNestedManyWithoutProductInput
@@ -21349,6 +21384,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     content?: ContentUncheckedCreateNestedManyWithoutProductInput
     access?: UserAccessUncheckedCreateNestedManyWithoutProductInput
     sales?: SaleUncheckedCreateNestedManyWithoutProductInput
@@ -21361,6 +21397,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     content?: ContentUpdateManyWithoutProductNestedInput
     access?: UserAccessUpdateManyWithoutProductNestedInput
     sales?: SaleUpdateManyWithoutProductNestedInput
@@ -21374,6 +21411,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     content?: ContentUncheckedUpdateManyWithoutProductNestedInput
     access?: UserAccessUncheckedUpdateManyWithoutProductNestedInput
     sales?: SaleUncheckedUpdateManyWithoutProductNestedInput
@@ -21387,6 +21425,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
   }
 
   export type ProductUpdateManyMutationInput = {
@@ -21395,6 +21434,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ProductUncheckedUpdateManyInput = {
@@ -21404,6 +21444,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserCreateInput = {
@@ -21591,6 +21632,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -21609,6 +21651,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -21624,6 +21667,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -21642,6 +21686,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -21659,6 +21704,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -21673,6 +21719,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -21688,6 +21735,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -22679,6 +22727,20 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type ContentListRelationFilter = {
     every?: ContentWhereInput
     some?: ContentWhereInput
@@ -22701,6 +22763,11 @@ export namespace Prisma {
     every?: ContentNodeWhereInput
     some?: ContentNodeWhereInput
     none?: ContentNodeWhereInput
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
   }
 
   export type ContentOrderByRelationAggregateInput = {
@@ -22726,6 +22793,7 @@ export namespace Prisma {
     shortName?: SortOrder
     price?: SortOrder
     active?: SortOrder
+    coverUrl?: SortOrder
   }
 
   export type ProductAvgOrderByAggregateInput = {
@@ -22740,6 +22808,7 @@ export namespace Prisma {
     shortName?: SortOrder
     price?: SortOrder
     active?: SortOrder
+    coverUrl?: SortOrder
   }
 
   export type ProductMinOrderByAggregateInput = {
@@ -22749,6 +22818,7 @@ export namespace Prisma {
     shortName?: SortOrder
     price?: SortOrder
     active?: SortOrder
+    coverUrl?: SortOrder
   }
 
   export type ProductSumOrderByAggregateInput = {
@@ -22762,6 +22832,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type EnumUserStatusFilter<$PrismaModel = never> = {
@@ -22780,25 +22867,6 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
   }
 
   export type UserCountOrderByAggregateInput = {
@@ -22922,23 +22990,6 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
   export type EnumContentTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.ContentType | EnumContentTypeFieldRefInput<$PrismaModel>
     in?: $Enums.ContentType[]
@@ -22984,6 +23035,7 @@ export namespace Prisma {
     title?: SortOrder
     duration?: SortOrder
     audioUrl?: SortOrder
+    coverUrl?: SortOrder
     lyrics?: SortOrder
     plays?: SortOrder
     listeners?: SortOrder
@@ -23010,6 +23062,7 @@ export namespace Prisma {
     title?: SortOrder
     duration?: SortOrder
     audioUrl?: SortOrder
+    coverUrl?: SortOrder
     lyrics?: SortOrder
     plays?: SortOrder
     listeners?: SortOrder
@@ -23026,6 +23079,7 @@ export namespace Prisma {
     title?: SortOrder
     duration?: SortOrder
     audioUrl?: SortOrder
+    coverUrl?: SortOrder
     lyrics?: SortOrder
     plays?: SortOrder
     listeners?: SortOrder
@@ -23820,6 +23874,10 @@ export namespace Prisma {
     set?: boolean
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type ContentUpdateManyWithoutProductNestedInput = {
     create?: XOR<ContentCreateWithoutProductInput, ContentUncheckedCreateWithoutProductInput> | ContentCreateWithoutProductInput[] | ContentUncheckedCreateWithoutProductInput[]
     connectOrCreate?: ContentCreateOrConnectWithoutProductInput | ContentCreateOrConnectWithoutProductInput[]
@@ -23966,10 +24024,6 @@ export namespace Prisma {
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type UserAccessUpdateManyWithoutUserNestedInput = {
@@ -24643,12 +24697,54 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedEnumUserStatusFilter<$PrismaModel = never> = {
@@ -24667,20 +24763,6 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
   export type NestedEnumUserStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -24705,34 +24787,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumContentTypeFilter<$PrismaModel = never> = {
@@ -24869,6 +24923,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -24885,6 +24940,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -25022,6 +25078,7 @@ export namespace Prisma {
     title?: StringFilter<"Content"> | string
     duration?: IntFilter<"Content"> | number
     audioUrl?: StringNullableFilter<"Content"> | string | null
+    coverUrl?: StringNullableFilter<"Content"> | string | null
     lyrics?: StringNullableFilter<"Content"> | string | null
     plays?: IntFilter<"Content"> | number
     listeners?: IntFilter<"Content"> | number
@@ -25217,6 +25274,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     access?: UserAccessCreateNestedManyWithoutProductInput
     sales?: SaleCreateNestedManyWithoutProductInput
     nodes?: ContentNodeCreateNestedManyWithoutProductInput
@@ -25229,6 +25287,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     access?: UserAccessUncheckedCreateNestedManyWithoutProductInput
     sales?: SaleUncheckedCreateNestedManyWithoutProductInput
     nodes?: ContentNodeUncheckedCreateNestedManyWithoutProductInput
@@ -25305,6 +25364,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     access?: UserAccessUpdateManyWithoutProductNestedInput
     sales?: SaleUpdateManyWithoutProductNestedInput
     nodes?: ContentNodeUpdateManyWithoutProductNestedInput
@@ -25317,6 +25377,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     access?: UserAccessUncheckedUpdateManyWithoutProductNestedInput
     sales?: SaleUncheckedUpdateManyWithoutProductNestedInput
     nodes?: ContentNodeUncheckedUpdateManyWithoutProductNestedInput
@@ -25388,6 +25449,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     content?: ContentCreateNestedManyWithoutProductInput
     access?: UserAccessCreateNestedManyWithoutProductInput
     sales?: SaleCreateNestedManyWithoutProductInput
@@ -25400,6 +25462,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     content?: ContentUncheckedCreateNestedManyWithoutProductInput
     access?: UserAccessUncheckedCreateNestedManyWithoutProductInput
     sales?: SaleUncheckedCreateNestedManyWithoutProductInput
@@ -25476,6 +25539,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -25493,6 +25557,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -25529,6 +25594,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     content?: ContentUpdateManyWithoutProductNestedInput
     access?: UserAccessUpdateManyWithoutProductNestedInput
     sales?: SaleUpdateManyWithoutProductNestedInput
@@ -25541,6 +25607,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     content?: ContentUncheckedUpdateManyWithoutProductNestedInput
     access?: UserAccessUncheckedUpdateManyWithoutProductNestedInput
     sales?: SaleUncheckedUpdateManyWithoutProductNestedInput
@@ -25617,6 +25684,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -25634,6 +25702,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -25664,6 +25733,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -25681,6 +25751,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -25752,6 +25823,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     content?: ContentCreateNestedManyWithoutProductInput
     sales?: SaleCreateNestedManyWithoutProductInput
     nodes?: ContentNodeCreateNestedManyWithoutProductInput
@@ -25764,6 +25836,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     content?: ContentUncheckedCreateNestedManyWithoutProductInput
     sales?: SaleUncheckedCreateNestedManyWithoutProductInput
     nodes?: ContentNodeUncheckedCreateNestedManyWithoutProductInput
@@ -25853,6 +25926,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     content?: ContentUpdateManyWithoutProductNestedInput
     sales?: SaleUpdateManyWithoutProductNestedInput
     nodes?: ContentNodeUpdateManyWithoutProductNestedInput
@@ -25865,6 +25939,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     content?: ContentUncheckedUpdateManyWithoutProductNestedInput
     sales?: SaleUncheckedUpdateManyWithoutProductNestedInput
     nodes?: ContentNodeUncheckedUpdateManyWithoutProductNestedInput
@@ -25932,6 +26007,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     content?: ContentCreateNestedManyWithoutProductInput
     access?: UserAccessCreateNestedManyWithoutProductInput
     nodes?: ContentNodeCreateNestedManyWithoutProductInput
@@ -25944,6 +26020,7 @@ export namespace Prisma {
     shortName: string
     price: number
     active?: boolean
+    coverUrl?: string | null
     content?: ContentUncheckedCreateNestedManyWithoutProductInput
     access?: UserAccessUncheckedCreateNestedManyWithoutProductInput
     nodes?: ContentNodeUncheckedCreateNestedManyWithoutProductInput
@@ -26033,6 +26110,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     content?: ContentUpdateManyWithoutProductNestedInput
     access?: UserAccessUpdateManyWithoutProductNestedInput
     nodes?: ContentNodeUpdateManyWithoutProductNestedInput
@@ -26045,6 +26123,7 @@ export namespace Prisma {
     shortName?: StringFieldUpdateOperationsInput | string
     price?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     content?: ContentUncheckedUpdateManyWithoutProductNestedInput
     access?: UserAccessUncheckedUpdateManyWithoutProductNestedInput
     nodes?: ContentNodeUncheckedUpdateManyWithoutProductNestedInput
@@ -26502,6 +26581,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -26546,6 +26626,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -26562,6 +26643,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -26578,6 +26660,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -26796,6 +26879,7 @@ export namespace Prisma {
     title: string
     duration?: number
     audioUrl?: string | null
+    coverUrl?: string | null
     lyrics?: string | null
     plays?: number
     listeners?: number
@@ -26842,6 +26926,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -26859,6 +26944,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number
@@ -26875,6 +26961,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     duration?: IntFieldUpdateOperationsInput | number
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    coverUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lyrics?: NullableStringFieldUpdateOperationsInput | string | null
     plays?: IntFieldUpdateOperationsInput | number
     listeners?: IntFieldUpdateOperationsInput | number

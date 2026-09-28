@@ -27,6 +27,8 @@ const shape = (c, map = new Map()) => ({
   published: c.published,
   sortOrder: c.sortOrder,
   audioUrl: c.audioUrl,
+  // The item's own artwork. null = the app falls back to the Part's cover.
+  coverUrl: c.coverUrl ?? null,
   lyrics: c.lyrics,
   // Always present, even for an unscheduled item, so the form can render its
   // tick boxes without null-checking every time.
@@ -149,7 +151,7 @@ async function resolveNode(nodeId, productId) {
 }
 
 // POST /api/content
-//   { productId, title, audioUrl?, lyrics?, type?, published?,
+//   { productId, title, audioUrl?, coverUrl?, lyrics?, type?, published?,
 //     schedule?: { morning: ['mon',…], afternoon: […] },
 //     nodeId?, childPath? }
 // Omitting `schedule` (or sending empty arrays) leaves the item unscheduled.
@@ -166,7 +168,7 @@ async function resolveNode(nodeId, productId) {
 // next time. Accepts plain strings too.
 export async function create(req, res) {
   const {
-    productId, title, audioUrl = '', lyrics = '', published = true, schedule,
+    productId, title, audioUrl = '', coverUrl = '', lyrics = '', published = true, schedule,
     nodeId, childPath, childName, childKind,
   } = req.body || {}
   // Only the Part is required — an item has to live somewhere. Everything
@@ -234,6 +236,7 @@ export async function create(req, res) {
       title: cleanTitle,
       type: audioUrl ? 'audio' : 'text',
       audioUrl: audioUrl || null,
+      coverUrl: coverUrl || null,
       lyrics: lyrics || null,
       published: !!published,
       sortOrder: count + 1,
@@ -246,7 +249,7 @@ export async function create(req, res) {
 }
 
 // PATCH /api/content/:id
-//   partial: { published, lyrics, title, sortOrder, audioUrl, schedule, nodeId }
+//   partial: { published, lyrics, title, sortOrder, audioUrl, coverUrl, schedule, nodeId }
 //
 // `schedule` is replace-all, not merge: whatever the form last showed is the
 // new truth. Sending { morning: [], afternoon: [] } therefore clears it back
@@ -259,7 +262,7 @@ export async function update(req, res) {
   const id = Number(req.params.id)
   if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid content id.' })
 
-  const { published, lyrics, title, sortOrder, audioUrl, schedule, nodeId } = req.body || {}
+  const { published, lyrics, title, sortOrder, audioUrl, coverUrl, schedule, nodeId } = req.body || {}
   const data = {}
 
   if (schedule !== undefined) {
@@ -311,18 +314,24 @@ export async function update(req, res) {
     // type, because the whole branch is guarded on `!== undefined`.
     data.type = audioUrl ? 'audio' : 'text'
   }
+  // Empty string clears it, so the song goes back to showing the Part's cover.
+  if (coverUrl !== undefined) data.coverUrl = coverUrl || null
 
   try {
     // Read the old path first: re-uploading a song used to leave the previous
     // file in uploads/audio forever, and those are the biggest files here.
-    const before = data.audioUrl !== undefined
-      ? await prisma.content.findUnique({ where: { id }, select: { audioUrl: true } })
+    // Same for a replaced cover image.
+    const before = data.audioUrl !== undefined || data.coverUrl !== undefined
+      ? await prisma.content.findUnique({ where: { id }, select: { audioUrl: true, coverUrl: true } })
       : null
 
     const updated = await prisma.content.update({ where: { id }, data, include: WITH_RELATIONS })
 
-    if (before?.audioUrl && before.audioUrl !== data.audioUrl) {
+    if (data.audioUrl !== undefined && before?.audioUrl && before.audioUrl !== data.audioUrl) {
       await removeUploadIfUnused(before.audioUrl)
+    }
+    if (data.coverUrl !== undefined && before?.coverUrl && before.coverUrl !== data.coverUrl) {
+      await removeUploadIfUnused(before.coverUrl)
     }
     res.json({ content: shape(updated, await sectionMap([updated.productId])) })
   } catch {
@@ -345,9 +354,10 @@ export async function remove(req, res) {
     if (hard) {
       // Only here. A binned item is meant to be restorable, so its audio must
       // survive the soft delete.
-      const gone = await prisma.content.findUnique({ where: { id }, select: { audioUrl: true } })
+      const gone = await prisma.content.findUnique({ where: { id }, select: { audioUrl: true, coverUrl: true } })
       await prisma.content.delete({ where: { id } })
       if (gone?.audioUrl) await removeUploadIfUnused(gone.audioUrl)
+      if (gone?.coverUrl) await removeUploadIfUnused(gone.coverUrl)
       return res.json({ ok: true, hard: true })
     }
     const item = await prisma.content.update({ where: { id }, data: { deletedAt: new Date() } })

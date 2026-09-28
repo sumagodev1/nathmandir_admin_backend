@@ -85,6 +85,8 @@ model Product {
   shortName String  @map("short_name")
   price     Int
   active    Boolean @default(true)
+  // Default artwork for every song in this Part that has no cover of its own.
+  coverUrl  String? @map("cover_url") @db.Text
 
   content Content[]
   access  UserAccess[]
@@ -143,6 +145,9 @@ model Content {
   title     String
   duration  Int         @default(0) // seconds
   audioUrl  String?     @map("audio_url") @db.Text
+  // Artwork the app shows beside the song (player bar, lock screen). NULL
+  // means "use the Part's cover", so most songs never need their own.
+  coverUrl  String?     @map("cover_url") @db.Text
   lyrics    String?     @db.Text
   plays     Int         @default(0)
   listeners Int         @default(0)

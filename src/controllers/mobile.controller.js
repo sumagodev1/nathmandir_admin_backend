@@ -44,6 +44,10 @@ const absUrl = (req, ref) => {
   return `${base}${ref.startsWith('/') ? '' : '/'}${ref}`
 }
 
+// Artwork for one song: its own cover, else its Part's. Sent even while the
+// song is locked, so the app can still show the picture on a locked row.
+const coverOf = (req, c, product) => absUrl(req, c.coverUrl || product?.coverUrl)
+
 // What the app is allowed to see in one Part: published, not binned, and not
 // filed inside a section that has been switched off.
 //
@@ -437,6 +441,7 @@ async function home(req, res) {
     price: p.price,
     owned: ownedIds.has(p.id),
     songCount: countMap.get(p.id) || 0,
+    coverUrl: absUrl(req, p.coverUrl),
   }))
 
   return sendOk(res, 'Modules', { modules })
@@ -450,7 +455,7 @@ async function home(req, res) {
 // One content row as the app receives it. Shared by get_content and the
 // per-session calls below so a song never looks different depending on which
 // screen asked for it.
-function shapeItem(req, c, owned, sections) {
+function shapeItem(req, c, owned, sections, product) {
   return {
     id: c.id,
     title: c.title,
@@ -460,6 +465,7 @@ function shapeItem(req, c, owned, sections) {
     plays: c.plays,
     locked: !owned,
     audioUrl: owned ? absUrl(req, c.audioUrl) : null,
+    coverUrl: coverOf(req, c, product),
     lyrics: c.lyrics || '',
     // Where the item sits in the Part's menu. `sectionId` is null and
     // `sectionPath` is empty for an item that sits directly in the Part —
@@ -510,11 +516,11 @@ async function get_content(req, res) {
     }
   }
 
-  const content = visible.map((c) => shapeItem(req, c, owned, sections))
+  const content = visible.map((c) => shapeItem(req, c, owned, sections, product))
 
   return sendOk(res, 'Content loaded', {
     owned,
-    product: { code, name: product.name, price: product.price },
+    product: { code, name: product.name, price: product.price, coverUrl: absUrl(req, product.coverUrl) },
     content,
   })
 }
@@ -572,6 +578,7 @@ async function get_sections(req, res) {
     title: c.title,
     // Null until the module is bought — the same rule the old API follows.
     url: owned ? absUrl(req, c.audioUrl) : null,
+    coverUrl: coverOf(req, c, product),
     otherData: {
       type: c.type,
       duration: c.duration,
@@ -641,7 +648,7 @@ async function get_sections(req, res) {
 
   return sendOk(res, 'Sections loaded', {
     owned,
-    product: { code, name: product.name, price: product.price },
+    product: { code, name: product.name, price: product.price, coverUrl: absUrl(req, product.coverUrl) },
     [childKey(roots)]: build('root'),
     unsectioned: filesOf.get('none') || [],
   })
@@ -729,11 +736,12 @@ async function sub_items(req, res) {
     plays: c.plays,
     hasAudio: !!c.audioUrl,
     hasLyrics: !!c.lyrics,
+    coverUrl: coverOf(req, c, product),
     schedule: groupSchedule(c.schedule),
   }))
 
   return sendOk(res, 'Sub items loaded', {
-    product: { code, name: product.name, price: product.price },
+    product: { code, name: product.name, price: product.price, coverUrl: absUrl(req, product.coverUrl) },
     items,
   })
 }
@@ -747,7 +755,10 @@ async function get_media(req, res) {
   const id = field(req, 'id')
   if (!id) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
-  const item = await prisma.content.findUnique({ where: { id: Number(id) } })
+  const item = await prisma.content.findUnique({
+    where: { id: Number(id) },
+    include: { product: { select: { coverUrl: true } } },
+  })
   // deletedAt: a binned item is gone as far as the app is concerned.
   if (!item || !item.published || item.deletedAt) {
     return sendFail(res, 'Content not found', STATUS.NOT_FOUND)
@@ -771,6 +782,7 @@ async function get_media(req, res) {
     type: item.type,
     duration: item.duration,
     audioUrl: owned ? absUrl(req, item.audioUrl) : null,
+    coverUrl: coverOf(req, item, item.product),
     lyrics: item.lyrics || '',
     locked: !owned,
   })

@@ -137,7 +137,8 @@ exports.Prisma.ProductScalarFieldEnum = {
   name: 'name',
   shortName: 'shortName',
   price: 'price',
-  active: 'active'
+  active: 'active',
+  coverUrl: 'coverUrl'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -172,6 +173,7 @@ exports.Prisma.ContentScalarFieldEnum = {
   title: 'title',
   duration: 'duration',
   audioUrl: 'audioUrl',
+  coverUrl: 'coverUrl',
   lyrics: 'lyrics',
   plays: 'plays',
   listeners: 'listeners',

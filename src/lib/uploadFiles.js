@@ -42,14 +42,17 @@ function localPath(ref) {
 
 // How many rows still point at this path, ignoring the one being replaced.
 async function referenceCount(ref, ignore = {}) {
-  const [albums, photos, content, books, pages] = await Promise.all([
+  const [albums, photos, content, covers, parts, books, pages] = await Promise.all([
     prisma.album.count({ where: { cover: ref, ...(ignore.albumId ? { NOT: { id: ignore.albumId } } : {}) } }),
     prisma.photo.count({ where: { url: ref, ...(ignore.photoId ? { NOT: { id: ignore.photoId } } : {}) } }),
     prisma.content.count({ where: { audioUrl: ref, ...(ignore.contentId ? { NOT: { id: ignore.contentId } } : {}) } }),
+    // One image is often reused as the cover of several songs and of the Part.
+    prisma.content.count({ where: { coverUrl: ref, ...(ignore.contentId ? { NOT: { id: ignore.contentId } } : {}) } }),
+    prisma.product.count({ where: { coverUrl: ref, ...(ignore.productId ? { NOT: { id: ignore.productId } } : {}) } }),
     prisma.book.count({ where: { cover: ref, ...(ignore.bookId ? { NOT: { id: ignore.bookId } } : {}) } }),
     prisma.page.count({ where: { heroImage: ref, ...(ignore.pageId ? { NOT: { id: ignore.pageId } } : {}) } }),
   ])
-  return albums + photos + content + books + pages
+  return albums + photos + content + covers + parts + books + pages
 }
 
 /**

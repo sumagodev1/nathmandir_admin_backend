@@ -5,6 +5,7 @@
 // at) and a stable public `code` such as "gita1". Both are returned, and
 // :id params accept either form — see lib/products.js.
 import { prisma } from '../lib/prisma.js'
+import { removeUploadIfUnused } from '../lib/uploadFiles.js'
 
 // A price is whole rupees, zero or more. `Number(x) || 0` was doing the
 // checking, which turned a typo into a free book: "abc" became 0 and the
@@ -29,9 +30,9 @@ export async function list(req, res) {
   res.json({ products })
 }
 
-// POST /api/products   — add a module/part { name, price, shortName?, code? }
+// POST /api/products   — add a module/part { name, price, shortName?, code?, coverUrl? }
 export async function create(req, res) {
-  const { name, price = 0, shortName, code } = req.body || {}
+  const { name, price = 0, shortName, code, coverUrl } = req.body || {}
   const created = readPrice(price)
   if (created.error) return res.status(400).json({ error: created.error })
   if (!name?.trim()) return res.status(400).json({ error: 'Product name is required.' })
@@ -46,6 +47,7 @@ export async function create(req, res) {
       name: name.trim(),
       shortName: shortName?.trim() || name.trim(),
       price: created.value,
+      coverUrl: coverUrl || null,
     },
   })
 
@@ -56,12 +58,13 @@ export async function create(req, res) {
   res.status(201).json({ product })
 }
 
-// PATCH /api/products/:id   — update name / price / active (Settings pricing)
+// PATCH /api/products/:id   — update name / price / active / coverUrl
+//   coverUrl is the default artwork for the Part's songs; '' clears it.
 export async function update(req, res) {
   const id = await resolveProductId(req.params.id)
   if (id === null) return res.status(404).json({ error: 'Product not found.' })
 
-  const { name, price, shortName, active } = req.body || {}
+  const { name, price, shortName, active, coverUrl } = req.body || {}
   const data = {}
   if (name !== undefined) data.name = String(name).trim()
   if (shortName !== undefined) data.shortName = String(shortName).trim()
@@ -71,9 +74,16 @@ export async function update(req, res) {
     data.price = p.value
   }
   if (active !== undefined) data.active = !!active
+  if (coverUrl !== undefined) data.coverUrl = coverUrl || null
 
   try {
+    const before = data.coverUrl !== undefined
+      ? await prisma.product.findUnique({ where: { id }, select: { coverUrl: true } })
+      : null
     const product = await prisma.product.update({ where: { id }, data })
+    if (before?.coverUrl && before.coverUrl !== data.coverUrl) {
+      await removeUploadIfUnused(before.coverUrl)
+    }
     res.json({ product })
   } catch {
     res.status(404).json({ error: 'Product not found.' })
