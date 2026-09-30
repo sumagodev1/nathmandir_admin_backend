@@ -1,0 +1,198 @@
+{
+  "ganpati": {
+    "title": "गणपतीची आरती",
+    "audioFile": "05.AARTI SUKHKARTA.mp3"
+  },
+  "sainath": {
+    "title": "साईनाथ आरती",
+    "audioFile": "06.AARTI SSAI BABA.mp3"
+  },
+  "gajanan": {
+    "title": "गजानन महाराज आरती",
+    "audioFile": "07.AARTI GAJANAN MAHARAJ.mp3"
+  },
+  "vitthal": {
+    "title": "विठ्ठल आरती",
+    "audioFile": "08.AARTI VITTHAL.mp3"
+  },
+  "kapur": {
+    "title": "कापूर आरती",
+    "audioFile": "09.AARTI KARPUR.mp3"
+  },
+  "mantra": {
+    "title": "मंत्र पुष्पांजली",
+    "audioFile": "10.MANTRA POOSHPANJALI.mp3"
+  },
+  "sun_a1": {
+    "title": "नाथ आरती - रविवार - १",
+    "audioFile": "15.NATH ARATI- RAVIVAAR - 1.mp3"
+  },
+  "sun_a2": {
+    "title": "नाथ आरती - रविवार - २",
+    "audioFile": "16.NATH ARATI- RAVIVAAR - 2.mp3"
+  },
+  "mon_a1": {
+    "title": "नाथ आरती - सोमवार - १",
+    "audioFile": "17.NATH ARATI- SOMVAAR - 1.mp3"
+  },
+  "mon_a2": {
+    "title": "नाथ आरती - सोमवार - २",
+    "audioFile": "18.NATH ARATI- SOMVAAR - 2.mp3"
+  },
+  "tue_a1": {
+    "title": "नाथ आरती - मंगळवार - १",
+    "audioFile": "19.NATH ARATI- MANGALVAAR - 1.mp3"
+  },
+  "tue_a2": {
+    "title": "नाथ आरती - मंगळवार - २",
+    "audioFile": "20.NATH ARATI- MANGALVAAR - 2.mp3"
+  },
+  "wed_a1": {
+    "title": "नाथ आरती - बुधवार - १",
+    "audioFile": "21.NATH ARATI- BUDHVAAR - 1.mp3"
+  },
+  "wed_a2": {
+    "title": "नाथ आरती - बुधवार - २",
+    "audioFile": "22.NATH ARATI- BUDHVAAR - 2.mp3"
+  },
+  "thu_a1": {
+    "title": "नाथ आरती - गुरुवार",
+    "audioFile": "23.NATH ARATI-GURUVAR.mp3"
+  },
+  "fri_a1": {
+    "title": "नाथ आरती - शुक्रवार - १",
+    "audioFile": "11.NATH ARATI- SHUKRAVAAR  1.mp3"
+  },
+  "fri_a2": {
+    "title": "नाथ आरती - शुक्रवार - २",
+    "audioFile": "12.NATH ARATI- SHUKRAVAAR - 2.mp3"
+  },
+  "sat_a1": {
+    "title": "नाथ आरती - शनिवार - १",
+    "audioFile": "13.NATH ARATI- SHANIVAAR - 1.mp3"
+  },
+  "sat_a2": {
+    "title": "नाथ आरती - शनिवार - २",
+    "audioFile": "14.NATH ARATI- SHANIVAAR - 2.mp3"
+  },
+  "jayajaykar": {
+    "title": "जयजयकार",
+    "audioFile": "01.JAY JAYKAR.mp3"
+  },
+  "palana": {
+    "title": "पालना",
+    "audioFile": "01.PALANA.mp3"
+  },
+  "bhupali": {
+    "title": "भूपाळी - उठ उठ मनोहवा",
+    "audioFile": "02. UTH UTH MANOHAVA.mp3"
+  },
+  "kakada": {
+    "title": "काकड आरती",
+    "audioFile": "03. KAKDA NATHRAYA.mp3"
+  },
+  "prabhati1": {
+    "title": "प्रभाती - १",
+    "audioFile": "04.BHAJ RE BHAJ.mp3"
+  },
+  "prabhati2": {
+    "title": "प्रभाती - २",
+    "audioFile": "05. JAY JAY JAY SUKHNIDHAN.mp3"
+  },
+  "shejarati": {
+    "title": "शेजारती",
+    "audioFile": "03.SHEJARTI.mp3"
+  },
+  "pradakshina": {
+    "title": "प्रदक्षिणा",
+    "audioFile": "01.PRADAKSHINA.mp3"
+  },
+  "vida": {
+    "title": "विडा",
+    "audioFile": "01.VEEDA.mp3"
+  },
+  "shlok": {
+    "title": "श्लोक - सर्वधारा मनारे",
+    "audioFile": "10. SARVADHARA MANARE.mp3"
+  },
+  "servodya": {
+    "title": "सर्वोदय - बंधू भगिनींनो",
+    "audioFile": "06. BANDHU BHAGININO.mp3"
+  },
+  "bharatvakya": {
+    "title": "भारतवाक्य",
+    "audioFile": "04.BHARATVAKYA.mp3"
+  },
+  "anantkoti": {
+    "title": "अनंतकोटी",
+    "audioFile": "ANATKOTI.mp3"
+  },
+  "sodina": {
+    "title": "सोडीना गुरू राया",
+    "audioFile": "14.SODINA GURU RAYA.mp3"
+  },
+  "lalite": {
+    "title": "ललिते जननीमसी",
+    "audioFile": "13.LALITE JANANIMASI.mp3"
+  },
+  "sangrah": {
+    "title": "अशाश्वत संग्रह",
+    "audioFile": "02.ASHASHWAT SANGRAH.mp3"
+  },
+  "sakya": {
+    "title": "श्री योगेंद्र सदये",
+    "audioFile": "09.SHREE YOGENDRA SADAYE.mp3"
+  },
+  "shatchakra": {
+    "title": "षट्चक्र - श्री योगभ्यानंदन",
+    "audioFile": "08.SHREE YOGABHYANANADAN.mp3"
+  },
+  "hrudaykamal": {
+    "title": "हृदयकमली श्लोक",
+    "audioFile": "04.HRIDAY KAMALI.mp3"
+  },
+  "bhairavi": {
+    "title": "भैरवी - मज ए नाथ दयेचे देणे",
+    "audioFile": "12.MAJ EH NATH DAYECHE DENE.mp3"
+  },
+  "bolawe": {
+    "title": "बोलावे बहू गोड",
+    "audioFile": "03.BOLAVE BAHU GOD.mp3"
+  },
+  "ashtangyog": {
+    "title": "अष्टांगयोग - योगाचळ शिखरी",
+    "audioFile": "07. YOGACHAL SHIKHARI.mp3"
+  },
+  "vitthal_pad": {
+    "title": "श्री गुरू नाथ - पद",
+    "audioFile": "05.SHREE GURU NATH.mp3"
+  },
+  "vitthal_pad2": {
+    "title": "श्री गुरू नाथ - पद २",
+    "audioFile": "06.SHREE GURU NATH 2.mp3"
+  },
+  "hanuman": {
+    "title": "हनुमानचालीसा"
+  },
+  "shiva": {
+    "title": "श्रीशिवपंचाक्षरस्तोत्रम"
+  },
+  "pandurang": {
+    "title": "पांडुरंगाअष्टकम"
+  },
+  "madhurashtakam": {
+    "title": "मधुराष्टकम",
+    "image": "krishna"
+  },
+  "gita": {
+    "title": "अथ पञ्चदशोऽध्यायः"
+  },
+  "purushsukta": {
+    "title": "पुरुषसुक्त",
+    "image": "vishnu"
+  },
+  "pasaydan": {
+    "title": "पसायदान",
+    "image": "dnyaneshwar"
+  }
+}
