@@ -1,5 +1,6 @@
 // ── Uploads API ───────────────────────────────────────────────
-// POST /api/uploads/:kind  (kind = audio | image)
+// POST /api/uploads/:kind  (kind = audio | image | cover)
+//   cover = song/Part artwork, saved as a 512×512 WebP.
 //   multipart/form-data, field name "file". See the controller for
 //   storage config, size limits and the returned URL shape.
 import { Router } from 'express'

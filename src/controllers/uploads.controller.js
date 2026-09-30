@@ -1,11 +1,14 @@
 // ── Uploads controller ────────────────────────────────────────
-// Multer setup + handler for /api/uploads/:kind (kind = audio | image).
+// Multer setup + handler for /api/uploads/:kind (kind = audio | image | cover).
+//   `cover` is song/Part artwork: any image is accepted and saved as a
+//   512×512 WebP, so every cover the app downloads is small and square.
 //   multipart/form-data, field name "file".
 //   Saves the file to Backend/uploads/<kind>/ and returns a
 //   relative URL like "/uploads/audio/1699999999-track.mp3".
 //   The relative path is stored in the DB (portable across domains);
 //   the frontend/mobile app prefixes it with the API origin.
 import multer from 'multer'
+import sharp from 'sharp'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -33,6 +36,9 @@ const envMb = (key, fallback) => {
 }
 const MAX_AUDIO = envMb('UPLOAD_MAX_AUDIO_MB', 50)
 const MAX_IMAGE = envMb('UPLOAD_MAX_IMAGE_MB', 25)
+// Lower than a gallery photo: a cover is shrunk to 512 px anyway, so nothing
+// bigger is needed. Keep in step with MAX_MB in the panel's CoverImageField.
+const MAX_COVER = envMb('UPLOAD_MAX_COVER_MB', 10)
 // The hard ceiling multer enforces while streaming, before the per-kind check.
 // Whichever kind is largest, or a 50 MB audio file would be cut off by a
 // 25 MB image limit.
@@ -56,6 +62,53 @@ const KINDS = {
     // downloaded in full by every devotee who opens the gallery.
     limit: MAX_IMAGE,
   },
+  // Checked exactly like `image` (sniffAs), then shrunk — see makeCover().
+  // Separate from `image` so gallery photos are never cropped to a square.
+  cover: {
+    dir: 'cover',
+    sniffAs: 'image',
+    mime: /^image\//,
+    ext: /\.(jpe?g|png|gif|webp|avif|bmp|heic|heif)$/i,
+    label: 'JPG, PNG, GIF, WEBP, AVIF or HEIC',
+    limit: MAX_COVER,
+  },
+}
+
+// Cover artwork as the app shows it: a square, sized for a player bar and the
+// phone's lock screen. 512 px is sharp on both and comes out around 20-60 KB.
+const COVER_SIZE = 512
+const COVER_QUALITY = 80
+// sharp's cache keeps input files open, and Windows refuses to delete an open
+// file — the original would be left behind next to every cover.
+sharp.cache(false)
+// Anything smaller is blown up to 512 and looks blurry on the phone.
+// Keep in step with MIN_PX in the panel's CoverImageField.
+const COVER_MIN = 300
+
+// Thrown for a picture that is readable but not usable; its message is shown
+// to the admin as-is.
+class CoverError extends Error {}
+
+// Crops to a square — keeping the most detailed part of the picture, so a
+// deity's face is kept rather than the empty sky above it — and re-encodes as
+// WebP. Replaces the original upload, which can be a 15 MB phone photo.
+// → the new filename.
+async function makeCover(filePath) {
+  const out = filePath.replace(/\.[^.\\/]*$/, '') + '.webp'
+  const { width = 0, height = 0 } = await sharp(filePath).metadata()
+  if (width < COVER_MIN || height < COVER_MIN) {
+    throw new CoverError(
+      `This image is only ${width}×${height} pixels, so it would look blurry in the app. Please use one at least ${COVER_MIN}×${COVER_MIN}.`
+    )
+  }
+  await sharp(filePath)
+    .rotate() // honour the phone's EXIF orientation before cropping
+    .resize(COVER_SIZE, COVER_SIZE, { fit: 'cover', position: sharp.strategy.attention })
+    .webp({ quality: COVER_QUALITY })
+    .toFile(out + '.tmp')
+  fs.unlinkSync(filePath)
+  fs.renameSync(out + '.tmp', out)
+  return path.basename(out)
 }
 
 // SVG is an image the browser will happily execute scripts inside. Serving one
@@ -166,9 +219,11 @@ const upload = multer({
 // POST /api/uploads/:kind  → { url, name, size, mime }
 export function uploadFile(req, res) {
   const cfg = KINDS[req.params.kind]
-  if (!cfg) return res.status(400).json({ error: 'Invalid upload kind. Use audio or image.' })
+  if (!cfg) return res.status(400).json({ error: 'Invalid upload kind. Use audio, image or cover.' })
+  // What the bytes must be — a cover is an image.
+  const expected = cfg.sniffAs || req.params.kind
 
-  upload.single('file')(req, res, (err) => {
+  upload.single('file')(req, res, async (err) => {
     if (err) {
       const msg =
         err.code === 'LIMIT_FILE_SIZE'
@@ -191,10 +246,10 @@ export function uploadFile(req, res) {
     // ── Verify by content, not by name ──
     const found = sniff(req.file.path)
 
-    if (found && found.kind !== req.params.kind) {
+    if (found && found.kind !== expected) {
       drop()
       return res.status(400).json({
-        error: `That file is ${found.ext.toUpperCase()}, which isn't ${req.params.kind}. Accepted: ${cfg.label}.`,
+        error: `That file is ${found.ext.toUpperCase()}, which isn't ${expected === 'image' ? 'an image' : expected}. Accepted: ${cfg.label}.`,
       })
     }
 
@@ -226,12 +281,31 @@ export function uploadFile(req, res) {
       }
     }
 
+    let size = req.file.size
+    let mime = req.file.mimetype
+    if (req.params.kind === 'cover') {
+      try {
+        filename = await makeCover(path.join(path.dirname(req.file.path), filename))
+        size = fs.statSync(path.join(UPLOADS_ROOT, cfg.dir, filename)).size
+        mime = 'image/webp'
+      } catch (e) {
+        const original = path.join(path.dirname(req.file.path), filename)
+        fs.unlink(original, () => {})
+        fs.unlink(original.replace(/\.[^.\\/]*$/, '') + '.webp.tmp', () => {})
+        if (e instanceof CoverError) return res.status(400).json({ error: e.message })
+        console.error(`⚠️  cover: could not convert "${req.file.originalname}": ${e.message}`)
+        return res.status(400).json({
+          error: `Could not read "${req.file.originalname}" as an image. Please try a JPG or PNG.`,
+        })
+      }
+    }
+
     const url = `/uploads/${cfg.dir}/${filename}`
     res.status(201).json({
       url,
       name: req.file.originalname,
-      size: req.file.size,
-      mime: req.file.mimetype,
+      size,
+      mime,
       detected: found ? found.ext : null,
     })
   })
