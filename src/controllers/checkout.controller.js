@@ -17,6 +17,7 @@ import { prisma } from '../lib/prisma.js'
 import { productMaps } from '../lib/products.js'
 import { jsonSafe } from '../lib/helpers.js'
 import { normalizeMobile, isValidMobile, readMobile } from '../lib/phone.js'
+import { findUserByMobile } from '../lib/userLookup.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
 import { sendOtpSms } from '../lib/sms.js'
 import {
@@ -77,7 +78,8 @@ async function ownedModules(mobile) {
 // no matter how the number was typed (09420…, +91 9420…, 9420…).
 async function findOrCreateUser({ mobile, name, email }) {
   const phone = normalizeMobile(mobile)
-  const existing = await prisma.user.findFirst({ where: { phone } })
+  // Normalized comparison, so an older "+91…" row is found rather than duplicated.
+  const existing = await findUserByMobile(phone)
   if (existing) return existing
   return prisma.user.create({
     data: {

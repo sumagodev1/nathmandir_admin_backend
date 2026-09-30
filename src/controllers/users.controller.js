@@ -2,6 +2,19 @@
 // Handlers for /api/users.
 import { prisma } from '../lib/prisma.js'
 import { normalizeMobile, isValidMobile } from '../lib/phone.js'
+import { findUserByMobile } from '../lib/userLookup.js'
+
+// One number, one user. Names the existing account so the admin can open it
+// and grant access there instead of creating a second login.
+async function numberTaken(res, phone, exceptId) {
+  const other = await findUserByMobile(phone, exceptId)
+  if (!other) return false
+  res.status(409).json({
+    error: `This mobile number is already registered to ${other.name} (#${other.id}). Open that user to give access instead.`,
+    existingUserId: other.id,
+  })
+  return true
+}
 import { ymd, shapeUserRow, grantExpiry, paginate } from '../lib/helpers.js'
 import { resolveProductId } from '../lib/products.js'
 
@@ -75,6 +88,7 @@ export async function create(req, res) {
   // only, country code and leading zeros stripped) so the same person is one
   // row however the number was written.
   if (!isValidMobile(phone)) return res.status(400).json({ error: 'Enter a valid 10-digit mobile number.' })
+  if (await numberTaken(res, phone)) return
 
   const now = new Date()
 
@@ -128,6 +142,7 @@ export async function update(req, res) {
   }
   if (phone !== undefined) {
     if (!isValidMobile(phone)) return res.status(400).json({ error: 'Enter a valid 10-digit mobile number.' })
+    if (await numberTaken(res, phone, id)) return
     data.phone = normalizeMobile(phone)
   }
   if (city !== undefined) {

@@ -21,6 +21,7 @@ import { sectionMap, sectionPath, subtreeIds, hiddenSectionIds } from '../lib/se
 import { jsonSafe, ymd, paginate } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
 import { normalizeMobile, readMobile } from '../lib/phone.js'
+import { findUserByMobile } from '../lib/userLookup.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
 
 // Read a POST field (falls back to query string), matching PHP $_POST.
@@ -28,6 +29,15 @@ const field = (req, key) => {
   const v = req.body?.[key] ?? req.query?.[key]
   return v === undefined || v === null ? undefined : String(v)
 }
+
+// Shown when an admin has disabled the account. `message` is always Marathi
+// (what the app displays); the English text rides along as `message_en`.
+const ACCOUNT_DISABLED = {
+  mr: 'हे खाते बंद करण्यात आले आहे. कृपया मंदिर व्यवस्थापनाशी संपर्क साधा.',
+  en: 'This account has been disabled. Please contact the temple management.',
+}
+const sendDisabled = (res) =>
+  sendFail(res, ACCOUNT_DISABLED.mr, STATUS.UNAUTHORIZED, { message_en: ACCOUNT_DISABLED.en })
 
 // Optional hard override for the public origin (e.g. https://api.nathmandir.sumago.ai).
 // Set PUBLIC_BASE_URL in production to guarantee https file URLs even if the reverse
@@ -155,9 +165,7 @@ async function loginuser(req, res) {
 
   // Turned away here as well as at verifyOTP, so a disabled account does not
   // burn an SMS on an OTP it can never use.
-  if (user.status === 'disabled') {
-    return sendFail(res, 'This account has been disabled. Please contact the temple.', STATUS.UNAUTHORIZED)
-  }
+  if (user.status === 'disabled') return sendDisabled(res)
 
   // Fixed OTP for the test account, random 4-digit otherwise.
   const otp = mobile === '1234567890' ? '1947' : String(Math.floor(1000 + Math.random() * 9000))
@@ -188,9 +196,7 @@ async function verifyOTP(req, res) {
   // `status` is the admin's enable/disable switch. Until now nothing checked
   // it, so "disable this user" in the panel changed a column and stopped
   // nothing — the person kept full access. This is where it finally bites.
-  if (user.status === 'disabled') {
-    return sendFail(res, 'This account has been disabled. Please contact the temple.', STATUS.UNAUTHORIZED)
-  }
+  if (user.status === 'disabled') return sendDisabled(res)
 
   // Issue a JWT for this mobile session (long-lived — the app stays logged in).
   const token = jwt.sign(
@@ -281,7 +287,8 @@ async function register(req, res) {
     return sendFail(res, 'Enter a valid 10-digit mobile number', STATUS.BAD_REQUEST)
   }
 
-  const exists = await prisma.user.findFirst({ where: { phone: mobile } })
+  // Normalized comparison, so an older "+91…" row still counts as taken.
+  const exists = await findUserByMobile(mobile)
   if (exists) return sendFail(res, 'Mobile Number Already exist', STATUS.CONFLICT)
 
   await prisma.user.create({
@@ -1183,7 +1190,7 @@ async function authenticateMobile(req) {
   // disabled the account is valid for a year, so without this the person would
   // keep full access until it expired.
   if (rows[0].status === 'disabled') {
-    return { ok: false, message: 'This account has been disabled. Please contact the temple.' }
+    return { ok: false, disabled: true }
   }
   return { ok: true, payload }
 }
@@ -1202,6 +1209,7 @@ export async function dispatch(req, res) {
   // Protected apicalls require a valid Bearer token.
   if (!PUBLIC_APICALLS.has(apicall)) {
     const auth = await authenticateMobile(req)
+    if (auth.disabled) return sendDisabled(res)
     if (!auth.ok) return sendFail(res, auth.message, STATUS.UNAUTHORIZED)
     req.mobileUser = auth.payload // { id, mobile, name } — available to handlers
   }
