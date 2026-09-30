@@ -1,18 +1,27 @@
-// ── Generate cover images for songs and Parts ─────────────────
-// Draws a 512×512 WebP cover for every song and Part that has none:
-// a gold ॐ on a maroon disc, the Marathi title, and the Part's name, in the
-// temple palette. Each Part has its own background so they are easy to tell
-// apart in the app.
+// ── Generate Part cover images ────────────────────────────────
+// Draws one 512×512 WebP cover per Part: the photo of Shri Madhavnath
+// Maharaj in a gold frame, with the Part's name below, in the temple palette.
+// Each Part has its own background so they are easy to tell apart.
+//
+// Songs do not get a copy each: a song with no cover of its own shows its
+// Part's cover in the app (see coverOf in mobile.controller.js), so changing
+// the photo later means changing four images, not hundreds.
 //
 // Run with:  node scripts/generate-covers.js            (dry run — lists only)
 //            node scripts/generate-covers.js --apply    (writes files + DB)
+//            node scripts/generate-covers.js --preview <folder>
+//                (draws every Part's cover into <folder> as PNG; DB untouched)
 //
-// Only rows whose coverUrl is empty are touched, so an image an admin
-// uploaded by hand is never replaced. Running it again later covers only the
-// songs added since. Files go to uploads/cover/, like panel uploads.
+// What --apply changes:
+//   • Parts with no cover, or with a cover this script made earlier, get the
+//     new cover. A cover an admin uploaded by hand is never replaced.
+//   • Songs still carrying an old text cover made by this script (…-song-<id>.webp)
+//     are cleared, so they fall back to the Part's photo cover. Song images an
+//     admin uploaded are left alone.
+//   Old generated files are deleted once nothing points at them.
 //
-// Font: Noto Sans Devanagari (SIL Open Font License, assets/fonts/OFL.txt),
-// bundled so the covers look the same on Windows and on the Linux server.
+// Assets: assets/covers/nath-maharaj.jpg (the photo, already cropped) and
+// Noto Sans Devanagari (SIL Open Font License, assets/fonts/OFL.txt).
 // ─────────────────────────────────────────────────────────────
 import 'dotenv/config'
 import fs from 'node:fs'
@@ -20,16 +29,21 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 import { prisma } from '../src/lib/prisma.js'
+import { removeUploadIfUnused } from '../src/lib/uploadFiles.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT_DIR = path.join(ROOT, 'uploads', 'cover')
-const FONT_BOLD = path.join(ROOT, 'assets/fonts/NotoSansDevanagari-Bold.ttf')
-const FONT_REG = path.join(ROOT, 'assets/fonts/NotoSansDevanagari-Regular.ttf')
+const PHOTO = path.join(ROOT, 'assets/covers/nath-maharaj.jpg')
+const FONT = path.join(ROOT, 'assets/fonts/NotoSansDevanagari-Bold.ttf')
 const APPLY = process.argv.includes('--apply')
-const S = 512
 
-// The chosen palette — nothing outside these five (plus a lighter shade of
-// each for the centre glow).
+// What this script names its files: "<timestamp>-part-<id>.webp" and, from
+// the earlier text version, "<timestamp>-song-<id>.webp". Panel uploads are
+// "<timestamp>-<random>-<name>.webp", so the two can never be confused.
+const OURS_PART = /^\/uploads\/cover\/\d+-part-\d+\.webp$/
+const OURS_SONG = /^\/uploads\/cover\/\d+-song-\d+\.webp$/
+
+// The chosen palette.
 const C = {
   gold: '#D9B26A',
   beige: '#DEC8AE',
@@ -37,144 +51,135 @@ const C = {
   brown: '#8B7260',
   maroon: '#470D0B',
 }
-const DARK = { bgA: '#5E1512', bgB: C.maroon, accent: C.gold, title: C.stone, sub: C.gold }
+const DARK = { bgA: '#5E1512', bgB: C.maroon, frame: C.gold, text: C.gold }
 
 // Keyed by the Part's public code, which is the same on every database.
 const STYLES = {
   gita1: { label: 'गीतांजली भाग १', ...DARK },
-  gita2: { label: 'गीतांजली भाग २', bgA: '#9A8170', bgB: C.brown, accent: C.beige, title: '#FFFFFF', sub: C.beige },
-  upasana: { label: 'उपासना', bgA: '#EBDCC8', bgB: C.beige, accent: C.brown, title: C.maroon, sub: C.brown },
-  nithya: { label: 'नित्यनियम', bgA: '#E8E2DA', bgB: C.stone, accent: C.gold, title: C.maroon, sub: C.brown },
+  gita2: { label: 'गीतांजली भाग २', bgA: '#9A8170', bgB: C.brown, frame: C.beige, text: '#FFFFFF' },
+  upasana: { label: 'उपासना', bgA: '#EBDCC8', bgB: C.beige, frame: C.brown, text: C.maroon },
+  nithya: { label: 'नित्यनियम', bgA: '#E8E2DA', bgB: C.stone, frame: C.gold, text: C.maroon },
 }
 // A Part added later gets the maroon style and its own name.
 const styleOf = (product) => STYLES[product.code] || { label: product.name, ...DARK }
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-// Background and ornament only. Text is drawn separately through Pango,
-// which joins Devanagari letters (श्री, क्ष) correctly; SVG text does not.
-function background({ accent, bgA, bgB }) {
-  const rays = Array.from({ length: 36 }, (_, i) => {
-    const a = (i * 10 * Math.PI) / 180
-    const x = 256 + Math.cos(a) * 360
-    const y = 150 + Math.sin(a) * 360
-    return `<line x1="256" y1="150" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${accent}" stroke-opacity="0.08" stroke-width="10"/>`
-  }).join('')
-  const petals = Array.from({ length: 16 }, (_, i) =>
-    `<ellipse cx="256" cy="92" rx="10" ry="30" fill="none" stroke="${accent}" stroke-opacity="0.5" stroke-width="1.5" transform="rotate(${i * 22.5} 256 150)"/>`
-  ).join('')
-  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">
+// Photo box: 380 px square, centred, leaving room for the name below.
+const BOX = 380
+const BOX_X = 66
+const BOX_Y = 30
+
+function background({ bgA, bgB, frame }) {
+  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="30%" r="80%">
+    <radialGradient id="bg" cx="50%" cy="35%" r="80%">
       <stop offset="0" stop-color="${bgA}"/><stop offset="1" stop-color="${bgB}"/>
     </radialGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="${accent}" stop-opacity="0.35"/><stop offset="1" stop-color="${accent}" stop-opacity="0"/>
-    </radialGradient>
   </defs>
-  <rect width="${S}" height="${S}" fill="url(#bg)"/>
-  ${rays}
-  <circle cx="256" cy="150" r="120" fill="url(#glow)"/>
-  ${petals}
-  <circle cx="256" cy="150" r="52" fill="${C.maroon}" stroke="${accent}" stroke-width="2.5"/>
-  <circle cx="256" cy="150" r="60" fill="none" stroke="${accent}" stroke-opacity="0.5" stroke-width="1"/>
-  <rect x="14" y="14" width="${S - 28}" height="${S - 28}" rx="18" fill="none" stroke="${accent}" stroke-opacity="0.45" stroke-width="1.5"/>
-  <line x1="196" y1="402" x2="316" y2="402" stroke="${accent}" stroke-opacity="0.7" stroke-width="1.5"/>
-  <circle cx="256" cy="402" r="3.5" fill="${accent}"/>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect x="${BOX_X - 7}" y="${BOX_Y - 7}" width="${BOX + 14}" height="${BOX + 14}" rx="30" fill="none" stroke="${frame}" stroke-width="3"/>
+  <rect x="14" y="14" width="484" height="484" rx="18" fill="none" stroke="${frame}" stroke-opacity="0.45" stroke-width="1.5"/>
 </svg>`)
 }
 
-const text = (markup, { bold = true, size, width }) =>
-  sharp({
-    text: {
-      text: markup,
-      font: `Noto Sans Devanagari ${bold ? 'Bold ' : ''}${size}`,
-      fontfile: bold ? FONT_BOLD : FONT_REG,
-      width,
-      align: 'centre',
-      rgba: true,
-      wrap: 'word',
-      dpi: 72,
-    },
-  }).png().toBuffer({ resolveWithObject: true })
-
-// The largest size at which the title fits the middle band (about 3 lines).
-async function fitTitle(title, color) {
-  const markup = `<span foreground="${color}">${esc(title)}</span>`
-  for (let size = 60; size >= 24; size -= 2) {
-    const r = await text(markup, { size, width: 420 })
-    if (r.info.height <= 170 && r.info.width <= 420) return r
-  }
-  return text(markup, { size: 22, width: 420 })
+async function photo() {
+  const mask = Buffer.from(`<svg width="${BOX}" height="${BOX}"><rect width="${BOX}" height="${BOX}" rx="24" fill="#fff"/></svg>`)
+  return sharp(PHOTO)
+    .resize(BOX, BOX, { fit: 'cover', position: 'top' })
+    .composite([{ input: mask, blend: 'dest-in' }])
+    .png()
+    .toBuffer()
 }
 
-async function render(title, subtitle, style) {
-  const om = await text(`<span foreground="${C.gold}">ॐ</span>`, { size: 64, width: 120 })
-  const t = await fitTitle(title, style.title)
-  const sub = await text(`<span foreground="${style.sub}" letter_spacing="1024">${esc(subtitle)}</span>`, {
-    bold: false, size: 22, width: 400,
-  })
-  const at = (img, cx, cy) => ({
-    input: img.data,
-    left: Math.round(cx - img.info.width / 2),
-    top: Math.round(cy - img.info.height / 2),
-  })
+// The largest size at which the name fits on one line under the photo.
+async function label(textValue, color) {
+  for (let size = 32; size >= 18; size -= 2) {
+    const r = await sharp({
+      text: {
+        text: `<span foreground="${color}">${esc(textValue)}</span>`,
+        font: `Noto Sans Devanagari Bold ${size}`,
+        fontfile: FONT,
+        width: 440,
+        align: 'centre',
+        rgba: true,
+        dpi: 72,
+      },
+    }).png().toBuffer({ resolveWithObject: true })
+    if (r.info.height <= 56) return r
+  }
+  throw new Error(`Part name too long for the cover: ${textValue}`)
+}
+
+async function render(style, photoPng) {
+  const name = await label(style.label, style.text)
   return sharp(background(style))
-    .composite([at(om, 256, 150), at(t, 256, 305), at(sub, 256, 440)])
+    .composite([
+      { input: photoPng, left: BOX_X, top: BOX_Y },
+      { input: name.data, left: Math.round(256 - name.info.width / 2), top: Math.round(460 - name.info.height / 2) },
+    ])
     .webp({ quality: 82 })
     .toBuffer()
 }
 
-// Timestamped like panel uploads, so a regenerated cover gets a new URL and
-// no phone keeps showing a cached old one.
-async function save(buf, name) {
-  const file = `${Date.now()}-${name}.webp`
-  fs.writeFileSync(path.join(OUT_DIR, file), buf)
-  return `/uploads/cover/${file}`
-}
-
 async function main() {
-  for (const f of [FONT_BOLD, FONT_REG]) {
-    if (!fs.existsSync(f)) throw new Error(`Font missing: ${f}`)
+  for (const f of [PHOTO, FONT]) {
+    if (!fs.existsSync(f)) throw new Error(`Missing file: ${f}`)
   }
-  fs.mkdirSync(OUT_DIR, { recursive: true })
 
   const products = await prisma.product.findMany({ orderBy: { id: 'asc' } })
-  const byId = new Map(products.map((p) => [p.id, p]))
-  const parts = products.filter((p) => !p.coverUrl)
-  const songs = await prisma.content.findMany({
-    where: { coverUrl: null, deletedAt: null },
-    orderBy: [{ productId: 'asc' }, { sortOrder: 'asc' }],
-    select: { id: true, title: true, productId: true },
-  })
 
-  console.log(`${APPLY ? 'Generating' : 'Dry run —'} ${parts.length} Part cover(s), ${songs.length} song cover(s).`)
-  if (!APPLY) {
-    for (const p of parts) console.log(`  Part  #${p.id}  ${styleOf(p).label}`)
-    for (const s of songs) console.log(`  Song  #${s.id}  ${s.title}  (${styleOf(byId.get(s.productId)).label})`)
-    console.log('\nNothing written. Run again with --apply to create them.')
+  const at = process.argv.indexOf('--preview')
+  if (at !== -1) {
+    const dir = process.argv[at + 1]
+    if (!dir) throw new Error('--preview needs a folder, e.g. --preview ./cover-preview')
+    fs.mkdirSync(dir, { recursive: true })
+    const photoPng = await photo()
+    for (const p of products) {
+      const file = path.join(dir, `part-${p.id}-${p.code}.png`)
+      await sharp(await render(styleOf(p), photoPng)).png().toFile(file)
+      console.log(`  ${file}`)
+    }
+    console.log('Preview only — the database was not changed.')
     return
   }
 
-  let bytes = 0
+  const parts = products.filter((p) => !p.coverUrl || OURS_PART.test(p.coverUrl))
+  const kept = products.filter((p) => !parts.includes(p))
+  const oldSongCovers = (await prisma.content.findMany({
+    where: { coverUrl: { startsWith: '/uploads/cover/' } },
+    select: { id: true, coverUrl: true },
+  })).filter((s) => OURS_SONG.test(s.coverUrl))
+
+  console.log(`${APPLY ? 'Applying' : 'Dry run —'} ${parts.length} Part cover(s) to make, ${oldSongCovers.length} old song text cover(s) to clear.`)
+  for (const p of parts) console.log(`  Part  #${p.id}  ${styleOf(p).label}`)
+  for (const p of kept) console.log(`  Part  #${p.id}  ${p.name} — keeps its hand-uploaded cover`)
+  if (!APPLY) {
+    console.log('\nNothing written. Run again with --apply to do it.')
+    return
+  }
+
+  fs.mkdirSync(OUT_DIR, { recursive: true })
+  const photoPng = await photo()
+
   for (const p of parts) {
-    const style = styleOf(p)
-    const buf = await render(style.label, 'श्रीनाथ गीतांजली', style)
-    const url = await save(buf, `part-${p.id}`)
+    const buf = await render(styleOf(p), photoPng)
+    // Timestamped, so a remade cover gets a new URL and no phone keeps a
+    // cached old one.
+    const url = `/uploads/cover/${Date.now()}-part-${p.id}.webp`
+    fs.writeFileSync(path.join(ROOT, url), buf)
     await prisma.product.update({ where: { id: p.id }, data: { coverUrl: url } })
-    bytes += buf.length
-    console.log(`  ✓ Part #${p.id} ${style.label}`)
+    if (p.coverUrl) await removeUploadIfUnused(p.coverUrl)
+    console.log(`  ✓ Part #${p.id} ${styleOf(p).label}  (${(buf.length / 1024).toFixed(0)} KB)`)
   }
-  for (const [i, s] of songs.entries()) {
-    const style = styleOf(byId.get(s.productId))
-    const buf = await render(s.title, style.label, style)
-    const url = await save(buf, `song-${s.id}`)
-    // Guarded on null again: an admin may have uploaded one while this ran.
-    await prisma.content.updateMany({ where: { id: s.id, coverUrl: null }, data: { coverUrl: url } })
-    bytes += buf.length
-    if ((i + 1) % 25 === 0 || i === songs.length - 1) console.log(`  ✓ ${i + 1}/${songs.length} songs`)
+
+  // Guarded on the old value, so a cover an admin uploads while this runs is kept.
+  for (const s of oldSongCovers) {
+    await prisma.content.updateMany({ where: { id: s.id, coverUrl: s.coverUrl }, data: { coverUrl: null } })
+    await removeUploadIfUnused(s.coverUrl)
   }
-  console.log(`Done. ${parts.length + songs.length} covers, ${(bytes / 1024).toFixed(0)} KB in total.`)
+  if (oldSongCovers.length) console.log(`  ✓ Cleared ${oldSongCovers.length} old song text covers — those songs now show their Part's cover.`)
+  console.log('Done.')
 }
 
 main()
