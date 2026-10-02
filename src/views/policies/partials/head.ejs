@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= pageTitle %> | <%= site.name %></title>
+  <meta name="description" content="<%= pageTitle %> of <%= site.fullName %>." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --saffron-50: #fff7ed; --saffron-100: #ffedd5; --saffron-600: #ea7317; --saffron-700: #c2570c;
+      --maroon-700: #7a1f1f; --maroon-800: #5e1818; --maroon-900: #4a1212;
+      --gold-300: #efd271; --gold-500: #d4a017;
+      --ivory: #fdfaf3; --ivory-200: #f8f1e3; --ink: #2b2b2b; --ink-muted: #6b6b6b;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; background: var(--ivory); color: var(--ink);
+      font-family: "Lexend Deca", "Noto Serif Devanagari", system-ui, sans-serif;
+      line-height: 1.7; font-size: 16px;
+    }
+    a { color: var(--saffron-700); }
+    .bar { height: 4px; background: linear-gradient(90deg, var(--gold-500), var(--saffron-600), var(--gold-500)); }
+    header.top {
+      background: linear-gradient(135deg, var(--maroon-800), var(--maroon-900));
+      color: var(--ivory); padding: 36px 16px 32px; text-align: center;
+    }
+    header.top .site { margin: 0 0 6px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-300); }
+    header.top h1 { margin: 0; font-size: clamp(26px, 5vw, 36px); font-weight: 700; line-height: 1.25; }
+    .meta { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; font-size: 13px; }
+    .chip { display: inline-block; padding: 3px 12px; border-radius: 999px; background: rgba(253, 250, 243, .12); border: 1px solid rgba(239, 210, 113, .4); }
+    main { max-width: 860px; margin: 0 auto; padding: 28px 16px 48px; }
+    .card { background: #fff; border: 1px solid var(--ivory-200); border-radius: 16px; padding: clamp(20px, 4vw, 40px); box-shadow: 0 6px 24px rgba(74, 18, 18, .06); }
+    .policy { overflow-wrap: anywhere; }
+    .policy h1, .policy h2, .policy h3, .policy h4 { color: var(--maroon-800); line-height: 1.3; margin: 1.6em 0 .5em; }
+    .policy h1 { font-size: 1.6em; } .policy h2 { font-size: 1.3em; } .policy h3 { font-size: 1.12em; }
+    .policy > :first-child { margin-top: 0; }
+    .policy p { margin: 0 0 1em; }
+    .policy ul, .policy ol { padding-left: 1.4em; margin: 0 0 1em; }
+    .policy li { margin: .25em 0; }
+    .policy blockquote { margin: 1em 0; padding: .6em 1em; border-left: 4px solid var(--gold-500); background: var(--saffron-50); }
+    .policy table { width: 100%; border-collapse: collapse; margin: 1em 0; display: block; overflow-x: auto; }
+    .policy th, .policy td { border: 1px solid var(--ivory-200); padding: 8px 10px; text-align: left; vertical-align: top; }
+    .policy th { background: var(--saffron-100); }
+    .updated { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--ivory-200); font-size: 13px; color: var(--ink-muted); }
+    nav.other { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; font-size: 14px; }
+    nav.other a { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--saffron-600); text-decoration: none; }
+    nav.other a:hover { background: var(--saffron-50); }
+    footer.bottom { background: var(--maroon-900); color: rgba(253, 250, 243, .7); text-align: center; font-size: 12px; padding: 20px 16px; }
+    footer.bottom a { color: var(--gold-300); }
+    .empty { text-align: center; color: var(--ink-muted); padding: 24px 0; }
+    .toc h2 { margin-top: 0; }
+    .section + .section { margin-top: 40px; padding-top: 32px; border-top: 2px solid var(--ivory-200); }
+    /* Inside the app's WebView: no site chrome, the app has its own header. */
+    body.app header.top, body.app footer.bottom, body.app .bar, body.app nav.other { display: none; }
+    body.app main { padding-top: 16px; }
+    body.app .card { border: 0; box-shadow: none; padding: 4px; background: transparent; }
+  </style>
+</head>
+<body class="<%= app ? 'app' : '' %>">
+  <div class="bar"></div>

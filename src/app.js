@@ -18,6 +18,7 @@ import galleryRoutes from './routes/gallery.routes.js'
 import galleryCategoryRoutes from './routes/galleryCategories.routes.js'
 import pagesRoutes from './routes/pages.routes.js'
 import settingsRoutes from './routes/settings.routes.js'
+import policiesRoutes from './routes/policies.routes.js'
 import notificationsRoutes from './routes/notifications.routes.js'
 import paymentsRoutes from './routes/payments.routes.js'
 import donationsRoutes from './routes/donations.routes.js'
@@ -113,6 +114,8 @@ app.use('/api/albums', galleryRoutes)
 app.use('/api/gallery-categories', galleryCategoryRoutes)
 app.use('/api/pages', pagesRoutes)
 app.use('/api/settings', settingsRoutes)
+// Privacy Policy + Terms & Conditions (admin editor; readers use /api/public/policies)
+app.use('/api/policies', policiesRoutes)
 app.use('/api/notifications', notificationsRoutes)
 app.use('/api/payments', paymentsRoutes)
 app.use('/api/donations', donationsRoutes)

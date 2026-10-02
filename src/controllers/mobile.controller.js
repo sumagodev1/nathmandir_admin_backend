@@ -23,6 +23,7 @@ import { sendOtpSms } from '../lib/sms.js'
 import { normalizeMobile, readMobile } from '../lib/phone.js'
 import { findUserByMobile } from '../lib/userLookup.js'
 import { STATUS, sendOk, sendFail } from '../lib/statusCodes.js'
+import { POLICY_TYPES, POLICY_LABELS, isPolicyType, shapePolicy, findPolicy, listPolicies } from '../lib/policies.js'
 
 // Read a POST field (falls back to query string), matching PHP $_POST.
 const field = (req, key) => {
@@ -1125,6 +1126,103 @@ async function gallery_category(req, res) {
   })
 }
 
+// ── Legal policies (Privacy Policy, Terms & Conditions) ────────
+// Same rows the admin edits under Privacy Policy / Terms & Conditions and the
+// website shows. `url` is the EJS web page with ?app=1, ready for a WebView.
+
+// One policy as the app receives it.
+const asPolicy = (req, p) => ({
+  ...shapePolicy(p),
+  url: absUrl(req, `/api/public/policies/web/${p.type}?app=1`),
+})
+
+// The acceptance state of one policy for one user. `needsAcceptance` is true
+// when the user never accepted, or accepted an older version than the current one.
+const acceptanceOf = (type, policy, row) => {
+  const currentVersion = policy ? policy.version : null
+  const acceptedVersion = row ? row.acceptedVersion : null
+  const accepted = policy !== null && acceptedVersion !== null && acceptedVersion >= currentVersion
+  return {
+    type,
+    title: policy ? policy.title : POLICY_LABELS[type],
+    published: policy !== null,
+    currentVersion,
+    acceptedVersion,
+    acceptedAt: row ? row.acceptedAt.toISOString() : null,
+    accepted,
+    // Nothing to accept until the admin has published it.
+    needsAcceptance: policy !== null && !accepted,
+  }
+}
+
+// ── get_policy ─ [public] { type? } → one policy, or both ───────
+//   type = privacy | terms   → { policy }
+//   no type                  → { policies: [...] }
+// Public because the app shows these before login, on the sign-up screen.
+async function get_policy(req, res) {
+  const type = field(req, 'type')
+  if (type === undefined || type === '') {
+    const rows = await listPolicies()
+    return sendOk(res, 'Policies loaded', { policies: rows.map((p) => asPolicy(req, p)) })
+  }
+  if (!isPolicyType(type)) return sendFail(res, 'type must be "privacy" or "terms"', STATUS.BAD_REQUEST)
+
+  const row = await findPolicy(type)
+  if (!row) return sendFail(res, `${POLICY_LABELS[type]} not found`, STATUS.NOT_FOUND)
+  return sendOk(res, 'Policy loaded', { policy: asPolicy(req, row) })
+}
+
+// ── accept_policy ─ [auth] { type } → record that this user accepted ──
+//   type = privacy | terms | all   (all = both published policies at once)
+// Records the CURRENT version. The user comes from the Bearer token, never
+// from a form field, so nobody can accept on someone else's behalf.
+async function accept_policy(req, res) {
+  const type = field(req, 'type')
+  const types = type === 'all' ? POLICY_TYPES : isPolicyType(type) ? [type] : null
+  if (!types) return sendFail(res, 'type must be "privacy", "terms" or "all"', STATUS.BAD_REQUEST)
+
+  const userId = Number(req.mobileUser.id)
+  const policies = (await Promise.all(types.map(findPolicy))).filter(Boolean)
+  if (!policies.length) {
+    return sendFail(res, type === 'all' ? 'No policy is published yet' : `${POLICY_LABELS[type]} not found`, STATUS.NOT_FOUND)
+  }
+
+  const now = new Date()
+  const rows = await prisma.$transaction(
+    policies.map((p) =>
+      prisma.policyAcceptance.upsert({
+        where: { userId_policyType: { userId, policyType: p.type } },
+        update: { acceptedVersion: p.version, acceptedAt: now },
+        create: { userId, policyType: p.type, acceptedVersion: p.version, acceptedAt: now },
+      })
+    )
+  )
+
+  const byType = new Map(policies.map((p) => [p.type, p]))
+  return sendOk(res, 'Policy accepted', {
+    acceptance: rows.map((r) => acceptanceOf(r.policyType, byType.get(r.policyType), r)),
+  })
+}
+
+// ── policy_status ─ [auth] → has this user accepted the current versions? ──
+// Always returns both types, so one call on app start tells the app whether
+// to show the "we've updated our policies" screen.
+async function policy_status(req, res) {
+  const userId = Number(req.mobileUser.id)
+  const [policies, rows] = await Promise.all([
+    listPolicies(),
+    prisma.policyAcceptance.findMany({ where: { userId } }),
+  ])
+  const policyOf = new Map(policies.map((p) => [p.type, p]))
+  const rowOf = new Map(rows.map((r) => [r.policyType, r]))
+
+  const status = POLICY_TYPES.map((t) => acceptanceOf(t, policyOf.get(t) || null, rowOf.get(t) || null))
+  return sendOk(res, 'Policy status loaded', {
+    status,
+    needsAcceptance: status.some((s) => s.needsAcceptance),
+  })
+}
+
 // ── apicall → handler map (mirrors the PHP switch) ─────────────
 export const handlers = {
   loginuser,
@@ -1152,6 +1250,10 @@ export const handlers = {
   gallery,
   gallery_album,
   gallery_category,
+  // Privacy Policy + Terms & Conditions.
+  get_policy,
+  accept_policy,
+  policy_status,
 }
 
 // apicalls that do NOT need a Bearer token — they run before a token
@@ -1165,6 +1267,7 @@ const PUBLIC_APICALLS = new Set([
   'gallery',
   'gallery_album',
   'gallery_category',
+  'get_policy',
 ])
 
 // Validate the mobile app's Bearer token: verify the JWT signature AND

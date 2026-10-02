@@ -1,0 +1,25 @@
+<%- include('partials/head', { pageTitle: 'Policies' }) %>
+  <header class="top">
+    <p class="site"><%= site.fullName %></p>
+    <h1>Policies</h1>
+  </header>
+
+  <main>
+    <article class="card">
+      <% if (!policies.length) { %>
+        <p class="empty">No policies have been published yet.</p>
+      <% } %>
+      <% policies.forEach(function (p) { %>
+        <section class="section" id="<%= p.type %>">
+          <h2 style="color: var(--maroon-800); margin-top: 0;"><%= p.title %></h2>
+          <%# Cleaned with sanitize-html on save, so it is printed unescaped. %>
+          <div class="policy"><%- p.content %></div>
+          <p class="updated">
+            Version <%= p.version %> · Last updated: <%= p.updatedOn %> ·
+            <a href="<%= p.href %>">Open on its own page</a>
+          </p>
+        </section>
+      <% }) %>
+    </article>
+  </main>
+<%- include('partials/foot') %>

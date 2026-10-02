@@ -1,0 +1,24 @@
+<%- include('partials/head', { pageTitle: policy.title }) %>
+  <header class="top">
+    <p class="site"><%= site.fullName %></p>
+    <h1><%= policy.title %></h1>
+    <div class="meta">
+      <span class="chip">Version <%= policy.version %></span>
+      <span class="chip">Last updated: <%= policy.updatedOn %></span>
+    </div>
+  </header>
+
+  <main>
+    <article class="card">
+      <%# Cleaned with sanitize-html when the admin saved it (src/lib/policies.js), so it is printed unescaped. %>
+      <div class="policy"><%- policy.content %></div>
+      <p class="updated">Version <%= policy.version %> · Last updated: <%= policy.updatedOn %></p>
+    </article>
+
+    <nav class="other">
+      <% others.forEach(function (o) { %>
+        <a href="<%= o.href %>"><%= o.label %></a>
+      <% }) %>
+    </nav>
+  </main>
+<%- include('partials/foot') %>

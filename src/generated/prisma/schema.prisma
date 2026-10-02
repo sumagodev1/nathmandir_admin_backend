@@ -414,6 +414,38 @@ model Setting {
   @@map("settings")
 }
 
+// ── Legal policies (Privacy Policy, Terms & Conditions) ──────
+// One row per type. `content` is HTML from the admin's rich-text editor,
+// cleaned on save. Every save that changes something bumps `version`, and
+// the app compares that against what the user last accepted.
+// Created by scripts/add-policies.js (raw SQL, not prisma migrate).
+model Policy {
+  id        Int      @id @default(autoincrement())
+  type      String   @unique @db.VarChar(20) // "privacy" | "terms"
+  title     String   @db.VarChar(191)
+  content   String   @db.LongText
+  version   Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("policies")
+}
+
+// Which version of each policy a mobile user has accepted. One row per
+// (user, type), overwritten on each acceptance. No foreign key to users on
+// purpose: user rows get merged and cleaned up, and an acceptance record
+// must never block that.
+model PolicyAcceptance {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  policyType      String   @map("policy_type") @db.VarChar(20)
+  acceptedVersion Int      @map("accepted_version")
+  acceptedAt      DateTime @default(now()) @map("accepted_at")
+
+  @@unique([userId, policyType])
+  @@map("policy_acceptances")
+}
+
 // ── Website content sections (CMS for the public website) ────
 // One row per website section (maharaj, temple, trust, events,
 // donate, story). `data` is a JSON document holding the section's

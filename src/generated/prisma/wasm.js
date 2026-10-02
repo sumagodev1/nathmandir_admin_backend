@@ -293,6 +293,24 @@ exports.Prisma.SettingScalarFieldEnum = {
   value: 'value'
 };
 
+exports.Prisma.PolicyScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  title: 'title',
+  content: 'content',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PolicyAcceptanceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  policyType: 'policyType',
+  acceptedVersion: 'acceptedVersion',
+  acceptedAt: 'acceptedAt'
+};
+
 exports.Prisma.SiteSectionScalarFieldEnum = {
   key: 'key',
   data: 'data',
@@ -377,6 +395,8 @@ exports.Prisma.ModelName = {
   Photo: 'Photo',
   Page: 'Page',
   Setting: 'Setting',
+  Policy: 'Policy',
+  PolicyAcceptance: 'PolicyAcceptance',
   SiteSection: 'SiteSection',
   OtpChallenge: 'OtpChallenge'
 };

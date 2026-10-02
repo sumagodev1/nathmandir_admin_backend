@@ -1,0 +1,12 @@
+<%- include('partials/head', { pageTitle: label }) %>
+  <header class="top">
+    <p class="site"><%= site.fullName %></p>
+    <h1><%= label %></h1>
+  </header>
+
+  <main>
+    <article class="card">
+      <p class="empty">The <%= label %> has not been published yet. Please check back soon.</p>
+    </article>
+  </main>
+<%- include('partials/foot') %>
