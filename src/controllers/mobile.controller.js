@@ -191,7 +191,11 @@ async function verifyOTP(req, res) {
   const did = field(req, 'DID')
   if (!otp || !mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
-  const user = await prisma.user.findFirst({ where: { phone: mobile, otp } })
+  // The default OTP (6666) logs in any registered number, as well as the
+  // real OTP that was sent. Set DEFAULT_OTP to an empty value to turn it off.
+  const defaultOtp = process.env.DEFAULT_OTP ?? '6666'
+  const where = defaultOtp && otp === defaultOtp ? { phone: mobile } : { phone: mobile, otp }
+  const user = await prisma.user.findFirst({ where })
   if (!user) return sendFail(res, 'OTP Incorrect', STATUS.UNAUTHORIZED)
 
   // `status` is the admin's enable/disable switch. Until now nothing checked
