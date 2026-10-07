@@ -9,6 +9,8 @@
 //   GET  /api/public/pages/:id                — one published page
 //   GET  /api/public/notifications?limit=     — recent "all" announcements
 //   POST /api/public/contact                  — submit a contact message
+//   GET  /api/public/app                      — latest Android APK details, or null
+//   GET  /api/public/app/download             — the latest APK file
 //
 //   Legal policies (type: privacy | terms):
 //   GET  /api/public/policies                 — both policies as JSON
@@ -19,6 +21,7 @@
 import { Router } from 'express'
 import * as pub from '../controllers/public.controller.js'
 import * as policies from '../controllers/publicPolicies.controller.js'
+import * as appRelease from '../controllers/appRelease.controller.js'
 
 const router = Router()
 
@@ -31,6 +34,8 @@ router.get('/notifications', pub.notifications)
 router.get('/sections', pub.sections)
 router.get('/sections/:key', pub.section)
 router.post('/contact', pub.submitContact)
+router.get('/app', appRelease.publicInfo)
+router.get('/app/download', appRelease.download)
 // web/* first, so "web" is never read as a policy type.
 router.get('/policies/web/all', policies.webAll)
 router.get('/policies/web/:type', policies.webPage)

@@ -303,6 +303,18 @@ exports.Prisma.PolicyScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AppReleaseScalarFieldEnum = {
+  id: 'id',
+  version: 'version',
+  originalName: 'originalName',
+  file: 'file',
+  size: 'size',
+  isLive: 'isLive',
+  uploadedBy: 'uploadedBy',
+  uploadedAt: 'uploadedAt',
+  fileDeletedAt: 'fileDeletedAt'
+};
+
 exports.Prisma.PolicyAcceptanceScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -396,6 +408,7 @@ exports.Prisma.ModelName = {
   Page: 'Page',
   Setting: 'Setting',
   Policy: 'Policy',
+  AppRelease: 'AppRelease',
   PolicyAcceptance: 'PolicyAcceptance',
   SiteSection: 'SiteSection',
   OtpChallenge: 'OtpChallenge'

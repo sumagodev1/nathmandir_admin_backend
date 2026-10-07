@@ -99,6 +99,11 @@ export type Setting = $Result.DefaultSelection<Prisma.$SettingPayload>
  */
 export type Policy = $Result.DefaultSelection<Prisma.$PolicyPayload>
 /**
+ * Model AppRelease
+ * 
+ */
+export type AppRelease = $Result.DefaultSelection<Prisma.$AppReleasePayload>
+/**
  * Model PolicyAcceptance
  * 
  */
@@ -502,6 +507,16 @@ export class PrismaClient<
     * ```
     */
   get policy(): Prisma.PolicyDelegate<ExtArgs>;
+
+  /**
+   * `prisma.appRelease`: Exposes CRUD operations for the **AppRelease** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AppReleases
+    * const appReleases = await prisma.appRelease.findMany()
+    * ```
+    */
+  get appRelease(): Prisma.AppReleaseDelegate<ExtArgs>;
 
   /**
    * `prisma.policyAcceptance`: Exposes CRUD operations for the **PolicyAcceptance** model.
@@ -990,6 +1005,7 @@ export namespace Prisma {
     Page: 'Page',
     Setting: 'Setting',
     Policy: 'Policy',
+    AppRelease: 'AppRelease',
     PolicyAcceptance: 'PolicyAcceptance',
     SiteSection: 'SiteSection',
     OtpChallenge: 'OtpChallenge'
@@ -1008,7 +1024,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "admin" | "product" | "user" | "content" | "contentNode" | "contentSchedule" | "userAccess" | "sale" | "notification" | "book" | "chapter" | "galleryCategory" | "album" | "photo" | "page" | "setting" | "policy" | "policyAcceptance" | "siteSection" | "otpChallenge"
+      modelProps: "admin" | "product" | "user" | "content" | "contentNode" | "contentSchedule" | "userAccess" | "sale" | "notification" | "book" | "chapter" | "galleryCategory" | "album" | "photo" | "page" | "setting" | "policy" | "appRelease" | "policyAcceptance" | "siteSection" | "otpChallenge"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2131,6 +2147,72 @@ export namespace Prisma {
           count: {
             args: Prisma.PolicyCountArgs<ExtArgs>
             result: $Utils.Optional<PolicyCountAggregateOutputType> | number
+          }
+        }
+      }
+      AppRelease: {
+        payload: Prisma.$AppReleasePayload<ExtArgs>
+        fields: Prisma.AppReleaseFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AppReleaseFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AppReleaseFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          findFirst: {
+            args: Prisma.AppReleaseFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AppReleaseFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          findMany: {
+            args: Prisma.AppReleaseFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>[]
+          }
+          create: {
+            args: Prisma.AppReleaseCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          createMany: {
+            args: Prisma.AppReleaseCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.AppReleaseDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          update: {
+            args: Prisma.AppReleaseUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          deleteMany: {
+            args: Prisma.AppReleaseDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AppReleaseUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.AppReleaseUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          aggregate: {
+            args: Prisma.AppReleaseAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAppRelease>
+          }
+          groupBy: {
+            args: Prisma.AppReleaseGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AppReleaseGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AppReleaseCountArgs<ExtArgs>
+            result: $Utils.Optional<AppReleaseCountAggregateOutputType> | number
           }
         }
       }
@@ -19033,6 +19115,920 @@ export namespace Prisma {
 
 
   /**
+   * Model AppRelease
+   */
+
+  export type AggregateAppRelease = {
+    _count: AppReleaseCountAggregateOutputType | null
+    _avg: AppReleaseAvgAggregateOutputType | null
+    _sum: AppReleaseSumAggregateOutputType | null
+    _min: AppReleaseMinAggregateOutputType | null
+    _max: AppReleaseMaxAggregateOutputType | null
+  }
+
+  export type AppReleaseAvgAggregateOutputType = {
+    id: number | null
+    size: number | null
+  }
+
+  export type AppReleaseSumAggregateOutputType = {
+    id: number | null
+    size: bigint | null
+  }
+
+  export type AppReleaseMinAggregateOutputType = {
+    id: number | null
+    version: string | null
+    originalName: string | null
+    file: string | null
+    size: bigint | null
+    isLive: boolean | null
+    uploadedBy: string | null
+    uploadedAt: Date | null
+    fileDeletedAt: Date | null
+  }
+
+  export type AppReleaseMaxAggregateOutputType = {
+    id: number | null
+    version: string | null
+    originalName: string | null
+    file: string | null
+    size: bigint | null
+    isLive: boolean | null
+    uploadedBy: string | null
+    uploadedAt: Date | null
+    fileDeletedAt: Date | null
+  }
+
+  export type AppReleaseCountAggregateOutputType = {
+    id: number
+    version: number
+    originalName: number
+    file: number
+    size: number
+    isLive: number
+    uploadedBy: number
+    uploadedAt: number
+    fileDeletedAt: number
+    _all: number
+  }
+
+
+  export type AppReleaseAvgAggregateInputType = {
+    id?: true
+    size?: true
+  }
+
+  export type AppReleaseSumAggregateInputType = {
+    id?: true
+    size?: true
+  }
+
+  export type AppReleaseMinAggregateInputType = {
+    id?: true
+    version?: true
+    originalName?: true
+    file?: true
+    size?: true
+    isLive?: true
+    uploadedBy?: true
+    uploadedAt?: true
+    fileDeletedAt?: true
+  }
+
+  export type AppReleaseMaxAggregateInputType = {
+    id?: true
+    version?: true
+    originalName?: true
+    file?: true
+    size?: true
+    isLive?: true
+    uploadedBy?: true
+    uploadedAt?: true
+    fileDeletedAt?: true
+  }
+
+  export type AppReleaseCountAggregateInputType = {
+    id?: true
+    version?: true
+    originalName?: true
+    file?: true
+    size?: true
+    isLive?: true
+    uploadedBy?: true
+    uploadedAt?: true
+    fileDeletedAt?: true
+    _all?: true
+  }
+
+  export type AppReleaseAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AppRelease to aggregate.
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppReleases to fetch.
+     */
+    orderBy?: AppReleaseOrderByWithRelationInput | AppReleaseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AppReleaseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppReleases from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppReleases.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AppReleases
+    **/
+    _count?: true | AppReleaseCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AppReleaseAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AppReleaseSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AppReleaseMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AppReleaseMaxAggregateInputType
+  }
+
+  export type GetAppReleaseAggregateType<T extends AppReleaseAggregateArgs> = {
+        [P in keyof T & keyof AggregateAppRelease]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAppRelease[P]>
+      : GetScalarType<T[P], AggregateAppRelease[P]>
+  }
+
+
+
+
+  export type AppReleaseGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AppReleaseWhereInput
+    orderBy?: AppReleaseOrderByWithAggregationInput | AppReleaseOrderByWithAggregationInput[]
+    by: AppReleaseScalarFieldEnum[] | AppReleaseScalarFieldEnum
+    having?: AppReleaseScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AppReleaseCountAggregateInputType | true
+    _avg?: AppReleaseAvgAggregateInputType
+    _sum?: AppReleaseSumAggregateInputType
+    _min?: AppReleaseMinAggregateInputType
+    _max?: AppReleaseMaxAggregateInputType
+  }
+
+  export type AppReleaseGroupByOutputType = {
+    id: number
+    version: string
+    originalName: string
+    file: string | null
+    size: bigint
+    isLive: boolean
+    uploadedBy: string | null
+    uploadedAt: Date
+    fileDeletedAt: Date | null
+    _count: AppReleaseCountAggregateOutputType | null
+    _avg: AppReleaseAvgAggregateOutputType | null
+    _sum: AppReleaseSumAggregateOutputType | null
+    _min: AppReleaseMinAggregateOutputType | null
+    _max: AppReleaseMaxAggregateOutputType | null
+  }
+
+  type GetAppReleaseGroupByPayload<T extends AppReleaseGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AppReleaseGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AppReleaseGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AppReleaseGroupByOutputType[P]>
+            : GetScalarType<T[P], AppReleaseGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AppReleaseSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    version?: boolean
+    originalName?: boolean
+    file?: boolean
+    size?: boolean
+    isLive?: boolean
+    uploadedBy?: boolean
+    uploadedAt?: boolean
+    fileDeletedAt?: boolean
+  }, ExtArgs["result"]["appRelease"]>
+
+
+  export type AppReleaseSelectScalar = {
+    id?: boolean
+    version?: boolean
+    originalName?: boolean
+    file?: boolean
+    size?: boolean
+    isLive?: boolean
+    uploadedBy?: boolean
+    uploadedAt?: boolean
+    fileDeletedAt?: boolean
+  }
+
+
+  export type $AppReleasePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AppRelease"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      version: string
+      originalName: string
+      file: string | null
+      size: bigint
+      isLive: boolean
+      uploadedBy: string | null
+      uploadedAt: Date
+      fileDeletedAt: Date | null
+    }, ExtArgs["result"]["appRelease"]>
+    composites: {}
+  }
+
+  type AppReleaseGetPayload<S extends boolean | null | undefined | AppReleaseDefaultArgs> = $Result.GetResult<Prisma.$AppReleasePayload, S>
+
+  type AppReleaseCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<AppReleaseFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: AppReleaseCountAggregateInputType | true
+    }
+
+  export interface AppReleaseDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AppRelease'], meta: { name: 'AppRelease' } }
+    /**
+     * Find zero or one AppRelease that matches the filter.
+     * @param {AppReleaseFindUniqueArgs} args - Arguments to find a AppRelease
+     * @example
+     * // Get one AppRelease
+     * const appRelease = await prisma.appRelease.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AppReleaseFindUniqueArgs>(args: SelectSubset<T, AppReleaseFindUniqueArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one AppRelease that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {AppReleaseFindUniqueOrThrowArgs} args - Arguments to find a AppRelease
+     * @example
+     * // Get one AppRelease
+     * const appRelease = await prisma.appRelease.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AppReleaseFindUniqueOrThrowArgs>(args: SelectSubset<T, AppReleaseFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first AppRelease that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseFindFirstArgs} args - Arguments to find a AppRelease
+     * @example
+     * // Get one AppRelease
+     * const appRelease = await prisma.appRelease.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AppReleaseFindFirstArgs>(args?: SelectSubset<T, AppReleaseFindFirstArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first AppRelease that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseFindFirstOrThrowArgs} args - Arguments to find a AppRelease
+     * @example
+     * // Get one AppRelease
+     * const appRelease = await prisma.appRelease.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AppReleaseFindFirstOrThrowArgs>(args?: SelectSubset<T, AppReleaseFindFirstOrThrowArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more AppReleases that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AppReleases
+     * const appReleases = await prisma.appRelease.findMany()
+     * 
+     * // Get first 10 AppReleases
+     * const appReleases = await prisma.appRelease.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const appReleaseWithIdOnly = await prisma.appRelease.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AppReleaseFindManyArgs>(args?: SelectSubset<T, AppReleaseFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a AppRelease.
+     * @param {AppReleaseCreateArgs} args - Arguments to create a AppRelease.
+     * @example
+     * // Create one AppRelease
+     * const AppRelease = await prisma.appRelease.create({
+     *   data: {
+     *     // ... data to create a AppRelease
+     *   }
+     * })
+     * 
+     */
+    create<T extends AppReleaseCreateArgs>(args: SelectSubset<T, AppReleaseCreateArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many AppReleases.
+     * @param {AppReleaseCreateManyArgs} args - Arguments to create many AppReleases.
+     * @example
+     * // Create many AppReleases
+     * const appRelease = await prisma.appRelease.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AppReleaseCreateManyArgs>(args?: SelectSubset<T, AppReleaseCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a AppRelease.
+     * @param {AppReleaseDeleteArgs} args - Arguments to delete one AppRelease.
+     * @example
+     * // Delete one AppRelease
+     * const AppRelease = await prisma.appRelease.delete({
+     *   where: {
+     *     // ... filter to delete one AppRelease
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AppReleaseDeleteArgs>(args: SelectSubset<T, AppReleaseDeleteArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one AppRelease.
+     * @param {AppReleaseUpdateArgs} args - Arguments to update one AppRelease.
+     * @example
+     * // Update one AppRelease
+     * const appRelease = await prisma.appRelease.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AppReleaseUpdateArgs>(args: SelectSubset<T, AppReleaseUpdateArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more AppReleases.
+     * @param {AppReleaseDeleteManyArgs} args - Arguments to filter AppReleases to delete.
+     * @example
+     * // Delete a few AppReleases
+     * const { count } = await prisma.appRelease.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AppReleaseDeleteManyArgs>(args?: SelectSubset<T, AppReleaseDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AppReleases.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AppReleases
+     * const appRelease = await prisma.appRelease.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AppReleaseUpdateManyArgs>(args: SelectSubset<T, AppReleaseUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one AppRelease.
+     * @param {AppReleaseUpsertArgs} args - Arguments to update or create a AppRelease.
+     * @example
+     * // Update or create a AppRelease
+     * const appRelease = await prisma.appRelease.upsert({
+     *   create: {
+     *     // ... data to create a AppRelease
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AppRelease we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AppReleaseUpsertArgs>(args: SelectSubset<T, AppReleaseUpsertArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of AppReleases.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseCountArgs} args - Arguments to filter AppReleases to count.
+     * @example
+     * // Count the number of AppReleases
+     * const count = await prisma.appRelease.count({
+     *   where: {
+     *     // ... the filter for the AppReleases we want to count
+     *   }
+     * })
+    **/
+    count<T extends AppReleaseCountArgs>(
+      args?: Subset<T, AppReleaseCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AppReleaseCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AppRelease.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AppReleaseAggregateArgs>(args: Subset<T, AppReleaseAggregateArgs>): Prisma.PrismaPromise<GetAppReleaseAggregateType<T>>
+
+    /**
+     * Group by AppRelease.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AppReleaseGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AppReleaseGroupByArgs['orderBy'] }
+        : { orderBy?: AppReleaseGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AppReleaseGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAppReleaseGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AppRelease model
+   */
+  readonly fields: AppReleaseFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AppRelease.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AppReleaseClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AppRelease model
+   */ 
+  interface AppReleaseFieldRefs {
+    readonly id: FieldRef<"AppRelease", 'Int'>
+    readonly version: FieldRef<"AppRelease", 'String'>
+    readonly originalName: FieldRef<"AppRelease", 'String'>
+    readonly file: FieldRef<"AppRelease", 'String'>
+    readonly size: FieldRef<"AppRelease", 'BigInt'>
+    readonly isLive: FieldRef<"AppRelease", 'Boolean'>
+    readonly uploadedBy: FieldRef<"AppRelease", 'String'>
+    readonly uploadedAt: FieldRef<"AppRelease", 'DateTime'>
+    readonly fileDeletedAt: FieldRef<"AppRelease", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AppRelease findUnique
+   */
+  export type AppReleaseFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Filter, which AppRelease to fetch.
+     */
+    where: AppReleaseWhereUniqueInput
+  }
+
+  /**
+   * AppRelease findUniqueOrThrow
+   */
+  export type AppReleaseFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Filter, which AppRelease to fetch.
+     */
+    where: AppReleaseWhereUniqueInput
+  }
+
+  /**
+   * AppRelease findFirst
+   */
+  export type AppReleaseFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Filter, which AppRelease to fetch.
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppReleases to fetch.
+     */
+    orderBy?: AppReleaseOrderByWithRelationInput | AppReleaseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AppReleases.
+     */
+    cursor?: AppReleaseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppReleases from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppReleases.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AppReleases.
+     */
+    distinct?: AppReleaseScalarFieldEnum | AppReleaseScalarFieldEnum[]
+  }
+
+  /**
+   * AppRelease findFirstOrThrow
+   */
+  export type AppReleaseFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Filter, which AppRelease to fetch.
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppReleases to fetch.
+     */
+    orderBy?: AppReleaseOrderByWithRelationInput | AppReleaseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AppReleases.
+     */
+    cursor?: AppReleaseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppReleases from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppReleases.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AppReleases.
+     */
+    distinct?: AppReleaseScalarFieldEnum | AppReleaseScalarFieldEnum[]
+  }
+
+  /**
+   * AppRelease findMany
+   */
+  export type AppReleaseFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Filter, which AppReleases to fetch.
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppReleases to fetch.
+     */
+    orderBy?: AppReleaseOrderByWithRelationInput | AppReleaseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AppReleases.
+     */
+    cursor?: AppReleaseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppReleases from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppReleases.
+     */
+    skip?: number
+    distinct?: AppReleaseScalarFieldEnum | AppReleaseScalarFieldEnum[]
+  }
+
+  /**
+   * AppRelease create
+   */
+  export type AppReleaseCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * The data needed to create a AppRelease.
+     */
+    data: XOR<AppReleaseCreateInput, AppReleaseUncheckedCreateInput>
+  }
+
+  /**
+   * AppRelease createMany
+   */
+  export type AppReleaseCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AppReleases.
+     */
+    data: AppReleaseCreateManyInput | AppReleaseCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AppRelease update
+   */
+  export type AppReleaseUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * The data needed to update a AppRelease.
+     */
+    data: XOR<AppReleaseUpdateInput, AppReleaseUncheckedUpdateInput>
+    /**
+     * Choose, which AppRelease to update.
+     */
+    where: AppReleaseWhereUniqueInput
+  }
+
+  /**
+   * AppRelease updateMany
+   */
+  export type AppReleaseUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AppReleases.
+     */
+    data: XOR<AppReleaseUpdateManyMutationInput, AppReleaseUncheckedUpdateManyInput>
+    /**
+     * Filter which AppReleases to update
+     */
+    where?: AppReleaseWhereInput
+  }
+
+  /**
+   * AppRelease upsert
+   */
+  export type AppReleaseUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * The filter to search for the AppRelease to update in case it exists.
+     */
+    where: AppReleaseWhereUniqueInput
+    /**
+     * In case the AppRelease found by the `where` argument doesn't exist, create a new AppRelease with this data.
+     */
+    create: XOR<AppReleaseCreateInput, AppReleaseUncheckedCreateInput>
+    /**
+     * In case the AppRelease was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AppReleaseUpdateInput, AppReleaseUncheckedUpdateInput>
+  }
+
+  /**
+   * AppRelease delete
+   */
+  export type AppReleaseDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Filter which AppRelease to delete.
+     */
+    where: AppReleaseWhereUniqueInput
+  }
+
+  /**
+   * AppRelease deleteMany
+   */
+  export type AppReleaseDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AppReleases to delete
+     */
+    where?: AppReleaseWhereInput
+  }
+
+  /**
+   * AppRelease without action
+   */
+  export type AppReleaseDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Model PolicyAcceptance
    */
 
@@ -21854,6 +22850,21 @@ export namespace Prisma {
   export type PolicyScalarFieldEnum = (typeof PolicyScalarFieldEnum)[keyof typeof PolicyScalarFieldEnum]
 
 
+  export const AppReleaseScalarFieldEnum: {
+    id: 'id',
+    version: 'version',
+    originalName: 'originalName',
+    file: 'file',
+    size: 'size',
+    isLive: 'isLive',
+    uploadedBy: 'uploadedBy',
+    uploadedAt: 'uploadedAt',
+    fileDeletedAt: 'fileDeletedAt'
+  };
+
+  export type AppReleaseScalarFieldEnum = (typeof AppReleaseScalarFieldEnum)[keyof typeof AppReleaseScalarFieldEnum]
+
+
   export const PolicyAcceptanceScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -21982,6 +22993,13 @@ export namespace Prisma {
    * Reference to a field of type 'SaleStatus'
    */
   export type EnumSaleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SaleStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'BigInt'
+   */
+  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
     
 
 
@@ -23214,6 +24232,80 @@ export namespace Prisma {
     version?: IntWithAggregatesFilter<"Policy"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Policy"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Policy"> | Date | string
+  }
+
+  export type AppReleaseWhereInput = {
+    AND?: AppReleaseWhereInput | AppReleaseWhereInput[]
+    OR?: AppReleaseWhereInput[]
+    NOT?: AppReleaseWhereInput | AppReleaseWhereInput[]
+    id?: IntFilter<"AppRelease"> | number
+    version?: StringFilter<"AppRelease"> | string
+    originalName?: StringFilter<"AppRelease"> | string
+    file?: StringNullableFilter<"AppRelease"> | string | null
+    size?: BigIntFilter<"AppRelease"> | bigint | number
+    isLive?: BoolFilter<"AppRelease"> | boolean
+    uploadedBy?: StringNullableFilter<"AppRelease"> | string | null
+    uploadedAt?: DateTimeFilter<"AppRelease"> | Date | string
+    fileDeletedAt?: DateTimeNullableFilter<"AppRelease"> | Date | string | null
+  }
+
+  export type AppReleaseOrderByWithRelationInput = {
+    id?: SortOrder
+    version?: SortOrder
+    originalName?: SortOrder
+    file?: SortOrderInput | SortOrder
+    size?: SortOrder
+    isLive?: SortOrder
+    uploadedBy?: SortOrderInput | SortOrder
+    uploadedAt?: SortOrder
+    fileDeletedAt?: SortOrderInput | SortOrder
+  }
+
+  export type AppReleaseWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: AppReleaseWhereInput | AppReleaseWhereInput[]
+    OR?: AppReleaseWhereInput[]
+    NOT?: AppReleaseWhereInput | AppReleaseWhereInput[]
+    version?: StringFilter<"AppRelease"> | string
+    originalName?: StringFilter<"AppRelease"> | string
+    file?: StringNullableFilter<"AppRelease"> | string | null
+    size?: BigIntFilter<"AppRelease"> | bigint | number
+    isLive?: BoolFilter<"AppRelease"> | boolean
+    uploadedBy?: StringNullableFilter<"AppRelease"> | string | null
+    uploadedAt?: DateTimeFilter<"AppRelease"> | Date | string
+    fileDeletedAt?: DateTimeNullableFilter<"AppRelease"> | Date | string | null
+  }, "id">
+
+  export type AppReleaseOrderByWithAggregationInput = {
+    id?: SortOrder
+    version?: SortOrder
+    originalName?: SortOrder
+    file?: SortOrderInput | SortOrder
+    size?: SortOrder
+    isLive?: SortOrder
+    uploadedBy?: SortOrderInput | SortOrder
+    uploadedAt?: SortOrder
+    fileDeletedAt?: SortOrderInput | SortOrder
+    _count?: AppReleaseCountOrderByAggregateInput
+    _avg?: AppReleaseAvgOrderByAggregateInput
+    _max?: AppReleaseMaxOrderByAggregateInput
+    _min?: AppReleaseMinOrderByAggregateInput
+    _sum?: AppReleaseSumOrderByAggregateInput
+  }
+
+  export type AppReleaseScalarWhereWithAggregatesInput = {
+    AND?: AppReleaseScalarWhereWithAggregatesInput | AppReleaseScalarWhereWithAggregatesInput[]
+    OR?: AppReleaseScalarWhereWithAggregatesInput[]
+    NOT?: AppReleaseScalarWhereWithAggregatesInput | AppReleaseScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"AppRelease"> | number
+    version?: StringWithAggregatesFilter<"AppRelease"> | string
+    originalName?: StringWithAggregatesFilter<"AppRelease"> | string
+    file?: StringNullableWithAggregatesFilter<"AppRelease"> | string | null
+    size?: BigIntWithAggregatesFilter<"AppRelease"> | bigint | number
+    isLive?: BoolWithAggregatesFilter<"AppRelease"> | boolean
+    uploadedBy?: StringNullableWithAggregatesFilter<"AppRelease"> | string | null
+    uploadedAt?: DateTimeWithAggregatesFilter<"AppRelease"> | Date | string
+    fileDeletedAt?: DateTimeNullableWithAggregatesFilter<"AppRelease"> | Date | string | null
   }
 
   export type PolicyAcceptanceWhereInput = {
@@ -24635,6 +25727,87 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AppReleaseCreateInput = {
+    version?: string
+    originalName: string
+    file?: string | null
+    size?: bigint | number
+    isLive?: boolean
+    uploadedBy?: string | null
+    uploadedAt?: Date | string
+    fileDeletedAt?: Date | string | null
+  }
+
+  export type AppReleaseUncheckedCreateInput = {
+    id?: number
+    version?: string
+    originalName: string
+    file?: string | null
+    size?: bigint | number
+    isLive?: boolean
+    uploadedBy?: string | null
+    uploadedAt?: Date | string
+    fileDeletedAt?: Date | string | null
+  }
+
+  export type AppReleaseUpdateInput = {
+    version?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    file?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    isLive?: BoolFieldUpdateOperationsInput | boolean
+    uploadedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fileDeletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AppReleaseUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    version?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    file?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    isLive?: BoolFieldUpdateOperationsInput | boolean
+    uploadedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fileDeletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AppReleaseCreateManyInput = {
+    id?: number
+    version?: string
+    originalName: string
+    file?: string | null
+    size?: bigint | number
+    isLive?: boolean
+    uploadedBy?: string | null
+    uploadedAt?: Date | string
+    fileDeletedAt?: Date | string | null
+  }
+
+  export type AppReleaseUpdateManyMutationInput = {
+    version?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    file?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    isLive?: BoolFieldUpdateOperationsInput | boolean
+    uploadedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fileDeletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AppReleaseUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    version?: StringFieldUpdateOperationsInput | string
+    originalName?: StringFieldUpdateOperationsInput | string
+    file?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    isLive?: BoolFieldUpdateOperationsInput | boolean
+    uploadedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fileDeletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type PolicyAcceptanceCreateInput = {
     userId: number
     policyType: string
@@ -25973,6 +27146,79 @@ export namespace Prisma {
     version?: SortOrder
   }
 
+  export type BigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[]
+    notIn?: bigint[] | number[]
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
+  export type AppReleaseCountOrderByAggregateInput = {
+    id?: SortOrder
+    version?: SortOrder
+    originalName?: SortOrder
+    file?: SortOrder
+    size?: SortOrder
+    isLive?: SortOrder
+    uploadedBy?: SortOrder
+    uploadedAt?: SortOrder
+    fileDeletedAt?: SortOrder
+  }
+
+  export type AppReleaseAvgOrderByAggregateInput = {
+    id?: SortOrder
+    size?: SortOrder
+  }
+
+  export type AppReleaseMaxOrderByAggregateInput = {
+    id?: SortOrder
+    version?: SortOrder
+    originalName?: SortOrder
+    file?: SortOrder
+    size?: SortOrder
+    isLive?: SortOrder
+    uploadedBy?: SortOrder
+    uploadedAt?: SortOrder
+    fileDeletedAt?: SortOrder
+  }
+
+  export type AppReleaseMinOrderByAggregateInput = {
+    id?: SortOrder
+    version?: SortOrder
+    originalName?: SortOrder
+    file?: SortOrder
+    size?: SortOrder
+    isLive?: SortOrder
+    uploadedBy?: SortOrder
+    uploadedAt?: SortOrder
+    fileDeletedAt?: SortOrder
+  }
+
+  export type AppReleaseSumOrderByAggregateInput = {
+    id?: SortOrder
+    size?: SortOrder
+  }
+
+  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[]
+    notIn?: bigint[] | number[]
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
   export type PolicyAcceptanceUserIdPolicyTypeCompoundUniqueInput = {
     userId: number
     policyType: string
@@ -26872,6 +28118,14 @@ export namespace Prisma {
     update?: XOR<XOR<AlbumUpdateToOneWithWhereWithoutPhotosInput, AlbumUpdateWithoutPhotosInput>, AlbumUncheckedUpdateWithoutPhotosInput>
   }
 
+  export type BigIntFieldUpdateOperationsInput = {
+    set?: bigint | number
+    increment?: bigint | number
+    decrement?: bigint | number
+    multiply?: bigint | number
+    divide?: bigint | number
+  }
+
   export type NestedIntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -27190,6 +28444,33 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSaleStatusFilter<$PrismaModel>
     _max?: NestedEnumSaleStatusFilter<$PrismaModel>
+  }
+
+  export type NestedBigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[]
+    notIn?: bigint[] | number[]
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
+  export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[]
+    notIn?: bigint[] | number[]
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
   }
 
   export type ContentCreateWithoutProductInput = {
@@ -29475,6 +30756,10 @@ export namespace Prisma {
      * @deprecated Use PolicyDefaultArgs instead
      */
     export type PolicyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PolicyDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use AppReleaseDefaultArgs instead
+     */
+    export type AppReleaseArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = AppReleaseDefaultArgs<ExtArgs>
     /**
      * @deprecated Use PolicyAcceptanceDefaultArgs instead
      */

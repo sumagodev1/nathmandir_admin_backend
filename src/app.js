@@ -29,6 +29,7 @@ import checkoutRoutes from './routes/checkout.routes.js'
 import donateRoutes from './routes/donate.routes.js'
 import publicRoutes from './routes/public.routes.js'
 import sectionsRoutes from './routes/sections.routes.js'
+import appReleaseRoutes from './routes/appRelease.routes.js'
 
 export const app = express()
 
@@ -123,6 +124,8 @@ app.use('/api/contacts', contactsRoutes)
 app.use('/api/logins', loginsRoutes)
 app.use('/api/sections', sectionsRoutes)
 app.use('/api/uploads', uploadsRoutes)
+// Android APK for the website's "Download APK" button (admin upload)
+app.use('/api/app-release', appReleaseRoutes)
 
 // Public mobile-app API (drop-in replacement for the legacy API.php)
 app.use('/api/mobile', mobileRoutes)

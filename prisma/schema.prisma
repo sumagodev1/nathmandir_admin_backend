@@ -431,6 +431,27 @@ model Policy {
   @@map("policies")
 }
 
+// ── Android app releases (website "Download APK" button) ─────
+// One row per APK uploaded in Admin → App Download. The row with
+// isLive = true is what the website serves; none live = no button.
+// `file` becomes null when an old version's file is deleted to free
+// disk space; the row stays as history.
+// Created by scripts/add-app-releases.js (raw SQL, not prisma migrate).
+model AppRelease {
+  id            Int       @id @default(autoincrement())
+  version       String    @default("") @db.VarChar(30)
+  originalName  String    @map("original_name") @db.VarChar(255)
+  file          String?   @db.VarChar(191)
+  size          BigInt    @default(0)
+  isLive        Boolean   @default(false) @map("is_live")
+  uploadedBy    String?   @map("uploaded_by") @db.VarChar(191)
+  uploadedAt    DateTime  @default(now()) @map("uploaded_at")
+  fileDeletedAt DateTime? @map("file_deleted_at")
+
+  @@index([isLive], map: "app_releases_is_live_idx")
+  @@map("app_releases")
+}
+
 // Which version of each policy a mobile user has accepted. One row per
 // (user, type), overwritten on each acceptance. No foreign key to users on
 // purpose: user rows get merged and cleaned up, and an acceptance record
