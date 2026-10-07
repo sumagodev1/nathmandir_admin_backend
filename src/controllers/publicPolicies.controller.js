@@ -10,7 +10,6 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ejs from 'ejs'
 import {
-  POLICY_TYPES,
   POLICY_LABELS,
   isPolicyType,
   shapePolicy,
@@ -95,10 +94,6 @@ export async function webPage(req, res) {
   render(res, 200, 'policy', {
     app,
     policy: { ...shapePolicy(row), updatedOn: longDate(row.updatedAt) },
-    others: [
-      ...POLICY_TYPES.filter((t) => t !== type).map((t) => ({ href: webHref(req, t, app), label: POLICY_LABELS[t] })),
-      { href: `${req.baseUrl}/web/all${app ? '?app=1' : ''}`, label: 'All policies' },
-    ],
   })
 }
 

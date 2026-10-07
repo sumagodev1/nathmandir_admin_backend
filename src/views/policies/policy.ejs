@@ -14,11 +14,5 @@
       <div class="policy"><%- policy.content %></div>
       <p class="updated">Version <%= policy.version %> · Last updated: <%= policy.updatedOn %></p>
     </article>
-
-    <nav class="other">
-      <% others.forEach(function (o) { %>
-        <a href="<%= o.href %>"><%= o.label %></a>
-      <% }) %>
-    </nav>
   </main>
 <%- include('partials/foot') %>
