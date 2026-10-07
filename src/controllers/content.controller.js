@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import { prisma } from '../lib/prisma.js'
 import { resolveProductId } from '../lib/products.js'
-import { findOrCreateChild, DAY_KIND } from '../lib/defaultSections.js'
+import { findOrCreateChild } from '../lib/defaultSections.js'
 import { sectionMap, sectionPath } from '../lib/sectionTrail.js'
 import { removeUploadIfUnused } from '../lib/uploadFiles.js'
 import { groupSchedule, parseSchedule } from '../lib/contentSchedule.js'
@@ -206,23 +206,8 @@ export async function create(req, res) {
     nid = child.nodeId
   }
 
-  // ── One item per day ───────────────────────────────────────
-  // A day holds a single item: once it has content, that day is finished and
-  // the next item belongs to another day. Enforced here rather than only in
-  // the form so the rule holds however the item arrives. It applies to days
-  // alone — an ordinary section still takes as many items as it needs.
-  if (nid) {
-    const target = await prisma.contentNode.findUnique({
-      where: { id: nid },
-      select: { name: true, kind: true, _count: { select: { content: true } } },
-    })
-    if (target?.kind === DAY_KIND && target._count.content > 0) {
-      return res.status(409).json({
-        error: `“${target.name}” already has content. Choose another day, or edit the item already there.`,
-      })
-    }
-  }
-
+  // A day takes as many items as it needs (वाराची पदे runs ten per day), so
+  // the only clash checked is a repeated title in the same place.
   const cleanTitle = String(title || '').trim() || UNTITLED
   const dupe = await duplicateInNode({ nodeId: nid, title: cleanTitle })
   if (dupe) return res.status(409).json({ error: dupe })
