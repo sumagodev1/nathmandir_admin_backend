@@ -18,6 +18,7 @@ import { prisma } from '../lib/prisma.js'
 import { productMaps, resolveProductId } from '../lib/products.js'
 import { groupSchedule } from '../lib/contentSchedule.js'
 import { sectionMap, sectionPath, subtreeIds, hiddenSectionIds } from '../lib/sectionTrail.js'
+import { DAY_KIND, WEEKDAYS } from '../lib/defaultSections.js'
 import { jsonSafe, ymd, paginate } from '../lib/helpers.js'
 import { sendOtpSms } from '../lib/sms.js'
 import { normalizeMobile, readMobile } from '../lib/phone.js'
@@ -639,17 +640,37 @@ async function get_sections(req, res) {
     return CHILD_KEYS[[...kinds][0]] || FALLBACK_CHILD_KEY
   }
 
+  // A day that holds just one song (स्तोत्र: one per weekday) would open a
+  // screen with a single card on it. When every day in a section is like that,
+  // the section lists the songs themselves, so one tap plays the song and shows
+  // its lyrics. Days holding several songs (वाराची पदे) keep their own screen.
+  const isSingleSongDay = (n) =>
+    n.kind === DAY_KIND && !(childrenOf.get(n.id) || []).length && (filesOf.get(n.id) || []).length === 1
+
+  // Today's day comes first, the way the app shows a list of days.
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' })
+  const todayAt = WEEKDAYS.findIndex((d) => d.includes(`(${today})`))
+  const fromToday = (n) => {
+    const at = WEEKDAYS.indexOf(n.name)
+    return at === -1 ? WEEKDAYS.length : (at - todayAt + WEEKDAYS.length) % WEEKDAYS.length
+  }
+
   const build = (parentKey) =>
     (childrenOf.get(parentKey) || []).map((n) => {
-      const files = filesOf.get(n.id) || []
-      const inside = childrenOf.get(n.id) || []
+      let files = filesOf.get(n.id) || []
+      let inside = childrenOf.get(n.id) || []
+      if (inside.length && inside.every(isSingleSongDay)) {
+        const days = [...inside].sort((a, b) => fromToday(a) - fromToday(b))
+        files = [...days.map((d) => filesOf.get(d.id)[0]), ...files]
+        inside = []
+      }
       return {
         id: n.id,
         name: n.name,
         // A free-text label the admin chose ("session", "sub part", "day").
         // Shown as-is; the app should not branch on it.
         kind: n.kind || null,
-        [childKey(inside)]: build(n.id),
+        [childKey(inside)]: inside.length ? build(n.id) : [],
         // `file` is the convenient one — a day holds exactly one song, so this
         // is what a day screen needs. `files` carries them all for a section
         // that holds several, and is null-free.
