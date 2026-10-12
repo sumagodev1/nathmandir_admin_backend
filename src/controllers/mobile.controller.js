@@ -647,12 +647,12 @@ async function get_sections(req, res) {
   const isSingleSongDay = (n) =>
     n.kind === DAY_KIND && !(childrenOf.get(n.id) || []).length && (filesOf.get(n.id) || []).length === 1
 
-  // Today's day comes first, the way the app shows a list of days.
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' })
-  const todayAt = WEEKDAYS.findIndex((d) => d.includes(`(${today})`))
-  const fromToday = (n) => {
+  // These songs are listed from Friday: शुक्रवार, शनिवार … गुरुवार. A day with a
+  // name not in WEEKDAYS goes after them, in its own order.
+  const FIRST_DAY = WEEKDAYS.indexOf('शुक्रवार (Friday)')
+  const fromFriday = (n) => {
     const at = WEEKDAYS.indexOf(n.name)
-    return at === -1 ? WEEKDAYS.length : (at - todayAt + WEEKDAYS.length) % WEEKDAYS.length
+    return at === -1 ? WEEKDAYS.length : (at - FIRST_DAY + WEEKDAYS.length) % WEEKDAYS.length
   }
 
   const build = (parentKey) =>
@@ -660,7 +660,7 @@ async function get_sections(req, res) {
       let files = filesOf.get(n.id) || []
       let inside = childrenOf.get(n.id) || []
       if (inside.length && inside.every(isSingleSongDay)) {
-        const days = [...inside].sort((a, b) => fromToday(a) - fromToday(b))
+        const days = [...inside].sort((a, b) => fromFriday(a) - fromFriday(b))
         files = [...days.map((d) => filesOf.get(d.id)[0]), ...files]
         inside = []
       }
