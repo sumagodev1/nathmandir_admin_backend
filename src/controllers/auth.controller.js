@@ -5,6 +5,9 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma.js'
 import { verifyRecaptcha } from '../lib/recaptcha.js'
 
+// How long an admin stays logged in. Counted from login, not from last use.
+const ADMIN_SESSION_EXPIRES = process.env.ADMIN_JWT_EXPIRES || '30m'
+
 // POST /api/auth/login   — email + password → JWT token
 export async function login(req, res) {
   const { email, password, captcha } = req.body || {}
@@ -29,7 +32,7 @@ export async function login(req, res) {
   const token = jwt.sign(
     { id: admin.id, email: admin.email, name: admin.name, role: admin.role },
     process.env.JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: ADMIN_SESSION_EXPIRES }
   )
 
   res.json({
@@ -96,7 +99,7 @@ export async function updateProfile(req, res) {
   const token = jwt.sign(
     { id: admin.id, email: admin.email, name: admin.name, role: admin.role },
     process.env.JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: ADMIN_SESSION_EXPIRES }
   )
 
   res.json({ admin, token })
