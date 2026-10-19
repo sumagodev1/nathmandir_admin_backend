@@ -655,6 +655,27 @@ async function get_sections(req, res) {
     return at === -1 ? WEEKDAYS.length : (at - FIRST_DAY + WEEKDAYS.length) % WEEKDAYS.length
   }
 
+  // Everything in a section, folders and songs together, in the order the
+  // screen shows them — so संध्याकाळ reads जयजयकार, वाराची पदे, भैरवी,
+  // प्रदक्षिणा… rather than every folder first. Same rule as the admin tree:
+  // by sortOrder, a folder first on a tie. Entries only point at the folder in
+  // the child list or the song in `files` by id, so nothing is sent twice.
+  const mixed = (folders, files) => {
+    const out = []
+    for (let f = 0, s = 0; f < folders.length || s < files.length; ) {
+      const takeFolder =
+        s >= files.length || (f < folders.length && folders[f].sortOrder <= files[s].otherData.sortOrder)
+      if (takeFolder) {
+        const n = folders[f++]
+        out.push({ type: 'folder', id: n.id, name: n.name })
+      } else {
+        const c = files[s++]
+        out.push({ type: 'song', id: c.id, title: c.title })
+      }
+    }
+    return out
+  }
+
   const build = (parentKey) =>
     (childrenOf.get(parentKey) || []).map((n) => {
       let files = filesOf.get(n.id) || []
@@ -670,9 +691,8 @@ async function get_sections(req, res) {
         // A free-text label the admin chose ("session", "sub part", "day").
         // Shown as-is; the app should not branch on it.
         kind: n.kind || null,
-        // Where this section sits among its parent's songs. Same number line
-        // as a song's `otherData.sortOrder`, so संध्याकाळ can read जयजयकार,
-        // वाराची पदे, भैरवी, प्रदक्षिणा… On a tie the section goes first.
+        // Where this section sits among its parent's songs — the number
+        // `items` is built from. On a tie the section goes first.
         sortOrder: n.sortOrder,
         [childKey(inside)]: inside.length ? build(n.id) : [],
         // `file` is the convenient one — a day holds exactly one song, so this
@@ -680,6 +700,7 @@ async function get_sections(req, res) {
         // that holds several, and is null-free.
         file: files[0] || null,
         files,
+        items: mixed(inside, files),
       }
     })
 

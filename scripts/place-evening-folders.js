@@ -5,7 +5,7 @@
 //
 // A folder goes just before a song by taking that song's number: on a tie the
 // folder goes first, the rule both the admin tree (contentTree.js) and the app
-// (get_sections → sortOrder) follow. Two folders before the same song share
+// (get_sections → items) follow. Two folders before the same song share
 // the number and their id decides, so the result is read back and checked
 // before anything is written.
 //
