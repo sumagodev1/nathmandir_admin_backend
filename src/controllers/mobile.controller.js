@@ -670,6 +670,10 @@ async function get_sections(req, res) {
         // A free-text label the admin chose ("session", "sub part", "day").
         // Shown as-is; the app should not branch on it.
         kind: n.kind || null,
+        // Where this section sits among its parent's songs. Same number line
+        // as a song's `otherData.sortOrder`, so संध्याकाळ can read जयजयकार,
+        // वाराची पदे, भैरवी, प्रदक्षिणा… On a tie the section goes first.
+        sortOrder: n.sortOrder,
         [childKey(inside)]: inside.length ? build(n.id) : [],
         // `file` is the convenient one — a day holds exactly one song, so this
         // is what a day screen needs. `files` carries them all for a section
