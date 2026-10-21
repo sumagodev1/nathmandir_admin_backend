@@ -13,6 +13,10 @@
 // Only songs with no cover of their own are changed, so an image an admin
 // uploaded is never replaced. Songs sharing a picture share one file.
 //
+// To change a picture, replace its .webp below and run again. Its songs get a
+// fresh copy under a new URL, so phones do not keep showing a cached old one,
+// and the old copy is deleted once nothing uses it.
+//
 // Inputs, bundled so the live server has them too:
 //   assets/audio-covers/<id>.webp   the 512×512 pictures
 //   assets/audio-covers/map.json    { id: { title, audioFile?, image? } } — from
@@ -24,6 +28,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { prisma } from '../src/lib/prisma.js'
+import { removeUploadIfUnused } from '../src/lib/uploadFiles.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const SRC = path.join(ROOT, 'assets/audio-covers')
@@ -45,6 +50,15 @@ function fileKey(ref) {
 // clears.
 const OURS = /^\/uploads\/cover\/\d+-audio-[a-z0-9_]+\.webp$/
 
+// True when both files exist and hold the same bytes.
+function sameBytes(a, b) {
+  try {
+    return fs.readFileSync(a).equals(fs.readFileSync(b))
+  } catch {
+    return false
+  }
+}
+
 async function main() {
   const map = JSON.parse(fs.readFileSync(path.join(SRC, 'map.json'), 'utf8'))
   const byFile = new Map()
@@ -62,24 +76,28 @@ async function main() {
     orderBy: [{ productId: 'asc' }, { sortOrder: 'asc' }],
   })
 
-  // Reuse a file this script already copied for the same picture.
+  // Reuse a file this script already copied for the same picture, but only
+  // while it still matches the picture here. A changed picture, or a copy lost
+  // from uploads/, gets a fresh file.
   const existing = new Map()
   for (const s of songs) {
     const m = s.coverUrl && OURS.test(s.coverUrl) && s.coverUrl.match(/-audio-([a-z0-9_]+)\.webp$/)
-    if (m) existing.set(m[1], s.coverUrl)
+    if (m && sameBytes(path.join(ROOT, s.coverUrl), path.join(SRC, `${m[1]}.webp`))) existing.set(m[1], s.coverUrl)
   }
 
   const plan = []
   let kept = 0
+  let current = 0
   let unmatched = 0
   for (const s of songs) {
     const id = byFile.get(fileKey(s.audioUrl)) || byTitle.get(s.title.trim())
     if (!id) { unmatched++; continue }
     if (s.coverUrl && !OURS.test(s.coverUrl)) { kept++; continue } // admin's own image
+    if (s.coverUrl && s.coverUrl === existing.get(id)) { current++; continue } // already up to date
     plan.push({ song: s, id })
   }
 
-  console.log(`${APPLY ? 'Applying' : 'Dry run —'} ${plan.length} song(s) to set, ${kept} keep their own image, ${unmatched} not in the app list (they use the Part cover).`)
+  console.log(`${APPLY ? 'Applying' : 'Dry run —'} ${plan.length} song(s) to set, ${current} already up to date, ${kept} keep their own image, ${unmatched} not in the app list (they use the Part cover).`)
   for (const { song, id } of plan) console.log(`  #${song.id}  ${song.title}  →  ${id}.webp`)
   if (!APPLY) {
     console.log('\nNothing written. Run again with --apply to do it.')
@@ -99,7 +117,9 @@ async function main() {
     const url = urlFor(id)
     if (song.coverUrl === url) continue
     // Guarded on the old value, so an image an admin uploads meanwhile is kept.
-    await prisma.content.updateMany({ where: { id: song.id, coverUrl: song.coverUrl }, data: { coverUrl: url } })
+    const { count } = await prisma.content.updateMany({ where: { id: song.id, coverUrl: song.coverUrl }, data: { coverUrl: url } })
+    // The old copy of a changed picture, once its last song has moved off it.
+    if (count && song.coverUrl) await removeUploadIfUnused(song.coverUrl)
   }
   console.log(`Done. ${plan.length} songs now show the same picture as the app.`)
 }
