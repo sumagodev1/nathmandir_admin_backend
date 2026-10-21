@@ -192,10 +192,14 @@ async function verifyOTP(req, res) {
   const did = field(req, 'DID')
   if (!otp || !mobile) return sendFail(res, 'Check parameter', STATUS.BAD_REQUEST)
 
-  // The default OTP (6666) logs in any registered number, as well as the
-  // real OTP that was sent. Set DEFAULT_OTP to an empty value to turn it off.
+  // The default OTP (6666) works only for the numbers in DEFAULT_OTP_NUMBERS
+  // (comma-separated, 7066104249 when not set), alongside the real OTP that was
+  // sent. Every other number needs the real OTP. Set DEFAULT_OTP to an empty
+  // value to turn it off.
   const defaultOtp = process.env.DEFAULT_OTP ?? '6666'
-  const where = defaultOtp && otp === defaultOtp ? { phone: mobile } : { phone: mobile, otp }
+  const defaultOtpNumbers = (process.env.DEFAULT_OTP_NUMBERS ?? '7066104249').split(',').map(normalizeMobile).filter(Boolean)
+  const useDefault = defaultOtp && otp === defaultOtp && defaultOtpNumbers.includes(normalizeMobile(mobile))
+  const where = useDefault ? { phone: mobile } : { phone: mobile, otp }
   const user = await prisma.user.findFirst({ where })
   if (!user) return sendFail(res, 'OTP Incorrect', STATUS.UNAUTHORIZED)
 
