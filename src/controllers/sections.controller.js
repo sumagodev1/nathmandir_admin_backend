@@ -4,7 +4,7 @@
 // save time (see lib/translate.js), storing the full { en, hi, mr }.
 import { prisma } from '../lib/prisma.js'
 
-export const SECTION_KEYS = ['maharaj', 'temple', 'trust', 'events', 'donate', 'story']
+export const SECTION_KEYS = ['maharaj', 'temple', 'trust', 'events', 'donate', 'story', 'library']
 
 const LANG_KEYS = ['en', 'hi', 'mr']
 
@@ -84,10 +84,42 @@ export async function update(req, res) {
   const merged = applySourceLang(data, prevData, sourceLang)
   const json = JSON.stringify(merged)
 
-  const row = await prisma.siteSection.upsert({
-    where: { key },
-    update: { data: json },
-    create: { key, data: json },
-  })
+  const row = await saveSectionVerified(key, json)
+  if (!row) {
+    return res.status(500).json({
+      error:
+        'This section is too large for the database column, so nothing was saved. ' +
+        'Run `npx prisma migrate deploy` on the server (site_sections.data must be LONGTEXT), then save again.',
+    })
+  }
   res.json({ section: parseRow(row) })
+}
+
+// Writes the section and reads it straight back in one transaction. A
+// database whose column is too small for the blob (TEXT, without strict mode)
+// does not refuse it — it silently cuts it off, and the section would come
+// back as broken JSON. If the stored copy is not identical, the transaction
+// is rolled back so the previous content stays intact, and null is returned.
+export async function saveSectionVerified(key, json, db = prisma) {
+  const TRUNCATED = Symbol('truncated')
+  try {
+    return await db.$transaction(
+      async (tx) => {
+        await tx.siteSection.upsert({
+          where: { key },
+          update: { data: json },
+          create: { key, data: json },
+        })
+        const saved = await tx.siteSection.findUnique({ where: { key } })
+        if (!saved || saved.data !== json) throw TRUNCATED
+        return saved
+      },
+      // The library section is ~1.2 MB; give the write + read-back more room
+      // than Prisma's 5 s default on a slow or busy host.
+      { maxWait: 10_000, timeout: 30_000 }
+    )
+  } catch (e) {
+    if (e === TRUNCATED) return null
+    throw e
+  }
 }

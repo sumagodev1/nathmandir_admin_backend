@@ -64,7 +64,15 @@ app.use(compression({ threshold: 1024 }))
 
 // Parse JSON, keeping the raw bytes on req.rawBody so the Razorpay webhook
 // can verify its signature (which is computed over the exact raw body).
-app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf } }))
+// Saving a website section (PUT /api/sections/:key) is skipped here: it sends
+// the whole section back, and "library" (the 35 Kiran, ~1.2 MB) is far past
+// the 100 KB default. That route parses its own body with a larger cap, after
+// the admin login check (routes/sections.routes.js).
+const parseJson = express.json({ verify: (req, _res, buf) => { req.rawBody = buf } })
+app.use((req, res, next) => {
+  if (req.method === 'PUT' && req.path.toLowerCase().startsWith('/api/sections/')) return next()
+  return parseJson(req, res, next)
+})
 app.use(express.urlencoded({ extended: true })) // parse form fields (mobile app / API.php style)
 
 // Serve uploaded files (audio, images) — public, no auth (mobile app fetches directly).

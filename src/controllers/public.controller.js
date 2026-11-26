@@ -205,8 +205,14 @@ const safeParse = (s) => {
   }
 }
 
+// Sections that only their own page needs. They are served by
+// GET /api/public/sections/:key and kept out of the all-sections payload,
+// which every page of the website loads (and re-checks every minute).
+// "library" holds the full text of the 35 Kiran (~1.2 MB).
+const PAGE_ONLY_SECTIONS = ['library']
+
 export async function sections(req, res) {
-  const rows = await prisma.siteSection.findMany()
+  const rows = await prisma.siteSection.findMany({ where: { key: { notIn: PAGE_ONLY_SECTIONS } } })
   const out = {}
   for (const r of rows) out[r.key] = safeParse(r.data)
   res.json({ sections: out })

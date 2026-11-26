@@ -469,13 +469,15 @@ model PolicyAcceptance {
 
 // ── Website content sections (CMS for the public website) ────
 // One row per website section (maharaj, temple, trust, events,
-// donate, story). `data` is a JSON document holding the section's
+// donate, story, library). `data` is a JSON document holding the section's
 // structured, tri-lingual content ({ en, hi, mr } per text field).
 // The admin edits in one language; the backend auto-translates the
 // other two at save time, so the whole { en, hi, mr } shape is stored.
+// LONGTEXT, not TEXT: "library" holds the full text of the 35 Kiran
+// (~1.2 MB) and TEXT stops at 64 KB (migration 20261126130000).
 model SiteSection {
-  key       String   @id // "maharaj" | "temple" | "trust" | "events" | "donate" | "story"
-  data      String   @db.Text // JSON blob
+  key       String   @id // "maharaj" | "temple" | "trust" | "events" | "donate" | "story" | "library"
+  data      String   @db.LongText // JSON blob
   updatedOn DateTime @default(now()) @updatedAt @map("updated_on")
 
   @@map("site_sections")

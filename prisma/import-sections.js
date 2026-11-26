@@ -1,8 +1,9 @@
 // ── Import website content sections from a JSON dump ──────────
-// Copies the six website sections (maharaj, temple, trust, events,
-// donate, story) into the `site_sections` table. Use this to move the
+// Copies website sections (maharaj, temple, trust, events, donate,
+// story, library) into the `site_sections` table. Use this to move the
 // content from a machine that already has it onto a server that does
-// not — `git pull` carries code, never database rows.
+// not — `git pull` carries code, never database rows. Only the sections
+// present in the file are written; every other section is left alone.
 //
 // Run on the server:
 //   node prisma/import-sections.js
@@ -11,6 +12,11 @@
 //   ../nathmandir_admin_frontend/.tmp-sections.json
 // Point it somewhere else with an argument or SECTIONS_FILE:
 //   node prisma/import-sections.js /path/to/sections.json
+//
+// The 35 Kiran of the Deepprakash (Library page) ship as their own file.
+// Run `npx prisma migrate deploy` first — site_sections.data must be
+// LONGTEXT to hold them:
+//   node prisma/import-sections.js prisma/seed-data/library-kiran.json
 //
 // Accepted shapes (both work):
 //   { "maharaj": { … }, "temple": { … } }          ← key → data object
@@ -24,7 +30,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 import { prisma } from '../src/lib/prisma.js'
-import { SECTION_KEYS } from '../src/controllers/sections.controller.js'
+import { SECTION_KEYS, saveSectionVerified } from '../src/controllers/sections.controller.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -75,6 +81,7 @@ async function main() {
 
   let written = 0
   let skipped = 0
+  let failed = 0
 
   for (const key of keys) {
     if (!SECTION_KEYS.includes(key)) {
@@ -90,21 +97,29 @@ async function main() {
     }
 
     const json = JSON.stringify(data)
-    await prisma.siteSection.upsert({
-      where: { key },
-      update: { data: json },
-      create: { key, data: json },
-    })
-    console.log(`  ✓ "${key}" saved (${json.length} bytes)`)
+    // Written and read back in one transaction: a too-small column would
+    // silently truncate the JSON, so a mismatch rolls back and leaves the
+    // section exactly as it was.
+    const saved = await saveSectionVerified(key, json)
+    if (!saved) {
+      console.error(
+        `  ✗ "${key}" NOT saved: it is ${Buffer.byteLength(json)} bytes and the database cut it off. ` +
+          'Nothing was changed. Run `npx prisma migrate deploy` (site_sections.data must be LONGTEXT), then import again.'
+      )
+      failed++
+      continue
+    }
+    console.log(`  ✓ "${key}" saved (${json.length} characters, ${Buffer.byteLength(json)} bytes)`)
     written++
   }
 
   // Report what the table holds now, so the result is visible without a
   // second command.
   const rows = await prisma.siteSection.findMany({ select: { key: true, data: true } })
-  console.log(`\n✅ Done. Wrote ${written}, skipped ${skipped}.`)
+  console.log(`\n${failed ? '❌' : '✅'} Done. Wrote ${written}, skipped ${skipped}, failed ${failed}.`)
+  if (failed) process.exitCode = 1
   console.log(`   site_sections now holds ${rows.length} row(s):`)
-  for (const r of rows) console.log(`     • ${r.key} (${r.data.length} bytes)`)
+  for (const r of rows) console.log(`     • ${r.key} (${r.data.length} characters)`)
   console.log('\n   Check it: https://api.nathmandir.sumago.ai/api/public/sections')
 }
 
