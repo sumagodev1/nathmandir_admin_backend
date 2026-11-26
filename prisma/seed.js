@@ -12,10 +12,10 @@ const prisma = new PrismaClient()
 
 // ── Source data (kept in sync with the frontend mock) ─────────
 const PRODUCTS = [
-  { id: 'gita1', name: 'Gitanjali Part 1', shortName: 'Part 1', price: 251 },
+  { id: 'gita1', name: 'Gitanjali Part 1', shortName: 'Part 1', price: 501 },
   { id: 'gita2', name: 'Gitanjali Part 2', shortName: 'Part 2', price: 251 },
-  { id: 'upasana', name: 'Upasana Part', shortName: 'Upasana', price: 151 },
-  { id: 'nithya', name: 'Nityaniyam Part', shortName: 'Nityaniyam', price: 251 },
+  { id: 'upasana', name: 'Upasana', shortName: 'Upasana', price: 251 },
+  { id: 'nithya', name: 'Nityaniyam', shortName: 'Nityaniyam', price: 251 },
 ]
 
 const USERS = [
