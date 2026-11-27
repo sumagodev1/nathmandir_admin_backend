@@ -1007,6 +1007,7 @@
         "hi": "श्री बालकृष्ण काशिनाथ जोशी",
         "mr": "श्री बाळकृष्ण काशिनाथ जोशी"
       },
+      "photo": "/trustees/balkrishna-joshi.webp",
       "role": {
         "en": "Founder President & Source of Inspiration",
         "hi": "संस्थापक अध्यक्ष व प्रेरणास्थान",
@@ -1020,180 +1021,305 @@
     },
     "committees": [
       {
-        "term": "2012 – 2015",
+        "term": "2015 – 2020",
         "members": [
           {
             "role": "vicePresident",
             "name": {
               "en": "Shri Baburao Gopala Nanekar",
-              "hi": "श्री बाबूराव गोपाळा नाणेकर",
-              "mr": "श्री बाबूराव गोपाळा नाणेकर"
-            }
+              "hi": "श्री. बाबूराव गोपाळा नाणेकर",
+              "mr": "श्री. बाबूराव गोपाळा नाणेकर"
+            },
+            "photo": "/trustees/baburao-nanekar.webp"
           },
           {
             "role": "secretary",
             "name": {
               "en": "Shri Suresh Karbhari Nagare",
-              "hi": "श्री सुरेश कारभारी नागरे",
-              "mr": "श्री सुरेश कारभारी नागरे"
-            }
+              "hi": "श्री. सुरेश कारभारी नागरे",
+              "mr": "श्री. सुरेश कारभारी नागरे"
+            },
+            "photo": "/trustees/suresh-nagare.webp"
           },
           {
             "role": "treasurer",
             "name": {
               "en": "Shri Arun Narayan Palde",
-              "hi": "श्री अरुण नारायण पाळदे",
-              "mr": "श्री अरुण नारायण पाळदे"
-            }
+              "hi": "श्री. अरुण नारायण पाळदे",
+              "mr": "श्री. अरुण नारायण पाळदे"
+            },
+            "photo": "/trustees/arun-palde.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Nivrutti Ganpat Shinde",
-              "hi": "श्री निवृत्ती गणपत शिंदे",
-              "mr": "श्री निवृत्ती गणपत शिंदे"
-            }
+              "hi": "श्री. निवृत्ती गणपत शिंदे",
+              "mr": "श्री. निवृत्ती गणपत शिंदे"
+            },
+            "photo": "/trustees/nivrutti-shinde.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Raman Keruji Patil",
-              "hi": "श्री रमण केरुजी पाटील",
-              "mr": "श्री रमण केरुजी पाटील"
-            }
+              "hi": "श्री. रमण केरुजी पाटील",
+              "mr": "श्री. रमण केरुजी पाटील"
+            },
+            "photo": "/trustees/raman-patil.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Chandrashekhar Gangadhar Topne",
-              "hi": "श्री चंद्रशेखर गंगाधर टोपणे",
-              "mr": "श्री चंद्रशेखर गंगाधर टोपणे"
-            }
+              "hi": "श्री. चंद्रशेखर गंगाधर टोपणे",
+              "mr": "श्री. चंद्रशेखर गंगाधर टोपणे"
+            },
+            "photo": "/trustees/chandrashekhar-topne.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Yashodhan Nivruttinath Vavde",
-              "hi": "श्री यशोधन निवृतीनाथ वावदे",
-              "mr": "श्री यशोधन निवृतीनाथ वावदे"
-            }
+              "hi": "श्री. यशोधन निवृतीनाथ वावदे",
+              "mr": "श्री. यशोधन निवृतीनाथ वावदे"
+            },
+            "photo": "/trustees/yashodhan-vavde.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Dattatray B. Gode",
-              "hi": "श्री दत्तात्रय बी. गोडे",
-              "mr": "श्री दत्तात्रय बी. गोडे"
-            }
+              "hi": "श्री. दत्तात्रय बी. गोडे",
+              "mr": "श्री. दत्तात्रय बी. गोडे"
+            },
+            "photo": "/trustees/dattatray-gode.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Omkar Shankarrao Vairagkar",
-              "hi": "श्री ओंकार शंकरराव वैरागकर",
-              "mr": "श्री ओंकार शंकरराव वैरागकर"
-            }
+              "hi": "श्री. ओंकार शंकरराव वैरागकर",
+              "mr": "श्री. ओंकार शंकरराव वैरागकर"
+            },
+            "photo": "/trustees/omkar-vairagkar.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Adv. Shri Dinkar Keruji Patil",
-              "hi": "श्री अॅड. दिनकर केरुजी पाटील",
-              "mr": "श्री अॅड. दिनकर केरुजी पाटील"
-            }
+              "hi": "श्री. ॲड. दिनकर केरुजी पाटील",
+              "mr": "श्री. ॲड. दिनकर केरुजी पाटील"
+            },
+            "photo": "/trustees/dinkar-patil.webp"
           }
         ]
       },
       {
-        "term": "2015 – 2017",
+        "term": "2020 – 2025",
         "members": [
           {
             "role": "president",
             "name": {
               "en": "Shri Somnath Yashwant Jachak",
-              "hi": "श्री सोमनाथ यशवंत जाचक",
-              "mr": "श्री सोमनाथ यशवंत जाचक"
-            }
+              "hi": "श्री. सोमनाथ यशवंत जाचक",
+              "mr": "श्री. सोमनाथ यशवंत जाचक"
+            },
+            "photo": "/trustees/somnath-jachak.webp"
           },
           {
             "role": "vicePresident",
             "name": {
               "en": "Adv. Shri Tryambak Sawakar Godse",
-              "hi": "श्री अॅड. त्र्यंबक सावकार गोडसे",
-              "mr": "श्री अॅड. त्र्यंबक सावकार गोडसे"
-            }
+              "hi": "श्री. ॲड. त्र्यंबक सावकार गोडसे",
+              "mr": "श्री. ॲड. त्र्यंबक सावकार गोडसे"
+            },
+            "photo": "/trustees/tryambak-godse.webp"
           },
           {
             "role": "secretary",
             "name": {
-              "en": "Shri Sachin Balasaheb Gawali",
-              "hi": "श्री सचिन बाळासाहेब गवळी",
-              "mr": "श्री सचिन बाळासाहेब गवळी"
-            }
+              "en": "Shri Sachin Nanasaheb Gawali",
+              "hi": "श्री. सचिन नानासाहेब गवळी",
+              "mr": "श्री. सचिन नानासाहेब गवळी"
+            },
+            "photo": "/trustees/sachin-gawali.webp"
           },
           {
             "role": "treasurer",
             "name": {
               "en": "Shri Shekhar Suresh Adhav",
-              "hi": "श्री शेखर सुरेश आढाव",
-              "mr": "श्री शेखर सुरेश आढाव"
-            }
+              "hi": "श्री. शेखर सुरेश आढाव",
+              "mr": "श्री. शेखर सुरेश आढाव"
+            },
+            "photo": ""
           },
           {
             "role": "legalAdvisor",
             "name": {
               "en": "Adv. Shri Dinkar Keruji Patil",
-              "hi": "श्री अॅड. दिनकर केरुजी पाटील",
-              "mr": "श्री अॅड. दिनकर केरुजी पाटील"
-            }
+              "hi": "श्री. ॲड. दिनकर केरुजी पाटील",
+              "mr": "श्री. ॲड. दिनकर केरुजी पाटील"
+            },
+            "photo": "/trustees/dinkar-patil.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Vaibhav Vitthal Halde",
-              "hi": "श्री वैभव विट्ठल हळदे",
-              "mr": "श्री वैभव विट्ठल हळदे"
-            }
+              "hi": "श्री. वैभव विठ्ठल हळदे",
+              "mr": "श्री. वैभव विठ्ठल हळदे"
+            },
+            "photo": "/trustees/vaibhav-halde.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Shashikant Baburao Nanekar",
-              "hi": "श्री शशिकांत बाबूराव नाणेकर",
-              "mr": "श्री शशिकांत बाबूराव नाणेकर"
-            }
+              "hi": "श्री. शशिकांत बाबूराव नाणेकर",
+              "mr": "श्री. शशिकांत बाबूराव नाणेकर"
+            },
+            "photo": "/trustees/shashikant-nanekar.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Krishna Jagannath Pawar",
-              "hi": "श्री कृष्णा जगन्नाथ पवार",
-              "mr": "श्री कृष्णा जगन्नाथ पवार"
-            }
+              "hi": "श्री. कृष्णा जगन्नाथ पवार",
+              "mr": "श्री. कृष्णा जगन्नाथ पवार"
+            },
+            "photo": "/trustees/krishna-pawar.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Sachin Ashok Nigal",
-              "hi": "श्री सचिन अशोक निगळ",
-              "mr": "श्री सचिन अशोक निगळ"
-            }
+              "hi": "श्री. सचिन अशोक निगळ",
+              "mr": "श्री. सचिन अशोक निगळ"
+            },
+            "photo": "/trustees/sachin-nigal.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Jayvant Namdev Pawar",
-              "hi": "श्री जयवंत नामदेव पवार",
-              "mr": "श्री जयवंत नामदेव पवार"
-            }
+              "hi": "श्री. जयवंत नामदेव पवार",
+              "mr": "श्री. जयवंत नामदेव पवार"
+            },
+            "photo": "/trustees/jayvant-pawar.webp"
           },
           {
             "role": "trustee",
             "name": {
               "en": "Shri Prashant Balkrishna Joshi",
-              "hi": "श्री प्रशांत बाळकृष्ण जोशी",
-              "mr": "श्री प्रशांत बाळकृष्ण जोशी"
-            }
+              "hi": "श्री. प्रशांत बाळकृष्ण जोशी",
+              "mr": "श्री. प्रशांत बाळकृष्ण जोशी"
+            },
+            "photo": "/trustees/prashant-joshi.webp"
+          }
+        ]
+      },
+      {
+        "term": "2025 – 2030",
+        "members": [
+          {
+            "role": "president",
+            "name": {
+              "en": "Shri Somnath Yashwant Jachak",
+              "hi": "श्री. सोमनाथ यशवंत जाचक",
+              "mr": "श्री. सोमनाथ यशवंत जाचक"
+            },
+            "photo": "/trustees/somnath-jachak.webp"
+          },
+          {
+            "role": "vicePresident",
+            "name": {
+              "en": "Shri Bharat Dattatray Dikshit",
+              "hi": "श्री. भारत दत्तात्रय दिक्षित",
+              "mr": "श्री. भारत दत्तात्रय दिक्षित"
+            },
+            "photo": ""
+          },
+          {
+            "role": "secretary",
+            "name": {
+              "en": "Shri Sachin Nanasaheb Gawali",
+              "hi": "श्री. सचिन नानासाहेब गवळी",
+              "mr": "श्री. सचिन नानासाहेब गवळी"
+            },
+            "photo": "/trustees/sachin-gawali.webp"
+          },
+          {
+            "role": "treasurer",
+            "name": {
+              "en": "Shri Shekhar Suresh Adhav",
+              "hi": "श्री. शेखर सुरेश आढाव",
+              "mr": "श्री. शेखर सुरेश आढाव"
+            },
+            "photo": ""
+          },
+          {
+            "role": "legalAdvisor",
+            "name": {
+              "en": "Adv. Shri Dinkar Keruji Patil",
+              "hi": "श्री. ॲड. दिनकर केरुजी पाटील",
+              "mr": "श्री. ॲड. दिनकर केरुजी पाटील"
+            },
+            "photo": "/trustees/dinkar-patil.webp"
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Shashikant Baburao Nanekar",
+              "hi": "श्री. शशिकांत बाबूराव नाणेकर",
+              "mr": "श्री. शशिकांत बाबूराव नाणेकर"
+            },
+            "photo": "/trustees/shashikant-nanekar.webp"
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Sachin Ashok Nigal",
+              "hi": "श्री. सचिन अशोक निगळ",
+              "mr": "श्री. सचिन अशोक निगळ"
+            },
+            "photo": "/trustees/sachin-nigal.webp"
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Prashant Shirish Mandora",
+              "hi": "श्री. प्रशांत शिरीष मंडोरा",
+              "mr": "श्री. प्रशांत शिरीष मंडोरा"
+            },
+            "photo": ""
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Madhukar Nivrutti Kothule",
+              "hi": "श्री. मधुकर निवृत्ती कोठुळे",
+              "mr": "श्री. मधुकर निवृत्ती कोठुळे"
+            },
+            "photo": ""
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Smt. Shobha Balkrishna Joshi (Mai)",
+              "hi": "श्रीमती. शोभा बाळकृष्ण जोशी (माई)",
+              "mr": "श्रीमती. शोभा बाळकृष्ण जोशी (माई)"
+            },
+            "photo": ""
+          },
+          {
+            "role": "trustee",
+            "name": {
+              "en": "Shri Ashok Kacharu Gawali",
+              "hi": "श्री. अशोक कचरु गवळी",
+              "mr": "श्री. अशोक कचरु गवळी"
+            },
+            "photo": ""
           }
         ]
       }
